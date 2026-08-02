@@ -6408,9 +6408,9 @@ body.game-page #enemy-container.vegnasis-formation::after {
 body.game-page .shared-enemy-visual.vegnasis-shared-visual {
   position: absolute;
   left: 50%;
-  bottom: 42px;
+  bottom: 15px;
   width: min(68%, 430px);
-  height: calc(100% - 42px);
+  height: calc(100% - 15px);
   transform: translateX(-50%);
   z-index: 30;
   pointer-events: none;
@@ -6435,65 +6435,12 @@ body.game-page .shared-enemy-visual.vegnasis-shared-visual > img {
 body.game-page #enemy-container.vegnasis-formation .vegnasis-boss-hud {
   position: absolute;
   left: 50%;
-  bottom: 3px;
-  width: min(84%, 500px);
-  min-width: 250px;
-  box-sizing: border-box;
+  bottom: 0;
+  width: 65%;
+  max-width: 450px;
   transform: translateX(-50%);
   z-index: 58;
   pointer-events: none;
-  padding: 3px 12px 6px;
-  border-top: 1px solid rgba(214, 188, 255, 0.52);
-  border-bottom: 1px solid rgba(54, 27, 72, 0.9);
-  background:
-    linear-gradient(90deg, transparent 0%, rgba(4, 4, 11, 0.88) 13%, rgba(11, 5, 19, 0.94) 50%, rgba(4, 4, 11, 0.88) 87%, transparent 100%);
-  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.88));
-  text-align: center;
-  text-shadow: 0 2px 2px #000, 0 0 7px rgba(140, 78, 191, 0.42);
-}
-
-body.game-page #enemy-container.vegnasis-formation .vegnasis-boss-name {
-  color: #f7f0ff;
-  font-size: clamp(15px, 4.1vw, 20px);
-  line-height: 1.15;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  white-space: nowrap;
-}
-
-body.game-page #enemy-container.vegnasis-formation .vegnasis-aggregate-hp-bar {
-  position: relative;
-  width: 100%;
-  height: 9px;
-  margin-top: 3px;
-  overflow: hidden;
-  box-sizing: border-box;
-  border: 1px solid rgba(8, 3, 11, 0.96);
-  border-radius: 2px;
-  background: rgba(19, 13, 24, 0.96);
-  box-shadow:
-    inset 0 1px 3px rgba(0, 0, 0, 0.96),
-    0 0 6px rgba(120, 45, 145, 0.34);
-}
-
-body.game-page #enemy-container.vegnasis-formation .vegnasis-aggregate-hp-value {
-  position: absolute;
-  inset: 0 auto 0 0;
-  min-width: 0;
-  border-radius: 1px;
-  background:
-    linear-gradient(180deg, #ff747f 0%, #d92443 50%, #8c0925 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 222, 225, 0.5),
-    0 0 7px rgba(255, 48, 91, 0.42);
-  transition: width 240ms ease;
-}
-
-body.game-page #enemy-container.vegnasis-formation .vegnasis-aggregate-hp-value::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 0 76%, rgba(255, 255, 255, 0.24) 88%, transparent 100%);
 }
 
 /* PolishBattleFX が共有本体ノードへ付与するクラス。位置transformは親に残し、画像だけを動かす。 */

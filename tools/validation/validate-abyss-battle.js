@@ -115,6 +115,77 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   await Battle.awaitPendingBattleEvent();
   assert(conversations.includes('ABYSS_AZELGARAG_TRANSFORM'), '第二形態移行会話を戦闘中イベントとして実行する');
 
+  // A self-inflicted status death must end the old turn before rebuilding manual input.
+  // This reproduces the reported case: Azelgarag acts, Shock kills form 1, form 2 appears,
+  // and command entry must still complete without reload/auto mode.
+  App.data.battle={
+    active:true,isBossBattle:true,fixedBossId:302100,battleId:'validation-shock-transition',
+    defeatedPhases:[],cutsceneQueue:[],phaseTransitionCount:0
+  };
+  const shockParty=[
+    {uid:'shock-p1',name:'勇者',hp:500,mp:100,baseMaxHp:500,baseMaxMp:100,spd:100,isDead:false,isFled:false,battleStatus:{buffs:{},debuffs:{},ailments:{}}},
+    {uid:'shock-p2',name:'僧侶',hp:420,mp:160,baseMaxHp:420,baseMaxMp:160,spd:90,isDead:false,isFled:false,battleStatus:{buffs:{},debuffs:{},ailments:{}}}
+  ];
+  const shockedFirstForm=Battle.createMonsterFromBase(monsterBases.get(302100));
+  shockedFirstForm.hp=10;
+  shockedFirstForm.baseMaxHp=100;
+  shockedFirstForm.maxHp=100;
+  shockedFirstForm.actCount=3;
+  shockedFirstForm.spd=150;
+  shockedFirstForm.battleStatus={buffs:{},debuffs:{},ailments:{Shock:{turns:2}}};
+  Battle.party=shockParty;
+  Battle.enemies=[shockedFirstForm];
+  Battle.active=true;
+  Battle.auto=false;
+  Battle.phase='input';
+  Battle.commandQueue=[];
+  Battle.currentActorIndex=0;
+  Battle.turnExecutionActive=false;
+  Battle.turnExecutionToken=null;
+  Battle.phaseTransitionRestartPending=false;
+  Battle.phaseTransitionResumeToken=null;
+  Battle.deferredPhaseTransitionResumeToken=null;
+  Battle.specialCutsceneAutoBefore=undefined;
+  Battle.pendingBattleEvent=null;
+  const savedProcessAction=Battle.processAction;
+  const savedDecideEnemyAction=Battle.decideEnemyAction;
+  const savedSaveBattleState=Battle.saveBattleState;
+  const savedStartInputPhase=Battle.startInputPhase;
+  const savedUpdateCommandButtons=Battle.updateCommandButtons;
+  const savedExecuteTurn=Battle.executeTurn;
+  let oldFormActions=0;
+  let inputStartedWhileTurnLocked=null;
+  Battle.processAction=async()=>{ oldFormActions+=1; };
+  Battle.decideEnemyAction=()=>({type:'enemy_attack',data:null,targetScope:'single',priority:0});
+  Battle.saveBattleState=()=>{};
+  Battle.updateCommandButtons=()=>{};
+  Battle.startInputPhase=function(){
+    inputStartedWhileTurnLocked=this.turnExecutionActive;
+    return savedStartInputPhase.call(this);
+  };
+  await Battle.executeTurn();
+  assert(oldFormActions===1, '感電死した旧形態の残り2行動を破棄する');
+  assert(Number(Battle.enemies[0]?.baseId)===302101, '敵自身の行動後に感電死しても第二形態へ移行する');
+  assert(Battle.turnExecutionActive===false && Battle.turnExecutionToken===null, '第二形態入力前に旧ターン実行ロックを確実に解放する');
+  assert(inputStartedWhileTurnLocked===false, '旧ターンのfinally完了後にだけ第二形態の入力フェーズを生成する');
+  assert(Battle.phase==='input' && Battle.currentActorIndex===0 && Battle.commandQueue.length===0, '感電死形態移行後に手動入力を先頭キャラクターから再構築する');
+  assert(!App.data.battle.phaseTransitionJournal, '入力再開後に形態移行ジャーナルを完了・清掃する');
+
+  let nextTurnExecutionCount=0;
+  Battle.executeTurn=()=>{ nextTurnExecutionCount+=1; return Promise.resolve(true); };
+  Battle.phase='input';
+  Battle.currentActorIndex=0;
+  Battle.commandQueue=[];
+  Battle.registerAction({type:'defend',actor:shockParty[0]});
+  Battle.registerAction({type:'defend',actor:shockParty[1]});
+  assert(nextTurnExecutionCount===1, '第二形態出現後も全員の手動コマンド入力を完了して次ターンへ進める');
+  Battle.executeTurn=savedExecuteTurn;
+  Battle.processAction=savedProcessAction;
+  Battle.decideEnemyAction=savedDecideEnemyAction;
+  Battle.saveBattleState=savedSaveBattleState;
+  Battle.startInputPhase=savedStartInputPhase;
+  Battle.updateCommandButtons=savedUpdateCommandButtons;
+
   // Generic chains must support future second/third forms without monster-ID branches.
   App.data.battle={active:true,fixedBossId:990001,defeatedPhases:[]};
   Battle.enemies=[Battle.createMonsterFromBase(monsterBases.get(990001))];
@@ -230,6 +301,9 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   const bossHud=fakeContainer.children.find(node=>String(node.className).includes('vegnasis-boss-hud'));
   assert(!!bossHud && bossHud.innerHTML.includes('ヴェグナシス') && bossHud.innerHTML.includes('vegnasis-aggregate-hp-bar'), 'ヴェグナシス名と統合HPバーを一つだけ描画する');
   assert(!bossHud.innerHTML.includes('vegnasis-aggregate-hp-percent') && !bossHud.innerHTML.includes('%</div>'), '統合HPは数値パーセントを表示せずバーだけで示す');
+  assert(bossHud.innerHTML.includes('font-size:10px') && bossHud.innerHTML.includes('width:60%;height:4px') &&
+    bossHud.innerHTML.includes('width:140%') && bossHud.innerHTML.includes('transform:scale(1.2)'),
+    'ヴェグナシスの名前・HPバーをアゼルガラグ第二形態と同じ敵ステータス寸法で描画する');
   Battle.enemies[0].hp=Math.floor(Battle.enemies[0].baseMaxHp/2);
   const damagedSummary=Battle.getSharedVisualHpSummary('vegnasis');
   assert(damagedSummary.currentHp<damagedSummary.maxHp && damagedSummary.percent<100, 'いずれかの柱の被ダメージを統合HPへ反映する');
@@ -246,6 +320,7 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   assert(!battleSource.includes('enemy-hp-percent') && !battleSource.includes('vegnasis-aggregate-hp-percent'), '通常戦闘を含めHP残量パーセント表示を追加しない');
   assert(!polishSource.includes('vegnasis-aggregate-hp-percent') && !cssSource.includes('.vegnasis-aggregate-hp-percent'), 'ヴェグナシス統合HPも数値パーセントを表示しない');
   assert(cssSource.includes('.vegnasis-shared-visual') && cssSource.includes('.vegnasis-boss-hud') && cssSource.includes('.vegnasis-shift-flash'), '共有画像・統合HP・柱撃破フラッシュの専用スタイルを定義する');
+  assert(!cssSource.includes('.vegnasis-boss-name') && !cssSource.includes('clamp(15px, 4.1vw, 20px)'), 'ヴェグナシス専用の大見出しフォントを残さない');
   assert(!cssSource.includes('.vegnasis-atmosphere') && !cssSource.includes('--vegnasis-cracks'), '背景暗転とひび割れ演出を削除する');
 
   // Every elemental trial must award its shard once and the sixth grants Octaprisma.

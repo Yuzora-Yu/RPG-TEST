@@ -10,6 +10,10 @@ const Battle = {
     enemies: [],
     commandQueue: [], 
     currentActorIndex: 0, 
+    turnExecutionActive: false,
+    turnExecutionToken: null,
+    phaseTransitionResumeToken: null,
+    deferredPhaseTransitionResumeToken: null,
     selectingAction: null, 
     selectedItemOrSkill: null,
 	runAttemptCount: 0, // ★追加: 逃走試行回数
@@ -386,6 +390,74 @@ const Battle = {
         return App.data.battle.cutsceneQueue;
     },
 
+    getPhaseTransitionJournal: () => {
+        const journal = App.data?.battle?.phaseTransitionJournal;
+        return journal && typeof journal === 'object' ? journal : null;
+    },
+
+    makePhaseTransitionToken: (enemy, nextForm) => {
+        const battleId = App.data?.battle?.battleId || 'battle';
+        const unitId = nextForm?.battleUnitId || enemy?.battleUnitId || Battle.makeBattleUnitId();
+        const phaseIndex = Math.max(1, Number(nextForm?.phaseIndex || enemy?.phaseIndex || 1));
+        return `${battleId}:phase:${unitId}:${phaseIndex}:${Date.now().toString(36)}`;
+    },
+
+    resetInputStateForPhaseTransition: () => {
+        Battle.commandQueue = [];
+        Battle.currentActorIndex = 0;
+        Battle.selectingAction = null;
+        Battle.selectedItemOrSkill = null;
+        Battle.isPreemptive = false;
+        Battle.isAmbushed = false;
+        Battle.closeSubMenu?.();
+        Battle.closeStrategyModal?.();
+        [...(Battle.party || []), ...(Battle.enemies || [])].forEach(unit => {
+            if (!unit) return;
+            unit.turnProcessed = false;
+            unit.hasDiedThisTurn = false;
+        });
+    },
+
+    beginPhaseTransitionJournal: (enemy, nextForm, config = {}) => {
+        if (!App.data?.battle) return null;
+        const token = Battle.makePhaseTransitionToken(enemy, nextForm);
+        const journal = {
+            version: 1,
+            token,
+            status: 'state_applied',
+            fromMonsterId: Battle.getUnitBaseId(enemy),
+            toMonsterId: Battle.getUnitBaseId(nextForm),
+            battleUnitId: nextForm?.battleUnitId || enemy?.battleUnitId || null,
+            phaseIndex: Math.max(1, Number(nextForm?.phaseIndex || 1)),
+            conversation: config.conversation || null,
+            resumePhase: config.resumePhase || 'input',
+            createdAt: Date.now()
+        };
+        App.data.battle.phaseTransitionJournal = journal;
+        Battle.phaseTransitionRestartPending = true;
+        Battle.phaseTransitionResumeToken = token;
+        Battle.deferredPhaseTransitionResumeToken = null;
+        // 旧形態が複数回行動だった場合、その残りコマンドを会話中も保持しない。
+        // 感電・毒・反射など「行動後死亡」でも、次形態へ旧ターンを絶対に持ち越さない。
+        Battle.resetInputStateForPhaseTransition();
+        Battle.phase = 'battle_event';
+        return journal;
+    },
+
+    completePhaseTransitionJournalOnInput: () => {
+        const journal = Battle.getPhaseTransitionJournal();
+        if (!journal) return false;
+        const currentIds = (Battle.enemies || []).map(enemy => Battle.getUnitBaseId(enemy));
+        if (journal.toMonsterId && !currentIds.includes(Number(journal.toMonsterId))) return false;
+        journal.status = 'completed';
+        journal.completedAt = Date.now();
+        Battle.phaseTransitionResumeToken = null;
+        // 完了済みジャーナルは次回ロードで再実行しない。第二形態自体は敵スナップショットに保存済み。
+        delete App.data.battle.phaseTransitionJournal;
+        App.save();
+        return true;
+    },
+
     playBattleCutsceneVisual: (effect) => {
         if (!effect || typeof document === 'undefined') return;
         if (effect.type === 'vegnasis-fall' || effect.type === 'vegnasis-final') {
@@ -417,6 +489,7 @@ const Battle = {
                     scriptKey,
                     status: 'queued',
                     resumePhase: options.resumePhase || 'input',
+                    phaseTransitionToken: options.phaseTransitionToken || null,
                     visualEffect: options.visualEffect ? JSON.parse(JSON.stringify(options.visualEffect)) : null,
                     createdAt: Date.now()
                 });
@@ -439,6 +512,12 @@ const Battle = {
             if (persistentEntry) {
                 persistentEntry.status = 'running';
                 persistentEntry.startedAt = persistentEntry.startedAt || Date.now();
+                const transitionJournal = Battle.getPhaseTransitionJournal();
+                const transitionToken = persistentEntry.phaseTransitionToken || options.phaseTransitionToken || null;
+                if (transitionJournal && transitionToken && transitionJournal.token === transitionToken) {
+                    transitionJournal.status = 'conversation_running';
+                    transitionJournal.conversationStartedAt = transitionJournal.conversationStartedAt || Date.now();
+                }
                 App.save();
             }
             Battle.playBattleCutsceneVisual(persistentEntry?.visualEffect || options.visualEffect || null);
@@ -458,6 +537,12 @@ const Battle = {
                 }
             } finally {
                 if (persistId && App.data?.battle && conversationSucceeded) {
+                    const transitionJournal = Battle.getPhaseTransitionJournal();
+                    const transitionToken = persistentEntry?.phaseTransitionToken || options.phaseTransitionToken || null;
+                    if (transitionJournal && transitionToken && transitionJournal.token === transitionToken) {
+                        transitionJournal.status = 'conversation_completed';
+                        transitionJournal.conversationCompletedAt = Date.now();
+                    }
                     App.data.battle.cutsceneQueue = Battle.ensureBattleCutsceneQueue()
                         .filter(entry => entry?.id !== persistId);
                     App.save();
@@ -486,40 +571,81 @@ const Battle = {
         }
     },
 
-    // 形態移行は「同じターンの残りコマンド」を継続すると、既に消えた第一形態の
-    // 行動・ターン終了処理・勝敗判定が混ざる。会話終了後に現在ターンを破棄し、
-    // 第二形態を先頭にした新しい入力フェーズとして再開する。
-    restartInputAfterPhaseTransition: () => {
-        if (!Battle.phaseTransitionRestartPending) return false;
-        Battle.phaseTransitionRestartPending = false;
-        Battle.commandQueue = [];
-        Battle.currentActorIndex = 0;
-        Battle.selectingAction = null;
-        Battle.selectedItemOrSkill = null;
-        Battle.isPreemptive = false;
-        Battle.isAmbushed = false;
-        Battle.closeSubMenu?.();
-        Battle.closeStrategyModal?.();
-        [...(Battle.party || []), ...(Battle.enemies || [])].forEach(unit => {
-            if (!unit) return;
-            unit.turnProcessed = false;
-            unit.hasDiedThisTurn = false;
-        });
+    resumeInputAfterPhaseTransition: (token) => {
+        const journal = Battle.getPhaseTransitionJournal();
+        const expectedToken = token || journal?.token || Battle.phaseTransitionResumeToken;
+        if (!expectedToken || !Battle.active || Battle.phase === 'result') return false;
+        if (journal?.token && journal.token !== expectedToken) return false;
+
+        Battle.resetInputStateForPhaseTransition();
         Battle.phase = 'input';
-        Battle.renderEnemies();
-        Battle.renderPartyStatus();
-        Battle.saveBattleState();
-        // 旧ターンのasyncスタックを終了してから、必ず新しい入力を作り直す。
-        const resume = () => {
-            if (!Battle.active || Battle.phase === 'result') return;
+        if (journal) {
+            journal.status = 'resuming_input';
+            journal.inputResumeAt = Date.now();
+        }
+
+        try {
+            Battle.renderEnemies?.();
+            Battle.renderPartyStatus?.();
+            Battle.saveBattleState?.();
+        } catch (error) {
+            // 描画・保存に失敗しても入力再開を止めない。ロード後は保存済みの第二形態から復帰できる。
+            console.error('[Battle] phase transition pre-input refresh failed:', error);
+            if (journal) {
+                journal.lastResumeError = String(error?.message || error);
+                journal.lastResumeErrorAt = Date.now();
+                try { App.save(); } catch (_) {}
+            }
+        }
+
+        try {
             Battle.startInputPhase();
-            // UI実装差で入力フェーズが作られなかった場合のフェイルセーフ。
-            setTimeout(() => {
-                if (Battle.active && Battle.phase === 'input' && Battle.currentActorIndex === 0 &&
-                    Battle.commandQueue.length === 0) Battle.findNextActor?.();
-            }, 50);
-        };
-        setTimeout(resume, 0);
+        } catch (error) {
+            console.error('[Battle] phase transition input restart failed:', error);
+            Battle.phase = 'input';
+            Battle.currentActorIndex = 0;
+            Battle.commandQueue = [];
+            if (journal) {
+                journal.status = 'resume_error';
+                journal.lastResumeError = String(error?.message || error);
+                journal.lastResumeErrorAt = Date.now();
+                try { App.save(); } catch (_) {}
+            }
+            // startInputPhase全体で例外が出ても、最低限の手動入力UIを再構築する。
+            try { Battle.findNextActor?.(); } catch (fallbackError) {
+                console.error('[Battle] phase transition input fallback failed:', fallbackError);
+                return false;
+            }
+        }
+        return true;
+    },
+
+    // 形態移行は「同じターンの残りコマンド」を継続すると、既に消えた旧形態の
+    // 行動・ターン終了処理・勝敗判定が混ざる。旧ターンを終了させてからだけ、
+    // 次形態を先頭にした新しい入力フェーズを作る。
+    restartInputAfterPhaseTransition: () => {
+        const journal = Battle.getPhaseTransitionJournal();
+        const hasPendingTransition = Battle.phaseTransitionRestartPending || !!journal;
+        if (!hasPendingTransition) return false;
+
+        Battle.phaseTransitionRestartPending = false;
+        const token = journal?.token || Battle.phaseTransitionResumeToken || `phase-resume-${Date.now().toString(36)}`;
+        Battle.phaseTransitionResumeToken = token;
+        Battle.resetInputStateForPhaseTransition();
+        Battle.phase = 'phase_transition_resume';
+
+        if (journal) {
+            journal.status = 'resume_waiting_for_turn_end';
+            journal.resumeRequestedAt = Date.now();
+        }
+
+        // executeTurn()の途中（感電・毒・反射・追撃など）なら、ここで入力を始めない。
+        // 旧ターンのfinallyで実行ロックを解放した直後に、同期的に一度だけ再開する。
+        if (Battle.turnExecutionActive) {
+            Battle.deferredPhaseTransitionResumeToken = token;
+        } else {
+            Battle.resumeInputAfterPhaseTransition(token);
+        }
         return true;
     },
 
@@ -667,13 +793,18 @@ const Battle = {
             App.data.battle.currentPhaseMonsterId = config.nextMonsterId;
         }
         Battle.applyPhaseTransitionEffects(config.effects);
-        Battle.phaseTransitionRestartPending = true;
+        const transitionJournal = Battle.beginPhaseTransitionJournal(enemy, nextForm, config);
         Battle.saveBattleState();
         if (config.conversation) {
             Battle.queueBattleConversation(config.conversation, {
                 persistId: `${config.conversation}:${nextForm.battleUnitId}:${nextForm.phaseIndex}`,
-                resumePhase: config.resumePhase || 'input'
+                resumePhase: config.resumePhase || 'input',
+                phaseTransitionToken: transitionJournal?.token || null
             });
+        } else if (transitionJournal) {
+            transitionJournal.status = 'conversation_completed';
+            transitionJournal.conversationCompletedAt = Date.now();
+            App.save();
         }
         return true;
     },
@@ -862,6 +993,7 @@ const Battle = {
             scriptKey: entry.scriptKey,
             persistId: entry.id,
             resumePhase: entry.resumePhase || 'input',
+            phaseTransitionToken: entry.phaseTransitionToken || null,
             visualEffect: entry.visualEffect || null
         }));
         if (isVegnasisBattle && recognizedSpirits.length > 0 && !App.data?.battle?.abyssSpiritFinalBlessingShown) {
@@ -871,6 +1003,10 @@ const Battle = {
         Battle.pendingBattleEvent = null;
         Battle.specialCutsceneAutoBefore = undefined;
         Battle.phaseTransitionRestartPending = false;
+        Battle.phaseTransitionResumeToken = Battle.getPhaseTransitionJournal()?.token || null;
+        Battle.deferredPhaseTransitionResumeToken = null;
+        Battle.turnExecutionActive = false;
+        Battle.turnExecutionToken = null;
         Battle.active = true;
         Battle.phase = 'init';
         Battle.commandQueue = [];
@@ -2329,6 +2465,7 @@ const Battle = {
             Battle.queueBattleConversation(entry.scriptKey, {
                 persistId: entry.persistId || null,
                 resumePhase: entry.resumePhase || 'input',
+                phaseTransitionToken: entry.phaseTransitionToken || null,
                 visualEffect: entry.visualEffect || null
             });
             Battle.awaitPendingBattleEvent().then(() => {
@@ -2339,7 +2476,10 @@ const Battle = {
         Battle.phase = 'input';
         Battle.commandQueue = [];
         Battle.currentActorIndex = 0;
+        Battle.selectingAction = null;
+        Battle.selectedItemOrSkill = null;
         Battle.closeSubMenu();
+        Battle.completePhaseTransitionJournalOnInput();
         Battle.findNextActor();
     },
 
@@ -3417,7 +3557,20 @@ findNextActor: () => {
     },
 
     registerAction: (actionObj) => {
+        const validInputPhases = ['input', 'skill_select', 'item_select', 'target_select'];
+        if (!actionObj || !validInputPhases.includes(Battle.phase)) return false;
         const actor = actionObj.actor;
+        const expectedActor = Battle.party[Battle.currentActorIndex];
+        // 形態移行前に開いていた対象ボタン等の古いクロージャから、
+        // 別の行動者・旧入力世代のコマンドが混入するのを防ぐ。
+        if (!actor || actor !== expectedActor || actor.isDead || actor.isFled) {
+            Battle.closeSubMenu();
+            Battle.selectingAction = null;
+            Battle.selectedItemOrSkill = null;
+            Battle.phase = 'input';
+            Battle.findNextActor();
+            return false;
+        }
         const spd = Battle.getBattleStat(actor, 'spd');
         
         let finalSpeed = spd * (0.9 + Math.random() * 0.2);
@@ -3432,6 +3585,7 @@ findNextActor: () => {
         Battle.closeSubMenu();
         Battle.currentActorIndex++;
         Battle.findNextActor();
+        return true;
     },
 
     run: () => {
@@ -3676,6 +3830,11 @@ findNextActor: () => {
     },
 
 	executeTurn: async () => {
+        if (Battle.turnExecutionActive) return false;
+        const executionToken = `turn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+        Battle.turnExecutionActive = true;
+        Battle.turnExecutionToken = executionToken;
+        try {
         Battle.phase = 'execution';
         const nameDiv = Battle.getEl('battle-actor-name');
         if(nameDiv) nameDiv.style.display = 'none';
@@ -3889,6 +4048,18 @@ findNextActor: () => {
 		
         Battle.saveBattleState();
 		Battle.startInputPhase();
+        } finally {
+            if (Battle.turnExecutionToken === executionToken) {
+                Battle.turnExecutionActive = false;
+                Battle.turnExecutionToken = null;
+            }
+            const deferredTransitionToken = Battle.deferredPhaseTransitionResumeToken;
+            if (deferredTransitionToken) {
+                Battle.deferredPhaseTransitionResumeToken = null;
+                Battle.resumeInputAfterPhaseTransition(deferredTransitionToken);
+            }
+        }
+        return true;
     },
 	
     // ターン終了時に全員の状態異常・バフの持続時間を更新する
@@ -5632,14 +5803,29 @@ findNextActor: () => {
                 bossHud.dataset.sharedVisualGroup = 'vegnasis';
                 bossHud.setAttribute('role', 'group');
                 bossHud.setAttribute('aria-label', profile.name);
+                const hpRatio = hpSummary.maxHp > 0 ? hpSummary.currentHp / hpSummary.maxHp : 0;
+                const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
                 bossHud.innerHTML = `
-                    <div class="vegnasis-boss-name">${Battle.escapeHtml(profile.name)}</div>
-                    <div class="vegnasis-aggregate-hp-bar" role="progressbar"
-                        aria-label="${Battle.escapeAttr(profile.name)}のHP"
-                        aria-valuemin="0"
-                        aria-valuemax="${hpSummary.maxHp}"
-                        aria-valuenow="${hpSummary.currentHp}">
-                        <div class="vegnasis-aggregate-hp-value" style="width:${hpSummary.percent}%"></div>
+                    <div class="enemy-status-panel" style="
+                        width:140%;
+                        margin-top:-30px;
+                        display:flex;
+                        flex-direction:column;
+                        align-items:center;
+                        z-index:10;
+                        pointer-events:none;
+                        transform:scale(1.2);
+                        transform-origin:top center;
+                        text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;">
+                        <div class="enemy-name" style="font-size:10px;color:${nameColor};font-weight:bold;white-space:nowrap;margin-bottom:2px;">${Battle.escapeHtml(profile.name)}</div>
+                        <div class="enemy-hp-bar vegnasis-aggregate-hp-bar" role="progressbar"
+                            aria-label="${Battle.escapeAttr(profile.name)}のHP"
+                            aria-valuemin="0"
+                            aria-valuemax="${hpSummary.maxHp}"
+                            aria-valuenow="${hpSummary.currentHp}"
+                            style="width:60%;height:4px;border:1px solid #000;background:#333;border-radius:3px;">
+                            <div class="enemy-hp-val vegnasis-aggregate-hp-value" style="width:${hpSummary.percent}%;height:100%;background:#ff4444;transition:width 0.2s;border-radius:2px;"></div>
+                        </div>
                     </div>`;
                 container.appendChild(bossHud);
             }
