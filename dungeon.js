@@ -53,6 +53,22 @@ const Dungeon = {
     floor: 0, width: 30, height: 30, map: [], pendingAction: null,
     fixedProceduralGenerationVersion: 3,
 
+    showConversationReliably: async (scriptKey, startFromIndex = 0, options = {}) => {
+        if (typeof StoryManager === 'undefined' || typeof StoryManager.showConversation !== 'function') {
+            return { status: 'unavailable', scriptKey };
+        }
+        let result = await StoryManager.showConversation(scriptKey, startFromIndex);
+        while (result?.status === 'busy') {
+            await new Promise(resolve => setTimeout(resolve, Math.max(20, Number(options.pollMs || 50))));
+            if (typeof options.abortWhen === 'function' && options.abortWhen()) {
+                return { status: 'aborted', scriptKey };
+            }
+            result = await StoryManager.showConversation(scriptKey, startFromIndex);
+        }
+        const status = result?.status || (result === false ? 'error' : 'completed');
+        return result && typeof result === 'object' ? result : { status, scriptKey };
+    },
+
     memoryRealmName: '追憶の魔境',
     memoryRealmMaxFloor: 30,
     memoryRealmBossIds: Object.freeze([
@@ -3734,9 +3750,16 @@ const Dungeon = {
                     }
                 ];
                 StoryManager.active = true;
-                await StoryManager.showConversation(key, 0);
-                StoryManager.endConversation();
-                delete StoryManager.scripts[key];
+                try {
+                    const result = await Dungeon.showConversationReliably(key, 0);
+                    if (result.status !== 'completed') throw new Error(`冒険者報酬会話を完了できませんでした: ${result.status}`);
+                    StoryManager.endConversation();
+                } catch (error) {
+                    console.error('[Dungeon] adventurer reward conversation failed:', error);
+                    App.log(`こんなところで会うなんて、これも何かの縁だ。<br>${rewardText}`);
+                } finally {
+                    delete StoryManager.scripts[key];
+                }
             } else {
                 App.log(`こんなところで会うなんて、これも何かの縁だ。<br>${rewardText}`);
             }
@@ -3772,8 +3795,15 @@ const Dungeon = {
                     { charId: 1000, name: 'システム', text: '闇がどこまでも続いているような亀裂を見つけた・・・' }
                 ];
                 StoryManager.active = true;
-                await StoryManager.showConversation(talkKey, 0);
-                delete StoryManager.scripts[talkKey];
+                try {
+                    const result = await Dungeon.showConversationReliably(talkKey, 0);
+                    if (result.status !== 'completed') throw new Error(`亀裂発見会話を完了できませんでした: ${result.status}`);
+                } catch (error) {
+                    console.error('[Dungeon] abyss rift prompt conversation failed:', error);
+                    App.log('闇がどこまでも続いているような亀裂を見つけた・・・');
+                } finally {
+                    delete StoryManager.scripts[talkKey];
+                }
             }
 
             if (typeof StoryManager !== 'undefined' && typeof StoryManager.showChoice === 'function') {
@@ -3889,7 +3919,8 @@ const Dungeon = {
             if (typeof StoryManager !== 'undefined' && typeof StoryManager.showConversation === 'function') {
                 StoryManager.scripts[key] = lines;
                 StoryManager.active = true;
-                await StoryManager.showConversation(key, 0);
+                const result = await Dungeon.showConversationReliably(key, 0);
+                if (result.status !== 'completed') throw new Error(`亀裂報酬会話を完了できませんでした: ${result.status}`);
                 StoryManager.endConversation();
                 shown = true;
             }

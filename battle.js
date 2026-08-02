@@ -12,6 +12,9 @@ const Battle = {
     currentActorIndex: 0, 
     turnExecutionActive: false,
     turnExecutionToken: null,
+    finishState: 'idle',
+    finishToken: null,
+    finishTimerId: null,
     runtimeGeneration: 0,
     inputGeneration: 0,
     phaseTransitionResumeToken: null,
@@ -515,7 +518,9 @@ const Battle = {
         delete App.data.battle.phaseTransitionJournal;
 
         try {
-            Battle.saveBattleState();
+            if (Battle.saveBattleState() === false) {
+                throw new Error('形態移行完了状態を保存できませんでした。');
+            }
         } catch (error) {
             // 保存に失敗した場合はジャーナルを戻し、入力開始前の安全な状態から再試行できるようにする。
             journal.status = previousStatus === 'input_starting' ? 'ready_for_input' : previousStatus;
@@ -615,14 +620,50 @@ const Battle = {
                 const resumeLine = activeConversation?.key === scriptKey
                     ? Math.max(0, Number(activeConversation.index || 0))
                     : 0;
-                await StoryManager.showConversation(scriptKey, resumeLine);
+                let conversationResult = await StoryManager.showConversation(scriptKey, resumeLine);
+                // 別会話の入力待ちと競合した場合は、完了扱いにせず終了まで待つ。
+                // 5秒などの固定上限で戦闘を再開すると、会話中に旧ターンが進むため上限を置かない。
+                while (conversationResult?.status === 'busy') {
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    if (!Battle.active && Battle.phase !== 'result') break;
+                    conversationResult = await StoryManager.showConversation(scriptKey, resumeLine);
+                }
+                const conversationStatus = conversationResult?.status
+                    || (conversationResult === false ? 'error' : 'completed');
+                if (conversationStatus === 'busy') {
+                    if (persistentEntry) {
+                        persistentEntry.status = 'queued';
+                        persistentEntry.retryAt = Date.now();
+                    }
+                    if (journal && transitionToken && journal.token === transitionToken && stepName) {
+                        journal.steps = journal.steps || {};
+                        journal.steps[stepName] = {
+                            ...(journal.steps[stepName] || {}),
+                            status: 'queued',
+                            retryAt: Date.now()
+                        };
+                    }
+                    App.save();
+                    return false;
+                }
+                if (conversationStatus !== 'completed') {
+                    throw new Error(`戦闘会話を完了できませんでした: ${scriptKey} (${conversationStatus})`);
+                }
                 StoryManager.endConversation();
                 conversationSucceeded = true;
             } catch (error) {
                 console.error(`[Battle] cutscene failed: ${scriptKey}`, error);
                 try { StoryManager.endConversation(); } catch (_) {}
+                const priorAttempts = Math.max(
+                    Number(persistentEntry?.attempts || 0),
+                    Number(journal?.steps?.[stepName]?.attempts || 0)
+                );
+                const attempts = priorAttempts + 1;
+                const maxErrorAttempts = Math.max(1, Number(options.maxErrorAttempts || 1));
+                const skipAfterError = options.continueOnError === true && attempts >= maxErrorAttempts;
                 if (persistentEntry) {
-                    persistentEntry.status = 'error';
+                    persistentEntry.status = skipAfterError ? 'skipped_after_error' : 'error';
+                    persistentEntry.attempts = attempts;
                     persistentEntry.error = String(error?.message || error);
                     persistentEntry.lastFailedAt = Date.now();
                 }
@@ -630,14 +671,19 @@ const Battle = {
                     journal.steps = journal.steps || {};
                     journal.steps[stepName] = {
                         ...(journal.steps[stepName] || {}),
-                        status: options.continueOnError ? 'skipped_after_error' : 'error',
+                        status: skipAfterError ? 'skipped_after_error' : 'error',
+                        attempts,
                         error: String(error?.message || error),
                         lastFailedAt: Date.now()
                     };
                 }
                 App.save();
             } finally {
-                if (persistId && App.data?.battle && (conversationSucceeded || options.continueOnError)) {
+                const persistentEntry = persistId
+                    ? Battle.ensureBattleCutsceneQueue().find(entry => entry?.id === persistId)
+                    : null;
+                const canDiscardFailedEntry = persistentEntry?.status === 'skipped_after_error';
+                if (persistId && App.data?.battle && (conversationSucceeded || canDiscardFailedEntry)) {
                     App.data.battle.cutsceneQueue = Battle.ensureBattleCutsceneQueue()
                         .filter(entry => entry?.id !== persistId);
                 }
@@ -657,6 +703,23 @@ const Battle = {
     },
 
     awaitPendingBattleEvent: async () => {
+        // 形態移行はupdateDeadState()直後にはrunnerだけが予約され、
+        // 会話Promiseがまだ作られていない瞬間がある。ここでfalseを返すと
+        // 呼出側が旧ターンを再開し得るため、runnerそのものを完了まで待つ。
+        if (!Battle.pendingBattleEvent && Battle.hasPendingPhaseTransition() && !Battle.turnExecutionActive) {
+            const journal = Battle.getPhaseTransitionJournal();
+            if (journal?.token) {
+                if (Battle.phaseTransitionRunnerActive) {
+                    while (Battle.active && Battle.phaseTransitionRunnerActive &&
+                        Battle.getPhaseTransitionJournal()?.token === journal.token) {
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                    }
+                } else {
+                    await Battle.runPhaseTransitionSequence(journal.token);
+                }
+                return true;
+            }
+        }
         if (!Battle.pendingBattleEvent) return false;
         let result = false;
         try {
@@ -845,7 +908,8 @@ const Battle = {
             resumePhase: 'battle_event',
             phaseTransitionToken: journal.token,
             phaseTransitionStep: stepName,
-            continueOnError: true
+            continueOnError: true,
+            maxErrorAttempts: 3
         });
         await Battle.awaitPendingBattleEvent();
         const finalStep = journal.steps?.[stepName];
@@ -858,7 +922,11 @@ const Battle = {
         const rebuiltEnemies = snapshots.map(snapshot => {
             const base = Battle.getMonsterBaseById?.(snapshot.baseId);
             if (!base) return null;
-            const monster = new Monster(base, 1.0);
+            // 生成経路を通常の動的モンスター生成へ統一し、状態コンテナ・識別子・
+            // 将来追加される初期化処理の取りこぼしを防ぐ。
+            const monster = Battle.createMonsterFromBase?.(base, { isBossBattle: true })
+                || (typeof Monster === 'function' ? new Monster(base, 1.0) : null);
+            if (!monster) return null;
             return Battle.restoreEnemyState(monster, snapshot, base);
         }).filter(Boolean);
         if (rebuiltEnemies.length !== snapshots.length || rebuiltEnemies.length === 0) {
@@ -900,7 +968,9 @@ const Battle = {
         journal.steps.runtime = { status: 'completed', completedAt: Date.now() };
         journal.status = 'ready_for_input';
         journal.readyForInputAt = Date.now();
-        Battle.saveBattleState();
+        if (Battle.saveBattleState() === false) {
+            throw new Error('次形態ランタイムを保存できませんでした。');
+        }
         Battle.renderEnemies?.();
         Battle.renderPartyStatus?.();
         return true;
@@ -946,13 +1016,18 @@ const Battle = {
         Battle.phaseTransitionRunnerActive = true;
         Battle.phaseTransitionRunnerToken = token;
         let shouldStartInput = false;
+        let shouldRetry = false;
         try {
             Battle.phase = 'battle_event';
             Battle.resetInputStateForPhaseTransition();
             Battle.showPhaseTransitionStill(journal, 'from');
 
             if (!journal.steps?.pre?.status || !['completed', 'skipped_after_error'].includes(journal.steps.pre.status)) {
-                await Battle.runPhaseTransitionConversationStep(journal, 'pre', journal.preConversation);
+                const preCompleted = await Battle.runPhaseTransitionConversationStep(journal, 'pre', journal.preConversation);
+                if (!preCompleted) {
+                    shouldRetry = true;
+                    return false;
+                }
             }
             if (!Battle.active || Battle.getPhaseTransitionJournal()?.token !== token) return false;
 
@@ -962,23 +1037,36 @@ const Battle = {
                 journal.steps.visual = { ...(journal.steps.visual || {}), status: 'running', startedAt: Date.now() };
                 App.save();
                 try {
-                    await Battle.playPhaseTransitionVisual(journal);
-                    journal.steps.visual = { status: 'completed', completedAt: Date.now() };
+                    const visualCompleted = await Battle.playPhaseTransitionVisual(journal);
+                    if (visualCompleted !== true) throw new Error('形態移行演出を完了できませんでした。');
+                    journal.steps.visual = { status: 'completed', completedAt: Date.now(), attempts: Number(journal.steps.visual?.attempts || 0) };
                 } catch (error) {
                     console.error('[Battle] phase transition visual failed:', error);
+                    const attempts = Math.max(0, Number(journal.steps.visual?.attempts || 0)) + 1;
                     journal.steps.visual = {
-                        status: 'skipped_after_error',
+                        status: attempts >= 3 ? 'skipped_after_error' : 'retry',
+                        attempts,
                         error: String(error?.message || error),
-                        completedAt: Date.now()
+                        lastFailedAt: Date.now()
                     };
+                    journal.status = attempts >= 3 ? 'visual_skipped' : 'visual_pending';
                     Battle.renderEnemies?.();
+                    App.save();
+                    if (attempts < 3) {
+                        shouldRetry = true;
+                        return false;
+                    }
                 }
                 App.save();
             }
             if (!Battle.active || Battle.getPhaseTransitionJournal()?.token !== token) return false;
 
             if (!journal.steps?.post?.status || !['completed', 'skipped_after_error'].includes(journal.steps.post.status)) {
-                await Battle.runPhaseTransitionConversationStep(journal, 'post', journal.postConversation);
+                const postCompleted = await Battle.runPhaseTransitionConversationStep(journal, 'post', journal.postConversation);
+                if (!postCompleted) {
+                    shouldRetry = true;
+                    return false;
+                }
             }
             if (!Battle.active || Battle.getPhaseTransitionJournal()?.token !== token) return false;
 
@@ -1010,9 +1098,14 @@ const Battle = {
                 Battle.phaseTransitionRunnerToken = null;
             }
             if (shouldStartInput) {
-                const resume = () => Battle.startInputAfterPhaseTransition(token);
-                if (typeof queueMicrotask === 'function') queueMicrotask(resume);
-                else Promise.resolve().then(resume);
+                // runnerロックは直前で解除済み。タイマーや別microtaskへ委ねず、
+                // この形態移行Promiseの完了条件として入力再構築まで確定する。
+                Battle.startInputAfterPhaseTransition(token);
+            } else if (shouldRetry) {
+                setTimeout(() => {
+                    const current = Battle.getPhaseTransitionJournal();
+                    if (Battle.active && current?.token === token) Battle.schedulePhaseTransitionRunner();
+                }, 100);
             }
         }
     },
@@ -1369,7 +1462,7 @@ const Battle = {
         return App?.data?.settings?.battleAutoStart === true;
     },
 
-    init: () => {
+    init: (options = {}) => {
         const fixedBossIds = (Array.isArray(App.data?.battle?.fixedBossId)
             ? App.data.battle.fixedBossId
             : [App.data?.battle?.fixedBossId]).map(Number).filter(Number.isFinite);
@@ -1379,6 +1472,10 @@ const Battle = {
         if (App.data?.battle) {
             if (!App.data.battle.battleId) {
                 App.data.battle.battleId = `battle-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+            }
+            // preparingは報酬適用前のactive戦闘を保存した印。再読込時は通常戦闘へ戻す。
+            if (App.data.battle.active && App.data.battle.resultJournal?.status === 'preparing') {
+                delete App.data.battle.resultJournal;
             }
             App.data.battle.abyssSpiritFinalBlessing = isVegnasisBattle && recognizedSpirits.length > 0;
             if (!isVegnasisBattle) delete App.data.battle.abyssSpiritFinalBlessing;
@@ -1412,6 +1509,10 @@ const Battle = {
         Battle.phaseTransitionRunnerScheduled = false;
         Battle.turnExecutionActive = false;
         Battle.turnExecutionToken = null;
+        if (Battle.finishTimerId) clearTimeout(Battle.finishTimerId);
+        Battle.finishState = 'idle';
+        Battle.finishToken = null;
+        Battle.finishTimerId = null;
         Battle.deferredInputStart = false;
         Battle.inputRecoveryScheduled = false;
         Battle.inputRecoveryAttempts = 0;
@@ -1422,7 +1523,7 @@ const Battle = {
         Battle.phase = 'init';
         Battle.commandQueue = [];
         Battle.currentActorIndex = 0;
-        Battle.auto = Battle.getAutoStartSetting();
+        Battle.auto = options.forceManual === true ? false : Battle.getAutoStartSetting();
         Battle.runAttemptCount = 0; 
         Battle.skillScrollPositions = {};
         Battle.updateAutoButton();
@@ -2914,6 +3015,38 @@ const Battle = {
         return true;
     },
 
+    recoverBattleRuntimeAfterResultError: (reason = null) => {
+        Battle.resultProcessing = false;
+        Battle.resultReadyToEnd = false;
+        Battle.resultEndIsGameOver = false;
+        Battle.resultInputLocked = false;
+        Battle.resultAdvanceResolver = null;
+        Battle.resultSkipRequested = false;
+        Battle.resultWaiters = [];
+        Battle.finishState = 'idle';
+        Battle.finishToken = null;
+        Battle.finishTimerId = null;
+        Battle.active = true;
+        Battle.phase = 'rollback_recovery';
+        if (App.data?.battle) App.data.battle.active = true;
+
+        // 結果計算中には所持金・経験値だけでなく、敵・味方のランタイムや
+        // 固定MAPの一時状態も変更され得る。入力UIだけを戻すのではなく、
+        // 保存済みの戦闘スナップショットから戦闘全体を再構築する。
+        try {
+            Battle.init({ forceManual: true });
+            Battle.auto = false;
+            Battle.updateAutoButton?.();
+            if (reason) console.error('[Battle] battle runtime rebuilt after result error:', reason);
+            return true;
+        } catch (initError) {
+            console.error('[Battle] battle runtime rebuild after result error failed:', initError);
+            Battle.active = true;
+            Battle.phase = 'input_recovery';
+            return Battle.recoverInputPhaseWithoutAuto(reason || initError);
+        }
+    },
+
     scheduleInputRecovery: (reason = null) => {
         if (!Battle.active || Battle.phase === 'result' || Battle.hasPendingPhaseTransition() ||
             Battle.phaseTransitionRunnerActive || Battle.turnExecutionActive) return false;
@@ -2958,8 +3091,8 @@ const Battle = {
                 phaseTransitionToken: entry.phaseTransitionToken || null,
                 visualEffect: entry.visualEffect || null
             });
-            Battle.awaitPendingBattleEvent().then(() => {
-                if (Battle.active) Battle.startInputPhase();
+            Battle.awaitPendingBattleEvent().then(completed => {
+                if (completed && Battle.active) Battle.startInputPhase();
             });
             return false;
         }
@@ -4569,7 +4702,10 @@ findNextActor: () => {
                         if (!Battle.active) return false;
                         Battle.updateDeadState();
                         if (Battle.hasPendingPhaseTransition()) return false;
-                        if (typeof Battle.awaitPendingBattleEvent === 'function') await Battle.awaitPendingBattleEvent();
+                        if (typeof Battle.awaitPendingBattleEvent === 'function') {
+                            const cutsceneCompleted = await Battle.awaitPendingBattleEvent();
+                            if (cutsceneCompleted === false && Battle.phase === 'battle_event') return false;
+                        }
                         if (!isCurrentTurn()) return false;
                         Battle.renderEnemies();
                         Battle.renderPartyStatus();
@@ -4608,7 +4744,10 @@ findNextActor: () => {
                 Battle.updateDeadState();
                 if (Battle.hasPendingPhaseTransition()) return false;
 
-                if (typeof Battle.awaitPendingBattleEvent === 'function') await Battle.awaitPendingBattleEvent();
+                if (typeof Battle.awaitPendingBattleEvent === 'function') {
+                    const cutsceneCompleted = await Battle.awaitPendingBattleEvent();
+                    if (cutsceneCompleted === false && Battle.phase === 'battle_event') return false;
+                }
                 if (!isCurrentTurn()) return false;
 
                 Battle.renderEnemies();
@@ -4661,7 +4800,13 @@ findNextActor: () => {
 
             if (Battle.hasPendingPhaseTransition()) {
                 Battle.deferredInputStart = false;
-                Battle.schedulePhaseTransitionRunner();
+                const journal = Battle.getPhaseTransitionJournal();
+                // 旧ターンのfinally内でロックを解除した後、次形態の会話・演出・
+                // ランタイム再構築・入力開始まで同じawait鎖で完了させる。
+                // 背景runnerへ投げっぱなしにしないことでAUTO/手動双方の競合を防ぐ。
+                if (journal?.token && Battle.active) {
+                    await Battle.runPhaseTransitionSequence(journal.token);
+                }
             } else if (Battle.active && Battle.phase !== 'result' &&
                 (startNextInput || recoverInputAfterError || Battle.deferredInputStart)) {
                 Battle.deferredInputStart = false;
@@ -5987,9 +6132,64 @@ findNextActor: () => {
 
     },
 
+    scheduleBattleFinish: (type, delay = 800) => {
+        if (!['win', 'loss'].includes(type)) return false;
+        if (Battle.finishState !== 'idle') return true;
+        const token = `finish-${type}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+        const battleId = App.data?.battle?.battleId || null;
+        const runtimeGeneration = Number(Battle.runtimeGeneration || 0);
+        Battle.finishState = 'scheduled';
+        Battle.finishToken = token;
+        Battle.finishTimerId = Battle.schedule(async () => {
+            Battle.finishTimerId = null;
+            if (Battle.finishToken !== token || Battle.finishState !== 'scheduled') return;
+            const cancelStaleFinish = () => {
+                if (Battle.finishToken !== token) return;
+                Battle.finishState = 'idle';
+                Battle.finishToken = null;
+            };
+            if (!Battle.active || Battle.phase === 'result') {
+                cancelStaleFinish();
+                return;
+            }
+            if (battleId && App.data?.battle?.battleId && String(App.data.battle.battleId) !== String(battleId)) {
+                cancelStaleFinish();
+                return;
+            }
+            if (Number(Battle.runtimeGeneration || 0) !== runtimeGeneration) {
+                cancelStaleFinish();
+                return;
+            }
+            const stillFinished = type === 'loss'
+                ? Battle.party.every(p => p.isDead)
+                : Battle.enemies.every(e => e.isDead || e.isFled);
+            if (!stillFinished) {
+                Battle.finishState = 'idle';
+                Battle.finishToken = null;
+                if (Battle.active && Battle.phase !== 'result' && !Battle.hasPendingPhaseTransition()) {
+                    Battle.scheduleInputRecovery?.('勝敗条件が確定待機中に変化しました。');
+                }
+                return;
+            }
+            Battle.finishState = 'processing';
+            try {
+                if (type === 'loss') await Battle.lose({ finishToken: token });
+                else await Battle.win({ finishToken: token });
+            } catch (error) {
+                console.error(`[Battle] ${type} finalization failed:`, error);
+                if (Battle.finishToken === token && Battle.phase !== 'result') {
+                    Battle.finishState = 'idle';
+                    Battle.finishToken = null;
+                }
+            }
+        }, delay);
+        return true;
+    },
+
     checkFinish: () => {
-		if (Battle.party.every(p => p.isDead)) { Battle.schedule(Battle.lose, 800); return true; }
-        if (Battle.enemies.every(e => e.isDead || e.isFled)) { Battle.schedule(Battle.win, 800); return true; }
+        if (Battle.finishState !== 'idle') return true;
+        if (Battle.party.every(p => p.isDead)) return Battle.scheduleBattleFinish('loss', 800);
+        if (Battle.enemies.every(e => e.isDead || e.isFled)) return Battle.scheduleBattleFinish('win', 800);
         return false;
     },
 
@@ -6089,7 +6289,7 @@ findNextActor: () => {
             const d = (typeof App.getChar === 'function') ? App.getChar(p.uid) : null;
             if(d) { d.currentHp = p.hp; d.currentMp = p.mp; d.battleStatus = p.battleStatus; } 
         }); 
-        App.save(); 
+        return App.save();
     },
 
     escapeAttr: (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'),
@@ -6743,7 +6943,32 @@ findNextActor: () => {
         return true;
     },
 
-	win: async () => {
+	win: async (options = {}) => {
+        const requestedToken = options.finishToken || Battle.finishToken ||
+            `finish-win-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+        if (Battle.finishState === 'finalized' || Battle.finishState === 'committed') return false;
+        if (Battle.finishState === 'processing' && Battle.finishToken && Battle.finishToken !== requestedToken) return false;
+        Battle.finishState = 'processing';
+        Battle.finishToken = requestedToken;
+
+        let rollbackSerialized = null;
+        let transactionCommitted = false;
+        try {
+            rollbackSerialized = (typeof App.serializeSaveData === 'function')
+                ? App.serializeSaveData(App.data)
+                : JSON.stringify(App.data);
+            if (!App.data.battle) App.data.battle = { active: true };
+            App.data.battle.resultJournal = {
+                version: 2,
+                battleId: App.data.battle.battleId || null,
+                type: 'win',
+                status: 'preparing',
+                finishToken: requestedToken,
+                startedAt: Date.now()
+            };
+            // preparingは戦闘activeのまま保存する。保存できなければ副作用へ進まない。
+            if (App.save() === false) throw new Error('勝利結果の準備状態を保存できませんでした。');
+            if (typeof App.beginSaveTransaction === 'function') App.beginSaveTransaction();
 		// --- [修正の要点] 演出前に戦闘を「非アクティブ」にし、内部処理を完結させる ---
 		// これにより、演出中のリロード時に戦闘シーンに戻る（＝再度報酬が貰える）のを防ぎます
 		Battle.phase = 'result'; 
@@ -6756,7 +6981,7 @@ findNextActor: () => {
 		Battle.resultSkipRequested = false;
 		Battle.resultWaiters = [];
 		if (App.data.battle) App.data.battle.active = false;
-        if (typeof App.beginSaveTransaction === 'function') App.beginSaveTransaction();
+        // 保存トランザクションは開始済み。
 
         const isEstark = App.data.battle && (App.data.battle.isSpecialBoss || App.data.battle.isEstark);
         const isBossBattle = App.data.battle && App.data.battle.isBossBattle;
@@ -7224,7 +7449,7 @@ findNextActor: () => {
             `battle-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
         App.data.battle.battleId = battleId;
         App.data.battle.resultJournal = {
-            version: 1,
+            version: 2,
             battleId,
             type: 'win',
             status: 'committed',
@@ -7244,7 +7469,12 @@ findNextActor: () => {
 
 		// --- [5] 全状態を一回の保存で確定し、その後は表示だけを行う ---
         App.save();
-        if (typeof App.commitSaveTransaction === 'function') App.commitSaveTransaction();
+        if (typeof App.commitSaveTransaction === 'function') {
+            const committed = App.commitSaveTransaction();
+            if (committed === false) throw new Error('勝利結果の保存に失敗しました。');
+        }
+        transactionCommitted = true;
+        Battle.finishState = 'committed';
 
 		// --- [6] ここから勝利演出（ログ表示、レベルアップ、待機など） ---
 		Battle.log(`<br><span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
@@ -7400,6 +7630,49 @@ findNextActor: () => {
 		//		await StoryManager.onBattleWin(eventId);
 		//	}
 		//}
+        } catch (error) {
+            console.error('[Battle] win transaction failed:', error);
+            if (!transactionCommitted) {
+                try { App.cancelSaveTransaction?.(); } catch (_) {}
+                try {
+                    if (!rollbackSerialized) throw new Error('戦闘結果処理前の復元スナップショットがありません。');
+                    const restored = JSON.parse(rollbackSerialized);
+                    App.data = restored;
+                    App.totalGoldGem?.();
+                    if (!App.data.battle) App.data.battle = { active: true };
+                    App.data.battle.active = true;
+                    App.data.battle.lastResultError = String(error?.message || error);
+                    App.data.battle.lastResultErrorAt = Date.now();
+                    delete App.data.battle.resultJournal;
+                    Battle.active = true;
+                    Battle.phase = 'input_recovery';
+                    Battle.resultProcessing = false;
+                    Battle.resultReadyToEnd = false;
+                    Battle.finishState = 'idle';
+                    Battle.finishToken = null;
+                    App.save();
+                    Battle.recoverBattleRuntimeAfterResultError(error);
+                } catch (rollbackError) {
+                    console.error('[Battle] win rollback failed:', rollbackError);
+                    try { App.load?.(); } catch (loadError) { console.error('[Battle] last committed save reload failed:', loadError); }
+                    if (App.data?.battle) App.data.battle.active = true;
+                    Battle.finishState = 'idle';
+                    Battle.finishToken = null;
+                    Battle.active = true;
+                    Battle.phase = 'input_recovery';
+                    Battle.recoverBattleRuntimeAfterResultError(rollbackError);
+                }
+                return false;
+            }
+            // commit後の表示例外では報酬を巻き戻さず、終了操作だけ復旧する。
+            Battle.finishState = 'committed';
+            Battle.resultProcessing = false;
+            Battle.resultReadyToEnd = true;
+            Battle.log('<span style="color:#ffb36b;">勝利演出の一部を省略しました。結果は保存済みです。</span>');
+            Battle.log("\n▼ 画面タップ / Enterキーで終了 ▼");
+            return true;
+        }
+
 	},
 	
     recoverCommittedBattleResult: () => {
@@ -7430,7 +7703,19 @@ findNextActor: () => {
         return true;
     },
 
-    lose: () => {
+    lose: async (options = {}) => {
+        const requestedToken = options.finishToken || Battle.finishToken ||
+            `finish-loss-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+        if (Battle.finishState === 'finalized' || Battle.finishState === 'committed') return false;
+        if (Battle.finishState === 'processing' && Battle.finishToken && Battle.finishToken !== requestedToken) return false;
+        Battle.finishState = 'processing';
+        Battle.finishToken = requestedToken;
+        let rollbackSerialized = null;
+        let transactionCommitted = false;
+        try {
+        rollbackSerialized = (typeof App.serializeSaveData === 'function')
+            ? App.serializeSaveData(App.data)
+            : JSON.stringify(App.data);
         Battle.phase = 'result';
         Battle.active = false;
         Battle.resultProcessing = true;
@@ -7525,7 +7810,7 @@ findNextActor: () => {
             `battle-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
         App.data.battle.battleId = battleId;
         App.data.battle.resultJournal = {
-            version: 1,
+            version: 2,
             battleId,
             type: 'loss',
             status: 'committed',
@@ -7536,12 +7821,58 @@ findNextActor: () => {
             eventQueued: !!queuedLossEventId
         };
         App.save();
-        if (typeof App.commitSaveTransaction === 'function') App.commitSaveTransaction();
+        if (typeof App.commitSaveTransaction === 'function') {
+            const committed = App.commitSaveTransaction();
+            if (committed === false) throw new Error('敗北結果の保存に失敗しました。');
+        }
+        transactionCommitted = true;
+        Battle.finishState = 'committed';
 
         if (typeof AudioManager !== 'undefined') AudioManager.playBgm?.('battle_wipeout', { resume: false });
         Battle.resultProcessing = false;
         Battle.resultReadyToEnd = true;
         Battle.log("\n▼ 画面タップ / Enterキーで終了 ▼");
+        return true;
+        } catch (error) {
+            console.error('[Battle] loss transaction failed:', error);
+            if (!transactionCommitted) {
+                try { App.cancelSaveTransaction?.(); } catch (_) {}
+                try {
+                    if (!rollbackSerialized) throw new Error('戦闘結果処理前の復元スナップショットがありません。');
+                    App.data = JSON.parse(rollbackSerialized);
+                    App.totalGoldGem?.();
+                    if (!App.data.battle) App.data.battle = { active: true };
+                    App.data.battle.active = true;
+                    App.data.battle.lastResultError = String(error?.message || error);
+                    App.data.battle.lastResultErrorAt = Date.now();
+                    delete App.data.battle.resultJournal;
+                    Battle.active = true;
+                    Battle.phase = 'input_recovery';
+                    Battle.resultProcessing = false;
+                    Battle.resultReadyToEnd = false;
+                    Battle.finishState = 'idle';
+                    Battle.finishToken = null;
+                    App.save();
+                    Battle.recoverBattleRuntimeAfterResultError(error);
+                } catch (rollbackError) {
+                    console.error('[Battle] loss rollback failed:', rollbackError);
+                    try { App.load?.(); } catch (loadError) { console.error('[Battle] last committed save reload failed:', loadError); }
+                    if (App.data?.battle) App.data.battle.active = true;
+                    Battle.finishState = 'idle';
+                    Battle.finishToken = null;
+                    Battle.active = true;
+                    Battle.phase = 'input_recovery';
+                    Battle.recoverBattleRuntimeAfterResultError(rollbackError);
+                }
+                return false;
+            }
+            Battle.finishState = 'committed';
+            Battle.resultProcessing = false;
+            Battle.resultReadyToEnd = true;
+            Battle.log('敗北結果は保存済みです。画面を押して戻ってください。');
+            return true;
+        }
+
     },
 
     endBattle: (isGameOver = false) => {
@@ -7553,6 +7884,10 @@ findNextActor: () => {
         Battle.phaseTransitionRunnerScheduled = false;
         Battle.turnExecutionActive = false;
         Battle.turnExecutionToken = null;
+        if (Battle.finishTimerId) clearTimeout(Battle.finishTimerId);
+        Battle.finishState = 'finalized';
+        Battle.finishToken = null;
+        Battle.finishTimerId = null;
         Battle.deferredInputStart = false;
         Battle.pendingBattleEvent = null;
         Battle.specialCutsceneAutoBefore = undefined;

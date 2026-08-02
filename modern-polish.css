@@ -6543,12 +6543,14 @@ body.game-page .phase-form-transition-layer {
 
 body.game-page .phase-form-transition-image {
   display: block;
-  width: min(65%, 450px);
+  /* 変身演出中は両形態を第一形態の通常戦闘サイズへ統一する。
+     最終フラッシュ後に通常描画へ戻るため、第二形態の本戦サイズには影響しない。 */
+  width: min(40%, 200px);
   max-height: calc(100% - 8px);
   aspect-ratio: 1 / 1;
   object-fit: contain;
   object-position: center bottom;
-  transform: scale(1.2) translateY(8px);
+  transform: translateY(10px);
   transform-origin: center bottom;
   filter:
     drop-shadow(0 8px 0 rgba(0, 0, 0, 0.22))

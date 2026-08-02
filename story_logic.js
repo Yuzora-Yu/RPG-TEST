@@ -10,6 +10,7 @@ const StoryManager = {
     currentScript: null,
     index: 0,
     onComplete: null,
+    mapTransferRecheckTokens: new Set(),
 
     // ==========================================
     // 目的表示の正本
@@ -91,22 +92,22 @@ const StoryManager = {
             || isCurrentAbyssStoryArea
             || !!flags.abyssCarmenaGateCleared;
         if (hasEnteredAbyssRegion) {
-            if (!flags.abyssCarmenaGateCleared) return 'カルメナで情報を集めよう';
-            if (!flags.abyssLeonardDefeated || !flags.abyssEliciaDefeated) return '雷と風の結界を解こう';
-            if (!flags.abyssSyrisDefeated || !flags.abyssGradDefeated) return '火と水の結界を解こう';
+            if (!flags.abyssCarmenaGateCleared) return 'カルメナ北門を守る二将を倒そう';
+            if (!flags.abyssLeonardDefeated || !flags.abyssEliciaDefeated) return '東西の楔を倒し、第一層の結界を解こう';
+            if (!flags.abyssSyrisDefeated || !flags.abyssGradDefeated) return 'ビスタの先で二つの楔を倒そう';
             if (!flags.abyssLegacionNorthGateOpen) return 'レガシオンの謁見の間へ向かおう';
             if (!flags.abyssVeldDefeated) return '夢幻回廊リドパルムの最深部へ進もう';
-            if (!flags.abyssJasperDefeated) return '災禍の根ジャゴレアの最深部へ進もう';
+            if (!flags.abyssJasperDefeated) return '災禍の根ジャゴレアでジャスパーを追おう';
             if (!flags.abyssIlluminaciaDefeated) {
                 const insideChronoRoute = flags.abyssChronoGateOpened || ['CHRONO_ABYSS', 'FINAL_ALTAR'].includes(String(currentArea || ''));
                 return insideChronoRoute
                     ? '次元牢獄クロノアビスの最深部へ進もう'
                     : '混沌の結晶片で地下神殿の封印門を開こう';
             }
-            if (!flags.abyssVegnasisDefeated) return '終焉の祭壇を調べよう';
-            if (!flags.abyssAzelgaragDefeated) return '深淵王を打ち倒そう！';
-            if (!flags.abyssEpilogueSeen) return '深淵王を打ち倒そう！';
-            if (!flags.abyssRandomUnlocked) return '終焉の祭壇奥の亀裂を調べよう';
+            if (!flags.abyssVegnasisDefeated) return '終焉の祭壇で死幻の魔柱を倒そう';
+            if (!flags.abyssAzelgaragDefeated) return '深淵王アゼルガラグを倒そう';
+            if (!flags.abyssEpilogueSeen) return '深淵王との戦いを見届けよう';
+            if (!flags.abyssRandomUnlocked) return '終焉の祭壇に残った亀裂を調べよう';
         }
 
         if (this.isMainStoryComplete(progress)) {
@@ -1216,25 +1217,148 @@ const StoryManager = {
         App.log(`<span style="color:#ff8b8b;">イベント処理を中断しました。再読込すると同じ位置から再試行します。<br>${this.escapeHtml ? this.escapeHtml(message) : message}</span>`);
     },
 
+    getMapTransferArrivalState: function(pending) {
+        if (!pending) return { arrived: false };
+        const location = App.data?.location || {};
+        const area = String(location.area || '');
+        const mapData = (typeof Field !== 'undefined') ? Field.currentMapData : null;
+        let currentAreaKey = null;
+        try {
+            currentAreaKey = typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function'
+                ? Field.getCurrentAreaKey()
+                : null;
+        } catch (error) {
+            console.warn('[StoryManager] current area lookup during transfer recovery failed:', error);
+        }
+        const mapIds = [
+            mapData?.id,
+            mapData?.key,
+            mapData?.mapId,
+            mapData?.areaKey,
+            mapData?.canonicalAreaKey,
+            currentAreaKey,
+            area
+        ].filter(value => value !== undefined && value !== null).map(String);
+        const currentFloor = Number(App.data?.progress?.floor || mapData?.floor || 0);
+        const currentX = Number(typeof Field !== 'undefined' && Number.isFinite(Number(Field.x)) ? Field.x : location.x);
+        const currentY = Number(typeof Field !== 'undefined' && Number.isFinite(Number(Field.y)) ? Field.y : location.y);
+
+        let destinationMatches = false;
+        if (pending.targetType === 'fixedMap' || pending.targetType === 'fixedDungeon') {
+            destinationMatches = mapIds.includes(String(pending.targetId || ''));
+        } else if (pending.targetType === 'abyss') {
+            destinationMatches = area === 'ABYSS' || mapIds.includes('ABYSS');
+            if (destinationMatches && pending.mode && App.data?.dungeon?.abyssMode) {
+                destinationMatches = String(App.data.dungeon.abyssMode) === String(pending.mode);
+            }
+        }
+
+        if (destinationMatches && Number.isFinite(Number(pending.floor)) && Number(pending.floor) > 0) {
+            destinationMatches = currentFloor === Number(pending.floor);
+        }
+        if (destinationMatches && pending.targetX !== null && pending.targetX !== undefined &&
+            Number.isFinite(Number(pending.targetX))) {
+            destinationMatches = currentX === Number(pending.targetX);
+        }
+        if (destinationMatches && pending.targetY !== null && pending.targetY !== undefined &&
+            Number.isFinite(Number(pending.targetY))) {
+            destinationMatches = currentY === Number(pending.targetY);
+        }
+        return {
+            arrived: destinationMatches,
+            area,
+            mapIds,
+            floor: currentFloor,
+            x: currentX,
+            y: currentY
+        };
+    },
+
     recoverPendingMapTransfer: function() {
         const progress = App?.data?.progress;
         const pending = progress?.pendingMapTransfer;
+        if (!pending) return false;
         const journal = this.ensureEventJournal();
         const active = journal?.active;
-        if (!pending || !active || pending.sourceEventToken !== active.token) return false;
-        const area = String(App.data?.location?.area || '');
-        let arrived = false;
-        if (pending.targetType === 'fixedMap' || pending.targetType === 'fixedDungeon') {
-            arrived = area === String(pending.targetId || '');
-        } else if (pending.targetType === 'abyss') {
-            arrived = area === 'ABYSS';
+        const arrival = this.getMapTransferArrivalState(pending);
+
+        // シーン切替直後はField.currentMapDataの構築がまだ終わっていない場合がある。
+        // API受付から短時間は失敗判定せず、初期化完了後にもう一度照合する。
+        if (!arrival.arrived && pending.status === 'dispatched' &&
+            Date.now() - Number(pending.dispatchedAt || 0) < 1500) {
+            // 再照合予約はメモリ上だけで管理する。セーブへ一時フラグを残すと、
+            // タイマー発火前の再読込後に永久に再予約されないため。
+            if (!(this.mapTransferRecheckTokens instanceof Set)) this.mapTransferRecheckTokens = new Set();
+            if (!this.mapTransferRecheckTokens.has(pending.token)) {
+                this.mapTransferRecheckTokens.add(pending.token);
+                setTimeout(() => {
+                    this.mapTransferRecheckTokens.delete(pending.token);
+                    const current = App.data?.progress?.pendingMapTransfer;
+                    if (current?.token === pending.token) StoryManager.resumeActiveConversation?.();
+                }, 250);
+            }
+            return true;
         }
-        if (!arrived) return false;
-        const key = this.getEventPathKey(pending.actionPath || active.currentPath || []);
-        if (key) active.completedActions[key] = true;
-        delete progress.pendingMapTransfer;
-        this.completeEventExecution(active);
-        return true;
+
+        if (arrival.arrived) {
+            pending.status = 'arrived';
+            pending.arrivedAt = Date.now();
+            pending.arrival = arrival;
+            if (active && pending.sourceEventToken === active.token) {
+                const key = this.getEventPathKey(pending.actionPath || active.currentPath || []);
+                if (key) active.completedActions[key] = true;
+                delete progress.pendingMapTransfer;
+                this.completeEventExecution(active);
+            } else if (!active && pending.sourceEventSnapshot?.eventId) {
+                // 遷移自体は成功したが、旧版の削除先行処理などでactiveだけ失われた場合も
+                // 保存済みスナップショットから完了処理を復元する。
+                const restored = this.normalizeActiveEventJournal(pending.sourceEventSnapshot);
+                const key = this.getEventPathKey(pending.actionPath || restored.currentPath || []);
+                if (key) restored.completedActions[key] = true;
+                journal.active = restored;
+                progress.activeEvent = restored;
+                delete progress.pendingMapTransfer;
+                this.completeEventExecution(restored);
+            } else {
+                delete progress.pendingMapTransfer;
+                App.save();
+            }
+            return true;
+        }
+
+        // 遷移API受付後も目的地へ到着していない場合は、元命令を未完了のまま再試行する。
+        // actionPathを完了扱いにしないため、MAP変更失敗でイベントだけ失われない。
+        if (active && pending.sourceEventToken === active.token) {
+            active.status = 'running';
+            active.currentPath = Array.isArray(pending.actionPath) ? [...pending.actionPath] : active.currentPath;
+            pending.status = 'retry';
+            pending.lastMismatch = arrival;
+            pending.retryCount = Math.max(0, Number(pending.retryCount || 0)) + 1;
+            delete progress.pendingMapTransfer;
+            journal.active = active;
+            progress.activeEvent = active;
+            App.save();
+            return false;
+        }
+
+        // 旧版の削除先行セーブを救済できるよう、保存済みイベントスナップショットがあれば復元する。
+        if (!active && pending.sourceEventSnapshot?.eventId) {
+            const restored = this.normalizeActiveEventJournal(pending.sourceEventSnapshot);
+            restored.status = 'running';
+            restored.currentPath = Array.isArray(pending.actionPath) ? [...pending.actionPath] : restored.currentPath;
+            const key = this.getEventPathKey(restored.currentPath || []);
+            if (key) delete restored.completedActions[key];
+            journal.active = restored;
+            progress.activeEvent = restored;
+            delete progress.pendingMapTransfer;
+            App.save();
+            return false;
+        }
+
+        pending.status = 'orphaned';
+        pending.lastMismatch = arrival;
+        App.save();
+        return false;
     },
 
     persistEventCursor: function(active, path) {
@@ -1311,19 +1435,23 @@ const StoryManager = {
                 });
             }
 
-            if (result === 'BREAK' || result === 'BREAK_COMPLETE') {
-                active.completedActions[pathKey] = true;
+            if (result === 'BREAK' || result === 'BREAK_COMPLETE' || result === 'BREAK_TRANSFER') {
                 active.currentPath = path;
-                active.status = result === 'BREAK_COMPLETE' ? 'completed' : 'suspended';
-                if (result === 'BREAK_COMPLETE') {
+                if (result === 'BREAK_TRANSFER') {
+                    // 到着確認が済むまで命令を完了扱いにしない。
+                    active.status = 'waiting_transfer';
                     const pendingTransfer = App.data?.progress?.pendingMapTransfer;
-                    if (pendingTransfer?.sourceEventToken === active.token &&
-                        this.getEventPathKey(pendingTransfer.actionPath || []) === pathKey) {
-                        delete App.data.progress.pendingMapTransfer;
+                    if (pendingTransfer?.sourceEventToken === active.token) {
+                        pendingTransfer.sourceEventSnapshot = JSON.parse(JSON.stringify(active));
                     }
-                    this.completeEventExecution(active);
-                } else App.save();
-                return 'BREAK';
+                    App.save();
+                } else {
+                    active.completedActions[pathKey] = true;
+                    active.status = result === 'BREAK_COMPLETE' ? 'completed' : 'suspended';
+                    if (result === 'BREAK_COMPLETE') this.completeEventExecution(active);
+                    else App.save();
+                }
+                return result === 'BREAK_TRANSFER' ? 'BREAK_TRANSFER' : 'BREAK';
             }
 
             active.completedActions[pathKey] = true;
@@ -1348,22 +1476,30 @@ const StoryManager = {
         this.active = false;
         this.isTyping = false;
         (async () => {
-            if (active?.eventId) {
-                const event = this.events[active.eventId];
-                if (event?.restartOnResume === true) {
-                    active.currentPath = null;
-                    delete data.activeConversation;
-                    App.save();
+            try {
+                if (active?.eventId) {
+                    // restartOnResume は副作用済み命令との整合が取れないため使用しない。
+                    // eventJournal の分岐・完了済み命令・会話行を正確に再開する。
+                    if (active.phase === 'win') {
+                        await this.onBattleWin(active.eventId, 0, 0, { token: active.token, resume: true, meta: active.meta });
+                    } else {
+                        await this.executeEvent(active.eventId, false, 0, 0, { token: active.token, resume: true, meta: active.meta });
+                    }
+                } else if (data.activeConversation) {
+                    const key = data.activeConversation.key;
+                    const conversationResult = await this.waitForConversationCompletion(key, Number(data.activeConversation.index || 0));
+                    const conversationStatus = conversationResult?.status
+                        || (conversationResult === false ? 'error' : 'completed');
+                    if (conversationStatus !== 'completed') {
+                        throw new Error(`会話を再開できませんでした: ${key} (${conversationStatus})`);
+                    }
+                    this.endConversation();
                 }
-                if (active.phase === 'win') {
-                    await this.onBattleWin(active.eventId, 0, 0, { token: active.token, resume: true, meta: active.meta });
-                } else {
-                    await this.executeEvent(active.eventId, false, 0, 0, { token: active.token, resume: true, meta: active.meta });
-                }
-            } else if (data.activeConversation) {
-                const key = data.activeConversation.key;
-                await this.showConversation(key, Number(data.activeConversation.index || 0));
-                this.endConversation();
+            } catch (error) {
+                this.isTyping = false;
+                this.active = false;
+                console.error('[StoryManager] active conversation resume failed:', error);
+                App.log('<span style="color:#ff8b8b;">会話の再開に失敗しました。再読込すると同じ位置から再試行します。</span>');
             }
         })();
         return true;
@@ -1428,7 +1564,7 @@ const StoryManager = {
             for (let i = Math.max(0, Number(startActionIndex || 0)); i < event.actions.length; i++) {
                 const lineIdx = i === Number(startActionIndex || 0) ? startLineIndex : 0;
                 const result = await this.processAction(event.actions[i], eventId, lineIdx);
-                if (result === 'BREAK' || result === 'BREAK_COMPLETE') return result;
+                if (result === 'BREAK' || result === 'BREAK_COMPLETE' || result === 'BREAK_TRANSFER') return result;
             }
             return true;
         }
@@ -1448,7 +1584,7 @@ const StoryManager = {
             const result = await this.runEventActionList(event.actions, eventId, 'actions', active, {
                 initialLineIndex: startLineIndex
             });
-            if (result === 'BREAK') return true;
+            if (result === 'BREAK' || result === 'BREAK_TRANSFER') return true;
             this.completeEventExecution(active);
             this.refreshFieldAfterStoryStateChange();
             return true;
@@ -1479,7 +1615,7 @@ const StoryManager = {
             const result = await this.runEventActionList(event.winActions, eventId, 'win', active, {
                 initialLineIndex: startLineIndex
             });
-            if (result === 'BREAK') return true;
+            if (result === 'BREAK' || result === 'BREAK_TRANSFER') return true;
             this.completeEventExecution(active);
             this.refreshFieldAfterStoryStateChange();
             return true;
@@ -1513,12 +1649,19 @@ const StoryManager = {
             token,
             sourceEventToken: active.token,
             sourceEventId: active.eventId,
+            sourceEventSnapshot: JSON.parse(JSON.stringify(active)),
             actionPath: Array.isArray(context.path) ? [...context.path] : active.currentPath,
             targetType,
             targetId: targetId || null,
             entryKey: transferOptions.entryKey || null,
             mode: transferOptions.mode || null,
             floor: transferOptions.floor || null,
+            targetX: transferOptions.targetX !== null && transferOptions.targetX !== undefined && Number.isFinite(Number(transferOptions.targetX))
+                ? Number(transferOptions.targetX)
+                : null,
+            targetY: transferOptions.targetY !== null && transferOptions.targetY !== undefined && Number.isFinite(Number(transferOptions.targetY))
+                ? Number(transferOptions.targetY)
+                : null,
             status: 'requested',
             requestedAt: Date.now()
         };
@@ -1537,19 +1680,21 @@ const StoryManager = {
             else if (transferOptions.direct === true && typeof Dungeon.start === 'function') {
                 result = Dungeon.start(transferOptions.floor || 1, { mode: transferOptions.mode || 'story' }) !== false;
             } else if (typeof Dungeon.enter === 'function') {
-                Dungeon.enter({ mode: transferOptions.mode || 'story' });
-                result = true;
+                result = Dungeon.enter({ mode: transferOptions.mode || 'story' }) !== false;
             }
         }
 
         if (!result) {
             progress.pendingMapTransfer.status = 'error';
             progress.pendingMapTransfer.error = 'target_rejected';
+            progress.pendingMapTransfer.failedAt = Date.now();
             App.save();
             throw new Error(`MAP遷移に失敗しました: ${targetType}:${targetId || ''}`);
         }
-        progress.pendingMapTransfer.status = 'arrived';
-        progress.pendingMapTransfer.arrivedAt = Date.now();
+        // APIがtrueを返しただけでは到着完了とみなさない。次シーン初期化後に厳密照合する。
+        progress.pendingMapTransfer.status = 'dispatched';
+        progress.pendingMapTransfer.dispatchedAt = Date.now();
+        App.save();
         return true;
     },
 
@@ -1684,6 +1829,20 @@ const StoryManager = {
         }
     },
 
+    waitForConversationCompletion: async function(scriptKey, startFromIndex = 0, options = {}) {
+        const pollMs = Math.max(20, Number(options.pollMs || 50));
+        let result = await this.showConversation(scriptKey, startFromIndex);
+        while (result?.status === 'busy') {
+            await new Promise(resolve => setTimeout(resolve, pollMs));
+            if (typeof options.abortWhen === 'function' && options.abortWhen()) {
+                return { status: 'aborted', scriptKey };
+            }
+            result = await this.showConversation(scriptKey, startFromIndex);
+        }
+        const status = result?.status || (result === false ? 'error' : 'completed');
+        return result && typeof result === 'object' ? result : { status, scriptKey };
+    },
+
     /**
      * 各アクションの個別処理
      * @param {Object} action 
@@ -1694,8 +1853,17 @@ const StoryManager = {
         const data = App.data.progress;
         const deferSave = context.deferSave === true;
         
-        // CONV命令時に lineIndex を渡す
-        if (action.type === 'CONV') await this.showConversation(action.value, lineIndex);
+        // CONV命令時に lineIndex を渡す。未表示・競合を成功扱いしない。
+        if (action.type === 'CONV') {
+            const conversationResult = await this.waitForConversationCompletion(action.value, lineIndex, {
+                abortWhen: () => context.activeEvent?.status === 'error'
+            });
+            const conversationStatus = conversationResult?.status
+                || (conversationResult === false ? 'error' : 'completed');
+            if (conversationStatus !== 'completed') {
+                throw new Error(`会話を完了できませんでした: ${action.value} (${conversationStatus})`);
+            }
+        }
         
         if (action.type === 'ALLY') {
             App.addStoryAlly(action.value, { save: !deferSave });
@@ -1869,7 +2037,7 @@ const StoryManager = {
                 floor: action.floor || null,
                 nestedReturn: action.nestedReturn === true
             }, context);
-            return 'BREAK_COMPLETE';
+            return 'BREAK_TRANSFER';
         }
 
         if (action.type === 'START_FIXED_MAP') {
@@ -1880,7 +2048,7 @@ const StoryManager = {
                 targetY: action.targetY,
                 replaceReturnPoint: action.replaceReturnPoint === true
             }, context);
-            return 'BREAK_COMPLETE';
+            return 'BREAK_TRANSFER';
         }
 
         if (action.type === 'START_ABYSS_DUNGEON') {
@@ -1891,7 +2059,7 @@ const StoryManager = {
                 mode,
                 floor
             }, context);
-            return 'BREAK_COMPLETE';
+            return 'BREAK_TRANSFER';
         }
 
         if (!context.managed && (action.type === 'IF_FLAG' || action.type === 'IF')) {
@@ -1902,7 +2070,7 @@ const StoryManager = {
             if (Array.isArray(branch)) {
                 for (const sub of branch) {
                     const res = await this.processAction(sub, eventId);
-                    if (res === 'BREAK') return 'BREAK';
+                    if (res === 'BREAK' || res === 'BREAK_TRANSFER') return res;
                 }
             }
         }
@@ -1916,7 +2084,7 @@ const StoryManager = {
             if (Array.isArray(branch)) {
                 for (const sub of branch) {
                     const res = await this.processAction(sub, eventId);
-                    if (res === 'BREAK') return 'BREAK';
+                    if (res === 'BREAK' || res === 'BREAK_TRANSFER') return res;
                 }
             }
         }
@@ -1927,7 +2095,7 @@ const StoryManager = {
             if (branch && branch.length > 0) {
                 for (const sub of branch) {
                     const res = await this.processAction(sub, eventId);
-                    if (res === 'BREAK') return 'BREAK';
+                    if (res === 'BREAK' || res === 'BREAK_TRANSFER') return res;
                 }
             }
         }
@@ -2197,115 +2365,164 @@ const StoryManager = {
      */
     showConversation: async function(scriptKey, startFromIndex = 0) {
         const lines = this.scripts[scriptKey];
-        if (!lines) return;
-        
-        // すでに会話中の場合は重複して動かさない
-        if (this.isTyping) return;
+        if (!Array.isArray(lines)) {
+            console.error(`[StoryManager] conversation not found: ${scriptKey}`);
+            return { status: 'missing', scriptKey };
+        }
+
+        // 別会話の入力待ちを「完了」と誤認しない。呼出側はqueuedのまま再試行する。
+        if (this.isTyping) return { status: 'busy', scriptKey };
         this.isTyping = true;
+        let completed = false;
+        let overlay = null;
 
-        startFromIndex = Math.max(0, Math.floor(Number(startFromIndex) || 0));
-        if (startFromIndex > 0 && this.scriptHasInlineFieldVisual(scriptKey)) {
-            try {
-                await this.restoreInlineFieldVisualState(scriptKey, startFromIndex);
-            } catch (e) {
-                console.warn('[StoryManager] inline field visual resume failed:', e);
-            }
-        }
-
-        let overlay = document.getElementById('story-ui-overlay') || this.createStoryDOM();
-        overlay.style.display = 'flex';
-        
-        const portraitImg = document.getElementById('story-portrait');
-        const nameBox = document.getElementById('story-name');
-        const textBox = document.getElementById('story-text');
-        const nextIndicator = document.getElementById('story-next-indicator');
-        const textWindow = textBox ? textBox.parentElement : null;
-        if (textWindow && !textWindow.dataset.defaultStyle) {
-            textWindow.dataset.defaultStyle = textWindow.getAttribute('style') || '';
-        }
-
-        for (let i = startFromIndex; i < lines.length; i++) {
-            const line = lines[i];
-
-            // 現在のセリフ番号を保存
-            if (App.data) {
-                App.data.progress.activeConversation = { key: scriptKey, index: i };
-                App.save();
-            }
-
-            if (this.isInlineStoryCommand(line)) {
-                await this.runInlineStoryCommand(line);
-                continue;
-            }
-            if (!line || typeof line.text !== 'string') continue;
-            if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('dialogue');
-
-            const hasExplicitCharId = line.charId !== undefined && line.charId !== null;
-            const isSystemLine = line.name === 'システム' && !hasExplicitCharId;
-            const masterChar = hasExplicitCharId ? DB.CHARACTERS.find(c => c.id === line.charId) : null;
-            const savedChar = hasExplicitCharId ? App.data.characters.find(c => c.charId === line.charId) : null;
-            let displayName = isSystemLine ? '' : (savedChar ? savedChar.name : (masterChar ? masterChar.name : line.name));
-            let displayImg = isSystemLine ? '' : (savedChar?.img || masterChar?.img);
-            if (line.hidePortrait === true) displayImg = '';
-
-            if (textWindow) {
-                if (isSystemLine) {
-                    textWindow.style.cssText = `
-                        position: absolute;
-                        top: 45%;
-                        left: 20px;
-                        right: 20px;
-                        background: rgba(0,0,0,0.72);
-                        border: none;
-                        border-radius: 2px;
-                        padding: 12px 16px;
-                        box-sizing: border-box;
-                        height: 112px;
-                        min-height: 112px;
-                        max-height: 112px;
-                        overflow: hidden;
-                        box-shadow: none;
-                        z-index: 10;
-                    `;
-                } else if (textWindow.dataset.defaultStyle) {
-                    textWindow.style.cssText = textWindow.dataset.defaultStyle;
+        try {
+            startFromIndex = Math.max(0, Math.floor(Number(startFromIndex) || 0));
+            if (startFromIndex > 0 && this.scriptHasInlineFieldVisual(scriptKey)) {
+                try {
+                    await this.restoreInlineFieldVisualState(scriptKey, startFromIndex);
+                } catch (e) {
+                    console.warn('[StoryManager] inline field visual resume failed:', e);
                 }
             }
-            nameBox.style.display = isSystemLine ? 'none' : 'block';
 
-            let processedText = line.text.replace(/\[N:(\d+)\]/g, (match, id) => {
-                const targetId = parseInt(id);
-                const saved = App.data.characters.find(c => c.charId === targetId);
-                const master = DB.CHARACTERS.find(c => c.id === targetId);
-                return (saved ? saved.name : (master ? master.name : `ID:${id}`));
-            }).replace(/\\n/g, '\n');
+            overlay = document.getElementById('story-ui-overlay') || this.createStoryDOM();
+            if (!overlay) throw new Error('会話UIを生成できませんでした。');
+            overlay.style.display = 'flex';
 
-            this.backlog.push({ name: displayName, text: processedText.replace(/\n/g, " ") });
-
-            portraitImg.src = displayImg || "";
-            portraitImg.style.display = displayImg ? 'block' : 'none';
-            nameBox.innerText = displayName;
-            nextIndicator.style.visibility = 'hidden';
-
-            let isTyping = true, skipTyping = false;
-            overlay.onclick = (e) => { if (!e.target.closest('.no-skip') && isTyping) skipTyping = true; };
-
-            textBox.innerHTML = "";
-            const chars = processedText.split("");
-            for (let j = 0; j < chars.length; j++) {
-                if (skipTyping) { textBox.innerHTML = processedText.replace(/\n/g, "<br>"); break; }
-                let char = chars[j];
-                textBox.innerHTML += (char === "\n" ? "<br>" : char);
-                await new Promise(r => setTimeout(r, char === "\n" ? this.newlineWait : this.textSpeed));
+            const portraitImg = document.getElementById('story-portrait');
+            const nameBox = document.getElementById('story-name');
+            const textBox = document.getElementById('story-text');
+            const nextIndicator = document.getElementById('story-next-indicator');
+            if (!portraitImg || !nameBox || !textBox || !nextIndicator) {
+                throw new Error('会話UIの必須要素が不足しています。');
             }
-            isTyping = false;
-            nextIndicator.style.visibility = 'visible';
-            await new Promise(resolve => { overlay.onclick = (e) => { if (!e.target.closest('.no-skip')) resolve(); }; });
+            const textWindow = textBox.parentElement;
+            if (textWindow && !textWindow.dataset.defaultStyle) {
+                textWindow.dataset.defaultStyle = textWindow.getAttribute('style') || '';
+            }
+
+            for (let i = startFromIndex; i < lines.length; i++) {
+                const line = lines[i];
+
+                if (App.data) {
+                    App.data.progress.activeConversation = { key: scriptKey, index: i };
+                    App.save();
+                }
+
+                if (this.isInlineStoryCommand(line)) {
+                    await this.runInlineStoryCommand(line);
+                    // 命令の副作用と次カーソルを同じ保存へ確定する。
+                    if (App.data?.progress) {
+                        App.data.progress.activeConversation = { key: scriptKey, index: i + 1 };
+                        App.save();
+                    }
+                    continue;
+                }
+                if (!line || typeof line.text !== 'string') continue;
+                if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('dialogue');
+
+                const hasExplicitCharId = line.charId !== undefined && line.charId !== null;
+                const isSystemLine = line.name === 'システム' && !hasExplicitCharId;
+                const masterChar = hasExplicitCharId ? DB.CHARACTERS.find(c => c.id === line.charId) : null;
+                const savedChar = hasExplicitCharId ? App.data.characters.find(c => c.charId === line.charId) : null;
+                let displayName = isSystemLine ? '' : (savedChar ? savedChar.name : (masterChar ? masterChar.name : line.name));
+                let displayImg = isSystemLine ? '' : (savedChar?.img || masterChar?.img);
+                if (line.hidePortrait === true) displayImg = '';
+
+                if (textWindow) {
+                    if (isSystemLine) {
+                        textWindow.style.cssText = `
+                            position: absolute;
+                            top: 45%;
+                            left: 20px;
+                            right: 20px;
+                            background: rgba(0,0,0,0.72);
+                            border: none;
+                            border-radius: 2px;
+                            padding: 12px 16px;
+                            box-sizing: border-box;
+                            height: 112px;
+                            min-height: 112px;
+                            max-height: 112px;
+                            overflow: hidden;
+                            box-shadow: none;
+                            z-index: 10;
+                        `;
+                    } else if (textWindow.dataset.defaultStyle) {
+                        textWindow.style.cssText = textWindow.dataset.defaultStyle;
+                    }
+                }
+                nameBox.style.display = isSystemLine ? 'none' : 'block';
+
+                const processedText = line.text.replace(/\[N:(\d+)\]/g, (match, id) => {
+                    const targetId = parseInt(id);
+                    const saved = App.data.characters.find(c => c.charId === targetId);
+                    const master = DB.CHARACTERS.find(c => c.id === targetId);
+                    return (saved ? saved.name : (master ? master.name : `ID:${id}`));
+                }).replace(/\\n/g, '\n');
+
+                this.backlog.push({ name: displayName, text: processedText.replace(/\n/g, ' ') });
+                portraitImg.src = displayImg || '';
+                portraitImg.style.display = displayImg ? 'block' : 'none';
+                nameBox.innerText = displayName;
+                nextIndicator.style.visibility = 'hidden';
+
+                let isLineTyping = true;
+                let skipTyping = false;
+                overlay.onclick = (e) => {
+                    if (!e.target.closest('.no-skip') && isLineTyping) skipTyping = true;
+                };
+
+                textBox.innerHTML = '';
+                const chars = processedText.split('');
+                for (let j = 0; j < chars.length; j++) {
+                    if (skipTyping) {
+                        textBox.innerHTML = processedText.replace(/\n/g, '<br>');
+                        break;
+                    }
+                    const char = chars[j];
+                    textBox.innerHTML += (char === '\n' ? '<br>' : char);
+                    await new Promise(resolve => setTimeout(resolve, char === '\n' ? this.newlineWait : this.textSpeed));
+                }
+                isLineTyping = false;
+                nextIndicator.style.visibility = 'visible';
+                await new Promise(resolve => {
+                    overlay.onclick = (e) => {
+                        if (!e.target.closest('.no-skip')) resolve();
+                    };
+                });
+                // 読了した行を再表示しないよう、次行カーソルを直ちに保存する。
+                if (App.data?.progress) {
+                    App.data.progress.activeConversation = { key: scriptKey, index: i + 1 };
+                    App.save();
+                }
+            }
+
+            completed = true;
+            if (App.data?.progress) {
+                delete App.data.progress.activeConversation;
+                App.save();
+            }
+            return { status: 'completed', scriptKey };
+        } catch (error) {
+            console.error(`[StoryManager] conversation failed: ${scriptKey}`, error);
+            // 会話DOMやインライン演出で例外が起きても、透明なオーバーレイや
+            // 入力待ちを残さない。カーソルはfinallyで保持し、再読込後に再試行する。
+            try { this.dismissChoiceUI({ hideOverlay: true }); } catch (_) {}
+            try { this.clearStoryPortrait(); } catch (_) {}
+            if (overlay) overlay.style.display = 'none';
+            this.active = false;
+            throw error;
+        } finally {
+            this.isTyping = false;
+            if (overlay) overlay.onclick = null;
+            // 失敗時はactiveConversationを残し、同じ行から再試行できるようにする。
+            if (!completed && App.data?.progress?.activeConversation?.key !== scriptKey) {
+                App.data.progress.activeConversation = { key: scriptKey, index: startFromIndex };
+                try { App.save(); } catch (_) {}
+            }
         }
-        
-        if (App.data) { delete App.data.progress.activeConversation; App.save(); }
-		this.isTyping = false;
-        // showConversation 自体では閉じず、executeEvent 側の endConversation に任せる
     },
 
     /**

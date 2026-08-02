@@ -3511,7 +3511,6 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "thunder_fort_clear": {
-                "restartOnResume": true,
                 "postBattleBossSprite": false,
                 "actions": [
                         {
@@ -5117,7 +5116,6 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "thunder_veld_forced_loss": {
-                "restartOnResume": true,
                 "skipAutoPostBattleBossSprite": true,
                 "actions": [
                         {
@@ -5159,7 +5157,6 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "thunder_veld_loss": {
-                "restartOnResume": true,
                 "skipAutoPostBattleBossSprite": true,
                 "actions": [
                         {
