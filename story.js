@@ -5498,7 +5498,8 @@ const STORY_MANAGER_DATA = {
             { name:'システム', text:'終焉の祭壇を再び訪れると、最奥の亀裂が以前より深く口を開けていた。' },
             { name:'シャニー', text:'物語を縛っていた深淵とは違う。\nここから先は、入るたびに形を変える底なしの迷宮。', charId:306 },
             { name:'魔王ゼノン', text:'王を失ってなお力だけが残ったか。\nよかろう。腕試しの穴として、何度でも踏破してやる。', charId:402 },
-            { name:'システム', text:'クリア後深淵、ダンジョンメニュー、宿屋の転送の扉が解放された。' }
+            { name:'システム', text:'さらなる深淵の奥深くへ挑戦できるようになった！' },
+            { name:'システム', text:'【Tips】メニューや宿屋からも挑戦が可能になりました。' }
         ],
         ABYSS_CARMENA_RESIDENT_SPRING: [
             { name:'泉辺の男', text:'その水面を、あまり長く見るな。\n帰りたい場所の匂いがする。' },
@@ -5660,8 +5661,8 @@ const STORY_MANAGER_DATA = {
         abyss_azelgarag_clear: clearEvent('ABYSS_AZELGARAG_CLEAR',['abyssAzelgaragDefeated','abyssEpilogueSeen'],[
             {type:'IF_ITEM',id:109,count:1,then:[],else:[{type:'ITEM',id:109,count:1}]},
             {type:'UNLOCK',value:'wing'},
-            {type:'CREDITS',title:'深淵世界編　完',lines:['企画・シナリオ　Yuzora-Yu','制作　RPG-TEST','最果ての地カルメナ','深淵都市ビスタ','混沌魔城レガシオン','そして、まだ見ぬ深淵へ']},
-            {type:'STEP',value:10},{type:'SUB',value:2},{type:'LOG',value:'深淵王を倒し、リュシオンから光の翼を授かった。終焉の祭壇には、なお深い亀裂が残っている。'}
+            {type:'CREDITS',title:'深淵世界編　完',lines:['ゲームデザイン　夕空','制作　Yuzora-Games','BGM・SE　魔王魂 様','使用　ChatGPT','','','To be continued…']},
+            {type:'STEP',value:10},{type:'SUB',value:2},{type:'LOG',value:'終焉の祭壇には、なお深い亀裂が残っている・・・'}
         ]),
         abyss_postgame_crack: clearEvent('ABYSS_POSTGAME_CRACK',['abyssRandomUnlocked','abyssDungeonMenuUnlocked'],[{type:'UNLOCK',value:['dungeonMenu','teleport']},{type:'START_ABYSS_DUNGEON',mode:'random',floor:1,direct:true}]),
         abyss_carmena_resident_spring: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_SPRING'}],winActions:[]},
