@@ -276,15 +276,54 @@
 
         getChallengePower(state = null, rarity = 'SSR') {
             const guildState = state || Guild.ensureState();
-            const rankPower = (Guild.rankIndex(guildState?.rank || 'G') + 1) * 22;
-            const expPower = Math.floor(Math.sqrt(Math.max(0, Number(guildState?.exp || 0))) * 4);
-            const storyPower = Math.max(0, Number(App.data?.progress?.storyStep || 0)) * 7;
-            const floorPower = Math.max(0, Number(
+            const master = Guild.getChallengeMaster();
+            const rankMap = master.referenceRankByGuildRank || {};
+            const rankPower = Math.max(1, Number(rankMap[String(guildState?.rank || 'G').toUpperCase()]) || 35);
+            const storyMultiplier = Math.max(0, Number(master.storyStepRankMultiplier || 8));
+            const storyCap = Math.max(rankPower, Number(master.storyStepRankCap || 160));
+            const storyPower = Math.min(storyCap, Math.max(0, Number(App.data?.progress?.storyStep || 0)) * storyMultiplier);
+            const legacyFloor = Math.max(0, Number(
                 App.getAbyssLegacyProgressFloor?.() ||
                 (Number(App.data?.dungeon?.maxFloor || 0) > 0 ? Number(App.data.dungeon.maxFloor) + 100 : Number(App.data?.dungeon?.storyMaxFloor || 0))
             ));
-            const rarityPower = { SSR: 20, UR: 45, EX: 85 }[String(rarity || '').toUpperCase()] || 0;
-            return Math.max(35, Math.floor(Math.max(rankPower, storyPower, floorPower) + expPower + rarityPower));
+            const floorPower = Math.min(Math.max(1, Number(master.abyssProgressRankCap || 200)), legacyFloor);
+            const rarityKey = String(rarity || 'SSR').toUpperCase();
+            const rarityBonus = Math.max(0, Number(master.rarityRankBonus?.[rarityKey] || 0));
+            const maxReferenceRank = Math.max(rankPower, Number(master.maxReferenceRank || 220));
+            return Math.max(35, Math.min(maxReferenceRank, Math.floor(Math.max(rankPower, storyPower, floorPower) + rarityBonus)));
+        },
+
+        getChallengeScaling(rarity = 'SSR', gimmickIds = []) {
+            const master = Guild.getChallengeMaster();
+            const rarityKey = String(rarity || 'SSR').toUpperCase();
+            const normalBase = Math.max(1, Number(master.normalStatMultiplier?.[rarityKey] || 1));
+            const bossStatMultiplier = Math.max(1, Number(master.bossStatMultiplier?.[rarityKey] || 1));
+            const eliteMultiplier = Math.max(1, Number(master.eliteGimmickMultiplier || 1.35));
+            const normalStatMultiplier = gimmickIds.includes('rare50_elite')
+                ? Number((normalBase * eliteMultiplier).toFixed(3))
+                : Number(normalBase.toFixed(3));
+            return { normalStatMultiplier, bossStatMultiplier: Number(bossStatMultiplier.toFixed(3)) };
+        },
+
+        getChallengeGuildRewards(power, rarity = 'SSR', bossOnly = false) {
+            const master = Guild.getChallengeMaster();
+            const rarityKey = String(rarity || 'SSR').toUpperCase();
+            const clearMultiplier = bossOnly ? 1.10 : 1;
+            const expRate = Math.max(0.1, Number(master.guildExpPerReferenceRank?.[rarityKey] || 2.2));
+            const gpRate = Math.max(0.1, Number(master.guildPointsPerReferenceRank?.[rarityKey] || 4));
+            return {
+                guildExp: Math.max(120, Math.round(Math.max(1, Number(power || 1)) * expRate * clearMultiplier)),
+                guildPoints: Math.max(80, Math.round(Math.max(1, Number(power || 1)) * gpRate * clearMultiplier))
+            };
+        },
+
+        createChallengeBossEnemyBoost(enemyBoost = {}) {
+            return {
+                ...JSON.parse(JSON.stringify(enemyBoost || {})),
+                statMultiplier: 1,
+                rareStatMultiplier: 1,
+                applyToRares: false
+            };
         },
 
         getMonsterSkillIds(base) {
@@ -301,19 +340,34 @@
             const monsters = (typeof DB !== 'undefined' && Array.isArray(DB.MONSTERS)) ? DB.MONSTERS : [];
             const boss = options.boss === true;
             const rare = options.rare === true;
+            const referenceRank = Math.max(1, Number(power || 1));
             let pool = monsters.filter(base => base && !!base.isBoss === boss && !!base.isRare === rare
                 && !base.isGuildPromotionBoss && !base.isSpecialBoss && !base.isEstark);
             const themed = pool.filter(base => Guild.monsterMatchesChallengeTheme(base, theme));
             if (themed.length) pool = themed;
-            const withinPower = pool.filter(base => {
+
+            const minRatio = boss ? 0.65 : (rare ? 0.45 : 0.55);
+            const maxRatio = boss ? 1.15 : (rare ? 1.25 : 1.05);
+            const withinReference = pool.filter(base => {
                 const rank = Math.max(1, Number(base.rank || base.minF || 1));
-                return rank <= Math.max(20, power * 1.35) && rank >= Math.max(1, power * 0.18);
+                return rank >= referenceRank * minRatio && rank <= referenceRank * maxRatio;
             });
-            if (withinPower.length) pool = withinPower;
-            pool = Array.from(new Map(pool.filter(base => Number.isFinite(Number(base.id))).map(base => [Number(base.id), base])).values());
-            const count = Math.min(pool.length, options.count || (boss ? 6 : 14));
+            if (withinReference.length) {
+                pool = withinReference;
+            } else {
+                const fallback = pool.filter(base => {
+                    const rank = Math.max(1, Number(base.rank || base.minF || 1));
+                    return rank >= referenceRank * 0.35 && rank <= referenceRank * 1.35;
+                });
+                if (fallback.length) pool = fallback;
+            }
+
+            pool = Array.from(new Map(pool.filter(base => Number.isFinite(Number(base.id))).map(base => [Number(base.id), base])).values())
+                .sort((a, b) => Math.abs(Number(a.rank || a.minF || 1) - referenceRank) - Math.abs(Number(b.rank || b.minF || 1) - referenceRank));
+            const candidateLimit = Math.min(pool.length, Math.max(options.count || (boss ? 6 : 14), boss ? 12 : 28));
+            const copy = pool.slice(0, candidateLimit);
+            const count = Math.min(copy.length, options.count || (boss ? 6 : 14));
             const result = [];
-            const copy = pool.slice();
             while (copy.length && result.length < count) {
                 const index = Guild.randomInt(0, copy.length - 1);
                 result.push(Number(copy.splice(index, 1)[0].id));
@@ -497,14 +551,10 @@
                 const bossMonsterIds = [Number(selectedBossId)];
                 const gimmicks = Guild.pickChallengeGimmicks(rarity);
                 const gimmickIds = gimmicks.map(gimmick => String(gimmick.id));
-                const rarityStatMultiplier = { SSR: 1.25, UR: 1.65, EX: 2.25 }[rarity] || 1.25;
-                // 通常敵も冒険者ランク・累積ギルド経験値・物語進行・深淵到達階層を反映して伸び続ける。
-                // ボスほど急激にはせず、既存個体の個性が残る緩やかな無上限補正とする。
-                const progressionStatMultiplier = Math.max(1, 1 + power / 400);
-                const statMultiplier = Number((rarityStatMultiplier * progressionStatMultiplier).toFixed(3));
+                const scaling = Guild.getChallengeScaling(rarity, gimmickIds);
                 const enemyBoost = {
-                    statMultiplier: gimmickIds.includes('rare50_elite') ? Number((statMultiplier * 1.9).toFixed(3)) : statMultiplier,
-                    rareStatMultiplier: statMultiplier,
+                    statMultiplier: scaling.normalStatMultiplier,
+                    rareStatMultiplier: scaling.normalStatMultiplier,
                     applyToRares: true,
                     nameSuffix: rarity === 'EX' ? '・異常個体' : '',
                     elmAtk: {},
@@ -514,22 +564,16 @@
                 if (gimmickIds.includes('element50') && theme?.element) enemyBoost.elmAtk[theme.element] = 50;
                 if (gimmickIds.includes('regen10')) enemyBoost.traits.push({ id: 52, level: 10 });
                 if (gimmickIds.includes('guts10')) enemyBoost.traits.push({ id: 18, level: 10 });
+                const bossEnemyBoost = Guild.createChallengeBossEnemyBoost(enemyBoost);
                 const rareChance = gimmickIds.some(idValue => idValue.startsWith('rare50')) ? 0.50 : (rarity === 'EX' ? 0.12 : rarity === 'UR' ? 0.06 : 0.03);
-                const storyStep = Math.max(0, Number(App.data?.progress?.storyStep || 0));
-                const maxFloor = Math.max(0, Number(
-                    App.getAbyssLegacyProgressFloor?.() ||
-                    (Number(App.data?.dungeon?.maxFloor || 0) > 0 ? Number(App.data.dungeon.maxFloor) + 100 : Number(App.data?.dungeon?.storyMaxFloor || 0))
-                ));
-                const endlessBossMultiplier = Math.max(1.5,
-                    1 + Guild.rankIndex(guildState.rank) * 0.28 + Number(guildState.exp || 0) / 850
-                    + storyStep * 0.055 + maxFloor / 120) * ({ SSR: 1.25, UR: 1.75, EX: 2.5 }[rarity] || 1.25);
                 const rewardItems = Guild.getRarityBonusRewards(rarityDef);
                 if (rarity === 'EX' && Math.random() < 0.38) {
                     const traitBookId = Guild.pickRandom(Guild.getNonExchangeTraitBookIds());
                     if (traitBookId) rewardItems.push({ id: traitBookId, count: 1 });
                 }
-                const guildExp = Math.max(300, Math.round(power * ({ SSR: 16, UR: 27, EX: 45 }[rarity] || 16) * (bossOnly ? 1.15 : 1)));
-                const guildPoints = Math.max(120, Math.round(power * ({ SSR: 6, UR: 11, EX: 20 }[rarity] || 6) * (bossOnly ? 1.15 : 1)));
+                const challengeRewards = Guild.getChallengeGuildRewards(power, rarity, bossOnly);
+                const guildExp = challengeRewards.guildExp;
+                const guildPoints = challengeRewards.guildPoints;
                 const gimmickLabel = gimmicks.length ? gimmicks.map(value => value.label).join('／') : '追加ギミックなし';
                 const questName = Guild.pickRandom(theme?.names) || `${theme?.label || '変異'}迷宮の討伐任務`;
                 const generatedRequiredRank = Guild.rankIndex(challengeMaster.minGuildRank || 'C') >= Guild.rankIndex(rarityDef.minGuildRank || 'G')
@@ -567,7 +611,7 @@
                     generatedAt: Date.now(),
                     sortOrder: 3000 + guildState.generatorSerial,
                     challenge: {
-                        version: 1,
+                        version: 2,
                         questId: id,
                         rarity,
                         themeId: String(theme?.id || 'random'),
@@ -582,8 +626,9 @@
                         rareMonsterIds,
                         rareChance,
                         bossMonsterIds,
-                        bossStatMultiplier: endlessBossMultiplier,
+                        bossStatMultiplier: scaling.bossStatMultiplier,
                         enemyBoost,
+                        bossEnemyBoost,
                         allyAilments: gimmickIds.includes('rare50_toxic') ? ['ToxicPoison'] : [],
                         gimmicks: gimmicks.map(value => ({ id: value.id, label: value.label }))
                     }
@@ -720,6 +765,47 @@
             return def;
         },
 
+        migrateGeneratedChallengeQuestDefinition(def, storedVersion = 0) {
+            if (!def || def.generatorKind !== 'challenge') return def;
+            const challenge = def.challenge && typeof def.challenge === 'object' ? def.challenge : {};
+            if (storedVersion >= 7 && Number(challenge.version || 0) >= 2) return def;
+
+            const rarity = String(challenge.rarity || def.rarity || 'SSR').toUpperCase();
+            const maxReferenceRank = Math.max(35, Number(Guild.getChallengeMaster().maxReferenceRank || 220));
+            const power = Math.max(35, Math.min(maxReferenceRank, Math.floor(Number(
+                challenge.encounterRank || challenge.power || def.rewardEquipment?.[0]?.floor || 90
+            ) || 90)));
+            const gimmickIds = (Array.isArray(challenge.gimmicks) ? challenge.gimmicks : [])
+                .map(gimmick => String(gimmick?.id || gimmick || ''))
+                .filter(Boolean);
+            const scaling = Guild.getChallengeScaling(rarity, gimmickIds);
+            const enemyBoost = challenge.enemyBoost && typeof challenge.enemyBoost === 'object'
+                ? JSON.parse(JSON.stringify(challenge.enemyBoost))
+                : {};
+            enemyBoost.statMultiplier = scaling.normalStatMultiplier;
+            enemyBoost.rareStatMultiplier = scaling.normalStatMultiplier;
+            enemyBoost.applyToRares = true;
+
+            const rewards = Guild.getChallengeGuildRewards(power, rarity, challenge.bossOnly === true);
+            def.guildExp = rewards.guildExp;
+            def.guildPoints = rewards.guildPoints;
+            if (Array.isArray(def.rewardEquipment) && def.rewardEquipment[0]) {
+                def.rewardEquipment[0].floor = power;
+                def.rewardEquipment[0].label = `RANK${power} 武器+${Number(def.rewardEquipment[0].plus ?? 3)}`;
+            }
+            def.challenge = {
+                ...challenge,
+                version: 2,
+                rarity,
+                power,
+                encounterRank: power,
+                bossStatMultiplier: scaling.bossStatMultiplier,
+                enemyBoost,
+                bossEnemyBoost: Guild.createChallengeBossEnemyBoost(enemyBoost)
+            };
+            return def;
+        },
+
         migrateGeneratorState(state) {
             if (!state) return;
             if (!state.generatedQuests || typeof state.generatedQuests !== 'object' || Array.isArray(state.generatedQuests)) {
@@ -732,6 +818,7 @@
                     return;
                 }
                 Guild.migrateGeneratedAbyssQuestDefinition(def, storedVersion);
+                Guild.migrateGeneratedChallengeQuestDefinition(def, storedVersion);
                 if (!def.rarity) def.rarity = 'R';
                 const rarityDef = Guild.getRarityDefinition(def.rarity);
                 def.rarity = rarityDef.id;
@@ -1372,6 +1459,12 @@
             }
         },
 
+        getQuestReferenceRank(definition = {}) {
+            if (definition.kind !== 'guildDungeon') return null;
+            const rank = Math.floor(Number(definition.challenge?.encounterRank || definition.challenge?.power || 0));
+            return Number.isFinite(rank) && rank > 0 ? rank : null;
+        },
+
         questCard(id, options = {}) {
             const def = Guild.getDefinitions()[id];
             const state = Guild.getQuestState(id);
@@ -1382,7 +1475,7 @@
             const rewardSummary = Guild.getCompactRewardSummary(def);
             return `<button class="btn guild-quest-entry" data-guild-quest-id="${App.escapeHtml(id)}" style="width:100%; text-align:left; margin:0 0 8px; padding:10px; background:#17191d; border:1px solid #655b43; color:#fff; border-radius:6px;">
                 <span style="display:flex; justify-content:space-between; gap:8px; align-items:center;"><strong style="display:flex; align-items:center; min-width:0;">${Guild.rarityBadgeHtml(def)}<span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${App.escapeHtml(def.name)}</span></strong><small style="color:${color}; white-space:nowrap;">${status}</small></span>
-                <span style="display:block; color:#c8b998; font-size:10px; margin-top:4px;">必要ランク ${App.escapeHtml(def.requiredRank || 'G')} / 危険度 ${App.escapeHtml(Guild.getDifficultyLabel(def))} / ${App.escapeHtml(App.getQuestKindLabel?.(def.kind) || def.kind)}</span>
+                <span style="display:block; color:#c8b998; font-size:10px; margin-top:4px;">必要ランク ${App.escapeHtml(def.requiredRank || 'G')}${Guild.getQuestReferenceRank(def) ? ` / 参考Rank ${Guild.getQuestReferenceRank(def)}` : ''} / 危険度 ${App.escapeHtml(Guild.getDifficultyLabel(def))} / ${App.escapeHtml(App.getQuestKindLabel?.(def.kind) || def.kind)}</span>
                 <span style="display:block; color:#aaa; font-size:11px; line-height:1.45; margin-top:5px; white-space:pre-wrap;">${App.escapeHtml(def.objective || '')}</span>
                 <span style="display:block; color:#dff0c8; font-size:9px; line-height:1.45; margin-top:6px; padding-top:5px; border-top:1px solid #3c4432; white-space:normal;">報酬: ${App.escapeHtml(rewardSummary)}</span>
             </button>`;
@@ -1406,7 +1499,7 @@
                 ? `<button id="guild-detail-travel" class="menu-btn" style="width:100%; margin-top:8px; border-color:#5c96b5; color:#dff4ff; background:#183445;">対象エリア入口へ移動</button>`
                 : '';
             Facilities.showModal('guild-scene', def.name, `
-                <div style="font-size:11px; color:#d9bd7d; display:flex; align-items:center;">${Guild.rarityBadgeHtml(def)}必要ランク ${def.requiredRank || 'G'} / ${App.getQuestKindLabel?.(def.kind) || def.kind} / 危険度 ${App.escapeHtml(Guild.getDifficultyLabel(def))}</div>
+                <div style="font-size:11px; color:#d9bd7d; display:flex; align-items:center; flex-wrap:wrap;">${Guild.rarityBadgeHtml(def)}必要ランク ${def.requiredRank || 'G'}${Guild.getQuestReferenceRank(def) ? ` / 参考Rank ${Guild.getQuestReferenceRank(def)}` : ''} / ${App.getQuestKindLabel?.(def.kind) || def.kind} / 危険度 ${App.escapeHtml(Guild.getDifficultyLabel(def))}</div>
                 <div style="font-size:12px; line-height:1.65; margin-top:10px; white-space:pre-wrap;">${App.escapeHtml(state.state === 'accepted' ? (def.progressText || def.objective) : (def.startText || def.objective))}</div>
                 <div style="margin-top:10px; padding:9px; border:1px solid #444; white-space:pre-wrap; font-size:11px;">${App.escapeHtml(Guild.targetSummary(id))}</div>
                 <div style="margin-top:8px; padding:9px; border:1px solid #5e4d2e; color:#dff0c8; white-space:pre-wrap; font-size:11px;">${App.escapeHtml(Guild.rewardSummary(def))}</div>

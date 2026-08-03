@@ -2411,10 +2411,18 @@ const Battle = {
                 storedIds.forEach((id, i) => {
                     const base = Battle.getMonsterBaseById(id);
                     if (!base) return;
+                    const guildBossBoost = storedAbyssBoss.source === 'guild-quest'
+                        ? (battleData.guildChallengeBossBoost || {
+                            ...(battleData.guildChallengeEnemyBoost || {}),
+                            statMultiplier: 1,
+                            rareStatMultiplier: 1,
+                            applyToRares: false
+                        })
+                        : (battleData.guildChallengeEnemyBoost || null);
                     pushBase(base, i, storedIds.length, {
                         isBossBattle: true,
                         storyBossStatMultiplier: battleData.bossStatMultiplier || 1,
-                        trialEnemyBoost: battleData.guildChallengeEnemyBoost || null
+                        trialEnemyBoost: guildBossBoost
                     });
                 });
             }

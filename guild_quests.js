@@ -2,7 +2,7 @@
 (function(root) {
     'use strict';
 
-    const GUILD_QUEST_SCHEMA_VERSION = 9;
+    const GUILD_QUEST_SCHEMA_VERSION = 10;
 
     // 旧町別掲示板時代のセーブIDを、新しいギルド依頼IDへ一度だけ移行するための対応表。
     // 固定依頼は GUILD_QUEST_DATA、自動生成依頼の条件は GUILD_QUEST_GENERATOR_MASTER を正本とする。
@@ -926,7 +926,7 @@
     // 自動生成依頼の正本。実際に掲示される依頼は guild.js 側でこのテンプレートから生成し、
     // 生成結果そのものをセーブへ保存する。受注後に再読込しても討伐数・報酬・対象範囲は変化しない。
     const GUILD_QUEST_GENERATOR_MASTER = {
-        schemaVersion: 6,
+        schemaVersion: 7,
         generatedOfferRatio: 0.75,
         normalHunts: [
             {
@@ -1007,6 +1007,17 @@
                 EX: [5, 9]
             },
             bossOnlyChance: { SSR: 0, UR: 0.30, EX: 0.50 },
+            referenceRankByGuildRank: { G: 35, F: 45, E: 60, D: 75, C: 90, B: 110, A: 135, S: 160 },
+            storyStepRankMultiplier: 8,
+            storyStepRankCap: 160,
+            abyssProgressRankCap: 200,
+            maxReferenceRank: 220,
+            rarityRankBonus: { SSR: 0, UR: 15, EX: 30 },
+            normalStatMultiplier: { SSR: 1.05, UR: 1.12, EX: 1.20 },
+            bossStatMultiplier: { SSR: 1.15, UR: 1.30, EX: 1.50 },
+            eliteGimmickMultiplier: 1.35,
+            guildExpPerReferenceRank: { SSR: 2.2, UR: 3.3, EX: 5.0 },
+            guildPointsPerReferenceRank: { SSR: 4, UR: 7, EX: 11 },
             themes: [
                 { id: 'fire', label: '灼熱', element: '火', visualThemeIds: ['ignis-volcano'], names: ['灼熱迷宮の鎮圧', '炎獄の最深部調査'] },
                 { id: 'water', label: '氷水', element: '水', visualThemeIds: ['seabed-temple', 'crena-cave'], names: ['氷水回廊の鎮圧', '蒼海迷宮の最深部調査'] },

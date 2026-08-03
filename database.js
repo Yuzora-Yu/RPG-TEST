@@ -271,16 +271,27 @@ const DB = {
     // ふるびたコイン交換所の累計消費報酬。
     // 判定基準は取得累計ではなく、交換所で実際に消費した枚数。
     COIN_SPENDING_REWARDS: [
-        { coins: 10, rewards: [{ type: 'ITEM', id: 2, val: 5 }] },
-        { coins: 30, rewards: [{ type: 'ITEM', id: 4, val: 5 }] },
-        { coins: 50, rewards: [{ type: 'ITEM', id: 5, val: 2 }] },
-        { coins: 100, rewards: [{ type: 'ITEM', id: 6, val: 2 }] },
-        { coins: 150, rewards: [{ type: 'ITEM', id: 1043, val: 1 }] },
-        { coins: 200, rewards: [{ type: 'ITEM', id: 106, val: 5 }] },
-        { coins: 300, rewards: [{ type: 'ITEM', id: 107, val: 1 }] },
-        { coins: 500, rewards: [
+        { coins: 10, rewards: [{ type: 'ITEM', id: 2, val: 10 }, { type: 'ITEM', id: 4, val: 5 }] },
+        { coins: 30, rewards: [{ type: 'ITEM', id: 5, val: 3 }, { type: 'ITEM', id: 6, val: 1 }] },
+        { coins: 50, rewards: [{ type: 'ITEM', id: 6, val: 3 }, { type: 'ITEM', id: 1043, val: 1 }] },
+        { coins: 100, rewards: [
+            { type: 'EQUIP', eid: 901 },
+            { type: 'EQUIP', eid: 902 },
+            { type: 'EQUIP', eid: 903 },
+            { type: 'EQUIP', eid: 904 },
+            { type: 'EQUIP', eid: 905 }
+        ] },
+        { coins: 150, rewards: [{ type: 'ITEM', id: 1043, val: 3 }, { type: 'ITEM', id: 106, val: 5 }] },
+        { coins: 200, rewards: [{ type: 'ITEM', id: 107, val: 1 }, { type: 'ITEM', id: 599999, val: 1 }] },
+        { coins: 300, rewards: [
             { type: 'ITEM', id: 107, val: 1 },
-            { type: 'ITEM', id: 599999, val: 2 }
+            { type: 'ITEM', id: 599999, val: 1 },
+            { type: 'ITEM', id: 98, val: 1 }
+        ] },
+        { coins: 500, rewards: [
+            { type: 'ITEM', id: 107, val: 2 },
+            { type: 'ITEM', id: 599999, val: 2 },
+            { type: 'ITEM', id: 98, val: 5 }
         ] }
     ]
 };

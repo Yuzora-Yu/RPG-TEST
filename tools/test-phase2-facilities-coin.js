@@ -82,6 +82,22 @@ assert(JSON.stringify(spendingRewards.map(entry => Number(entry.coins))) === JSO
     '累計消費報酬の達成枚数が指定値と一致しません。');
 assert(spendingRewards.every(entry => Array.isArray(entry.rewards) && entry.rewards.length > 0),
     '累計消費報酬に報酬内容がない項目があります。');
+const rewardByCoins = new Map(spendingRewards.map(entry => [Number(entry.coins), entry.rewards]));
+assert(JSON.stringify(rewardByCoins.get(100)?.map(reward => Number(reward.eid))) === JSON.stringify([901, 902, 903, 904, 905]),
+    '100枚累計報酬がレプリカ5種一式ではありません。');
+assert(JSON.stringify(rewardByCoins.get(300)) === JSON.stringify([
+    { type: 'ITEM', id: 107, val: 1 },
+    { type: 'ITEM', id: 599999, val: 1 },
+    { type: 'ITEM', id: 98, val: 1 }
+]), '300枚累計報酬が指定内容ではありません。');
+assert(JSON.stringify(rewardByCoins.get(500)) === JSON.stringify([
+    { type: 'ITEM', id: 107, val: 2 },
+    { type: 'ITEM', id: 599999, val: 2 },
+    { type: 'ITEM', id: 98, val: 5 }
+]), '500枚累計報酬が指定内容ではありません。');
+assert(spendingRewards.filter(entry => Number(entry.coins) < 100)
+    .every(entry => entry.rewards.reduce((sum, reward) => sum + Math.max(1, Number(reward.val) || 1), 0) >= 4),
+    '100枚未満の累計報酬が豪華化されていません。');
 assert(spendingRewards.flatMap(entry => entry.rewards).every(reward => reward.type !== 'ITEM' || itemById.has(Number(reward.id))),
     '累計消費報酬に存在しないアイテムIDがあります。');
 assert(!rewards.some(reward => Number(reward.id) === 108), '魔法の小舟が交換景品に残っています。');
@@ -143,7 +159,10 @@ const facilityContext = vm.createContext({
             return this.data.stats[key];
         },
         ensureCoinSpendingRewardProgress() { return this.data.progress.coinSpendingRewards; },
-        createEquipById() { return null; }
+        createEquipById(eid) {
+            const base = equips.find(equip => Number(equip.eid) === Number(eid));
+            return base ? { ...base, uid: `test-${eid}`, plus: 0 } : null;
+        }
     },
     Menu: { messages: [], msg(text) { this.messages.push(text); } },
     document: {}
@@ -161,8 +180,14 @@ assert(facilityContext.App.data.items[1001] === 1, '交換景品が付与され�
 facilityContext.App.data.stats.totalCoinsSpent = 10;
 Facilities.claimCoinSpendingReward(10);
 assert(facilityContext.App.data.progress.coinSpendingRewards.claimedMilestones.includes(10), '達成済み累計報酬が受取済みになりません。');
-assert(facilityContext.App.data.items[2] === 5, '10枚累計報酬が付与されません。');
+assert(facilityContext.App.data.items[2] === 10, '10枚累計報酬が付与されません。');
 Facilities.claimCoinSpendingReward(10);
-assert(facilityContext.App.data.items[2] === 5, '累計報酬を二重受領できてしまいます。');
+assert(facilityContext.App.data.items[2] === 10, '累計報酬を二重受領できてしまいます。');
+
+facilityContext.App.data.stats.totalCoinsSpent = 100;
+Facilities.claimCoinSpendingReward(100);
+assert(facilityContext.App.data.inventory.length === 5, '100枚累計報酬のレプリカ一式が付与されません。');
+assert(JSON.stringify(facilityContext.App.data.inventory.map(equip => Number(equip.eid))) === JSON.stringify([901, 902, 903, 904, 905]),
+    '100枚累計報酬で付与されるレプリカ装備が不正です。');
 
 console.log(`Phase2施設・ふるびたコイン検証: OK（技法書 ${skillShop.itemIds.length}種 / 景品 ${rewards.length}種 / 累計報酬 ${spendingRewards.length}段階）`);
