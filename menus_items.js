@@ -196,8 +196,12 @@ const MenuItems = {
             return;
         }
 
+        if (Number(item.id) === Number(window.PRISMA_DIVINE_ANVIL_ITEM_ID || 599998)) {
+            MenuItems.selectedItem = item;
+            MenuItems.openDivineAnvilEquipmentSelection(item);
+        }
         // スキル書は通常仲間の専用2枠、仲間モンスターの合計8枠を専用UIで管理する。
-        if (item.type === 'スキル書' || Number(item.skillId) >= 100) {
+        else if (item.type === 'スキル書' || Number(item.skillId) >= 100) {
             MenuItems.selectedItem = item;
             MenuItems.openSkillBookCharacterSelection(item);
         }
@@ -226,6 +230,126 @@ const MenuItems = {
         } else {
             Menu.msg("使用できないアイテムです。");
         }
+    },
+
+    getAllOwnedEquipmentEntries: () => {
+        const entries = [];
+        const seen = new Set();
+        const add = (equip, owner = '') => {
+            if (!equip || typeof equip !== 'object') return;
+            const key = equip.id != null ? `id:${equip.id}` : equip;
+            if (seen.has(key)) return;
+            seen.add(key);
+            entries.push({ equip, owner });
+        };
+        (App.data?.inventory || []).forEach(equip => add(equip, ''));
+        (App.data?.characters || []).forEach(character => {
+            Object.values(character?.equips || {}).forEach(equip => add(equip, character?.name || '装備中'));
+        });
+        return entries;
+    },
+
+    getDivineAnvilTargetMaster: equip => {
+        const masters = Array.isArray(window.EQUIP_MASTER) ? window.EQUIP_MASTER : [];
+        const current = typeof MenuBlacksmith !== 'undefined'
+            ? MenuBlacksmith.findEquipmentMaster(equip)
+            : null;
+        if (!current) return { ok:false, reason:'対応する正式装備マスターを特定できません。' };
+        if (current.specialEquip === true || current.noRandom === true || /^真・/.test(String(equip?.name || ''))) {
+            return { ok:false, reason:'特殊装備・レプリカ・真装備は対象外です。' };
+        }
+        const currentRank = Math.max(1, Number(current.rank) || Number(equip?.rank) || 1);
+        const desired = currentRank + Math.max(1, Number(window.PRISMA_BLACKSMITH_MASTER?.divineAnvilTargetRankDelta) || 10);
+        const candidates = masters.filter(entry =>
+            entry && entry.noRandom !== true && entry.specialEquip !== true
+            && String(entry.type || '') === String(current.type || equip?.type || '')
+            && String(entry.baseName || '') === String(current.baseName || equip?.baseName || '')
+            && Number(entry.rank || 0) > currentRank
+        ).sort((left, right) => {
+            const leftDistance = Math.abs(Number(left.rank || 0) - desired);
+            const rightDistance = Math.abs(Number(right.rank || 0) - desired);
+            return leftDistance - rightDistance || Number(left.rank || 0) - Number(right.rank || 0) || Number(left.eid || 0) - Number(right.eid || 0);
+        });
+        if (!candidates.length) return { ok:false, reason:'同じ部位・武器種に上位の通常装備がなく、最高段階です。' };
+        return { ok:true, current, target:candidates[0], desiredRank:desired };
+    },
+
+    buildDivineAnvilPreview: equip => {
+        const transition = MenuItems.getDivineAnvilTargetMaster(equip);
+        if (!transition.ok) return transition;
+        const plus = Math.max(0, Math.floor(Number(equip?.plus) || 0));
+        const plusMult = Number(window.PRISMA_BLACKSMITH_MASTER?.plusMultipliers?.[plus]) || 1;
+        const scalable = new Set(window.PRISMA_BLACKSMITH_MASTER?.scalableStatKeys || ['atk','def','mag','mdef','spd','hp','mp']);
+        const nextData = JSON.parse(JSON.stringify(transition.target.data || {}));
+        Object.keys(nextData).forEach(key => {
+            if (scalable.has(key) && typeof nextData[key] === 'number') nextData[key] = Math.floor(nextData[key] * plusMult);
+        });
+        const newName = `${transition.target.name}${plus > 0 ? `+${plus}` : ''}`;
+        const targetGrantSkills = Array.isArray(transition.target.grantSkills) ? transition.target.grantSkills : [];
+        return {
+            ...transition, plus, nextData, newName,
+            nextVal:Math.floor(Number(transition.target.rank || 1) * 150 * (1 + plus * 0.5)),
+            // 装備マスター由来の固有スキルは変換先へ置き換える。ランダム付与opts/traitsは装備インスタンス側で維持する。
+            grantSkills:Array.from(new Set(targetGrantSkills.map(Number).filter(Number.isFinite)))
+        };
+    },
+
+    openDivineAnvilEquipmentSelection: item => {
+        if (Number(App.data?.items?.[item.id] || 0) <= 0) return Menu.msg('神鉄の鍛冶台を所持していません。');
+        const eligible = MenuItems.getAllOwnedEquipmentEntries()
+            .map(entry => ({ ...entry, preview:MenuItems.buildDivineAnvilPreview(entry.equip) }))
+            .filter(entry => entry.preview.ok)
+            .sort((left, right) => Menu.compareEquipmentByRank?.(left.equip, right.equip) || 0);
+        if (!eligible.length) {
+            return Menu.msg('変換可能な装備がありません。\n特殊装備・レプリカ・真装備・最高段階装備・対応先のない装備は対象外です。');
+        }
+        Menu.listChoice('神鉄の鍛冶台を使う装備を選んでください。', eligible.map(entry => ({
+            label:`${entry.equip.name}　Rank ${Number(entry.equip.rank || 0)} → ${entry.preview.newName}　Rank ${Number(entry.preview.target.rank || 0)}${entry.owner ? `［${entry.owner}］` : ''}`,
+            callback:() => MenuItems.confirmDivineAnvilUse(item, entry.equip)
+        })));
+    },
+
+    confirmDivineAnvilUse: (item, equip) => {
+        const preview = MenuItems.buildDivineAnvilPreview(equip);
+        if (!preview.ok) return Menu.msg(preview.reason || 'この装備は変換できません。');
+        const oldSummary = typeof MenuBlacksmith !== 'undefined' ? MenuBlacksmith.getBaseStatSummary(equip.data) : '';
+        const newSummary = typeof MenuBlacksmith !== 'undefined' ? MenuBlacksmith.getBaseStatSummary(preview.nextData) : '';
+        Menu.confirm(`【神鉄の鍛冶台】\n${equip.name}（Rank ${equip.rank}）\n${oldSummary}\n　▼\n${preview.newName}（Rank ${preview.target.rank}）\n${newSummary}\n\nUID・＋値・オプション・特性・ロック状態を維持して変換します。`, () => {
+            const result = App.runAtomicSaveMutation(() => {
+                if (Number(App.data?.items?.[item.id] || 0) <= 0) return { ok:false, reason:'item' };
+                const live = MenuItems.buildDivineAnvilPreview(equip);
+                if (!live.ok || Number(live.target.eid) !== Number(preview.target.eid)) return { ok:false, reason:'changed' };
+                const preserved = {
+                    id:equip.id, opts:equip.opts, traits:equip.traits, locked:equip.locked, rarity:equip.rarity, source:equip.source
+                };
+                equip.eid = Number(live.target.eid);
+                equip.masterEid = Number(live.target.eid);
+                equip.rank = Number(live.target.rank);
+                equip.name = live.newName;
+                equip.type = live.target.type;
+                equip.baseName = live.target.baseName;
+                equip.data = live.nextData;
+                equip.val = live.nextVal;
+                equip.possibleOpts = JSON.parse(JSON.stringify(live.target.possibleOpts || []));
+                equip.grantSkills = live.grantSkills;
+                Object.assign(equip, preserved);
+                App.data.items[item.id] -= 1;
+                if (App.data.items[item.id] <= 0) delete App.data.items[item.id];
+                App.refreshAllSynergies?.();
+                App.incrementLifetimeStat?.('divineAnvilUses', 1, { save:false });
+                return { name:equip.name };
+            });
+            if (!result.ok) {
+                MenuItems.selectedItem = null;
+                return Menu.msg(result.saveFailed ? '保存に失敗したため、装備変換とアイテム消費をすべて取り消しました。' : '装備またはアイテムの状態が変わったため中止しました。', () => MenuItems.changeScreen('list'));
+            }
+            MenuItems.playUseSe(item);
+            Menu.msg(`${preview.newName}へ変換しました。`, () => {
+                MenuItems.selectedItem = null;
+                MenuItems.changeScreen('list');
+                Menu.renderPartyBar();
+            });
+        });
     },
 
     getSkillBookOwnedCharacters: () => {
@@ -643,13 +767,18 @@ const MenuItems = {
             // --- C. 育成アイテム(100-107)の処理 ---
             else if (item.id >= 100 && item.id <= 107) {
                 success = true;
+                if (!target.permanentStatBonuses || typeof target.permanentStatBonuses !== 'object' || Array.isArray(target.permanentStatBonuses)) target.permanentStatBonuses = {};
+                const addPermanentStat = (key, amount) => {
+                    target[key] = (Number(target[key]) || 0) + amount;
+                    target.permanentStatBonuses[key] = (Number(target.permanentStatBonuses[key]) || 0) + amount;
+                };
                 switch(item.id) {
-                    case 100: target.hp += 3; msg = `${target.name}の最大HPが上がった！`; break;
-                    case 101: target.mp += 2; msg = `${target.name}の最大MPが上がった！`; break;
-                    case 102: target.atk += 1; msg = `${target.name}の攻撃力が上がった！`; break;
-                    case 103: target.mag += 1; msg = `${target.name}の魔力が上がった！`; break;
-                    case 104: target.spd += 1; msg = `${target.name}の素早さが上がった！`; break;
-                    case 105: target.def += 1; msg = `${target.name}の防御力が上がった！`; break;
+                    case 100: addPermanentStat('hp', 3); msg = `${target.name}の最大HPが上がった！`; break;
+                    case 101: addPermanentStat('mp', 2); msg = `${target.name}の最大MPが上がった！`; break;
+                    case 102: addPermanentStat('atk', 1); msg = `${target.name}の攻撃力が上がった！`; break;
+                    case 103: addPermanentStat('mag', 1); msg = `${target.name}の魔力が上がった！`; break;
+                    case 104: addPermanentStat('spd', 1); msg = `${target.name}の素早さが上がった！`; break;
+                    case 105: addPermanentStat('def', 1); msg = `${target.name}の防御力が上がった！`; break;
                     case 106: target.sp = (target.sp || 0) + 1; msg = `${target.name}のSPが 1 増えた！`; break;
                     case 107:
                         if (App.isMonsterAlly?.(target)) {

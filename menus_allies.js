@@ -737,7 +737,8 @@ const MenuAllies = {
 
 					const buttonsHtml = `<div style="display:flex; gap:10px; margin: 10px 0;"><button class="btn" style="flex:1; background:#555;" onclick="MenuAllies.selectedEquip=null; MenuAllies.renderDetail()">やめる</button><button class="btn" style="flex:1; background:#d00;" onclick="MenuAllies.doEquip()">変更する</button></div>`;
 					contentHtml = `<div style="padding:10px; text-align:center; color:#ffd700; font-weight:bold; border-bottom:1px solid #444;">装備変更の確認 (${MenuAllies.targetPart})</div>
-						<div style="padding:5px; text-align:center; font-size:14px; color:${isRemove?'#aaa':Menu.getRarityColor(newItem.rarity)}; margin-bottom:3px;">${isRemove?'(装備を外す)':newItem.name} に変更しますか？</div>
+                            <div style="padding:5px; font-size:14px; margin-bottom:1px;">${isRemove ? '<div style="text-align:center;color:#aaa;">(装備を外す)</div>' : Menu.getEquipmentNameLineHTML(newItem)}</div>
+                            <div style="text-align:center;font-size:11px;color:#aaa;margin-bottom:3px;">に変更しますか？</div>
 						${buttonsHtml}<div style="background:#222; border:1px solid #444; border-radius:4px; margin-bottom:10px; padding:10px;">${statRows}</div>${buttonsHtml}`;
 
 				} else {
@@ -801,11 +802,8 @@ const MenuAllies = {
 				  if (b.isRemove) return 1;
 
 				  if (MenuAllies.candidateSortMode === 'RANK') {
-					if ((b.rank || 0) !== (a.rank || 0)) return (b.rank || 0) - (a.rank || 0);
-					const rA = rarityOrder[a.rarity] || 0;
-					const rB = rarityOrder[b.rarity] || 0;
-					if (rB !== rA) return rB - rA;
-					return (b.plus || 0) - (a.plus || 0);
+                    const commonDiff = Menu.compareEquipmentByRank(a, b);
+                    return commonDiff !== 0 ? commonDiff : (b.plus || 0) - (a.plus || 0);
 				  }
 				  return (b._originalIdx || 0) - (a._originalIdx || 0);
 				});
@@ -817,7 +815,7 @@ const MenuAllies = {
 					contentHtml = `<div style="margin-bottom:8px; display:flex; flex-direction:column; gap:4px;"><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:bold; color:#ffd700;">${p} の変更</span><button class="btn" style="background:#555; font-size:10px; padding:2px 8px;" onclick="MenuAllies.targetPart=null; MenuAllies.renderDetail()">もどる</button></div>
 						<div style="display:flex; gap:4px; align-items:center;"><select style="background:#333; color:#fff; font-size:10px; flex:1; height:20px; touch-action:auto; user-select:auto; -webkit-user-select:auto;" ${Menu.selectTouchAttrs()} onchange="MenuAllies.candidateFilter=this.value; MenuAllies.renderDetail()"><option value="ALL">全ての効果</option>${rules.map(opt => `<option value="${opt.key}${opt.elm?'_'+opt.elm:''}" ${MenuAllies.candidateFilter===(opt.key+(opt.elm?'_'+opt.elm:''))?'selected':''}>${opt.name}</option>`).join('')}</select>
 						<select style="background:#333; color:#fff; font-size:10px; flex:1; height:20px; touch-action:auto; user-select:auto; -webkit-user-select:auto;" ${Menu.selectTouchAttrs()} onchange="MenuAllies.candidateSortMode=this.value; MenuAllies.renderDetail()"><option value="RANK" ${MenuAllies.candidateSortMode==='RANK'?'selected':''}>Rank順</option><option value="NEWEST" ${MenuAllies.candidateSortMode==='NEWEST'?'selected':''}>取得順</option></select></div></div>
-						<div style="display:flex; flex-direction:column; gap:2px;">${candidates.map((item, idx) => `<div class="list-item" style="flex-direction:column; align-items:flex-start;" onclick="MenuAllies.selectCandidate(${idx}, ${item.isRemove?'true':'false'})"><div style="font-weight:bold; color:${item.isRemove ? '#aaa' : Menu.getRarityColor(item.rarity)};">${item.name} ${item.owner ? `<span style="color:#f88; font-size:9px;">[${item.owner}装備中]</span>` : ''}</div>${!item.isRemove ? MenuAllies.getEquipFullDetailHTML(item) : ''}</div>`).join('')}</div>`;
+						<div style="display:flex; flex-direction:column; gap:2px;">${candidates.map((item, idx) => `<div class="list-item" style="flex-direction:column; align-items:flex-start;" onclick="MenuAllies.selectCandidate(${idx}, ${item.isRemove?'true':'false'})">${item.isRemove ? `<div style="font-weight:bold;color:#aaa;">${item.name}</div>` : Menu.getEquipmentNameLineHTML(item, { suffixHTML: item.owner ? ` <span style="color:#f88;font-size:9px;">[${item.owner}装備中]</span>` : '' })}${!item.isRemove ? MenuAllies.getEquipFullDetailHTML(item) : ''}</div>`).join('')}</div>`;
 				}
 			} else {
                 let listHtml = '';
@@ -835,7 +833,7 @@ const MenuAllies = {
                     listHtml += `<div class="list-item" style="align-items:center; opacity:${isLocked?0.5:1};" ${onclick}>
                         <div style="width:40px; font-size:10px; color:#aaa; font-weight:bold;">${label}</div>
                         <div style="flex:1;">
-                            <div style="font-size:12px; font-weight:bold; color:${rarityColor};">${eq ? eq.name : (isLocked ? '両手持ち中' : 'なし')}</div>
+                            ${eq ? Menu.getEquipmentNameLineHTML(eq, { nameStyle:'font-size:12px;' }) : `<div style="font-size:12px;font-weight:bold;color:${rarityColor};">${isLocked ? '両手持ち中' : 'なし'}</div>`}
                             ${eq ? MenuAllies.getEquipFullDetailHTML(eq) : ''}
                         </div>
                         <div style="font-size:10px; color:#aaa; margin-left:5px;">${isLocked ? '' : '変更 >'}</div>
@@ -1271,10 +1269,9 @@ const MenuAllies = {
             <div style="display:flex; flex-direction:column; gap:4px;">
                 ${candidates.map((item, idx) => `
                     <div class="list-item" style="flex-direction:column; align-items:flex-start; padding:9px;" onclick="MenuAllies.selectCandidate(${idx}, ${item.isRemove?'true':'false'})">
-                        <div style="font-weight:bold; color:${item.isRemove ? '#aaa' : Menu.getRarityColor(item.rarity)};">
-                            ${MenuAllies.escapeHtml(item.name)}
-                            ${item.owner ? `<span style="color:#f88; font-size:9px;">[${MenuAllies.escapeHtml(item.owner)}装備中]</span>` : ''}
-                        </div>
+                        ${item.isRemove
+                            ? `<div style="font-weight:bold;color:#aaa;">${MenuAllies.escapeHtml(item.name)}</div>`
+                            : Menu.getEquipmentNameLineHTML(item, { suffixHTML: item.owner ? ` <span style="color:#f88;font-size:9px;">[${MenuAllies.escapeHtml(item.owner)}装備中]</span>` : '' })}
                         ${!item.isRemove ? MenuAllies.getEquipFullDetailHTML(item) : ''}
                         ${MenuAllies.getEquipPreviewStatsHTML(c, partLabel, item)}
                     </div>
@@ -1354,8 +1351,8 @@ const MenuAllies = {
             <button class="btn" style="flex:0 0 auto; padding:4px 10px; background:#555;" onclick="MenuAllies.selectedEquip=null; MenuAllies.renderEquipModalList()">戻る</button>
         `;
         content.innerHTML = `
-            <div style="text-align:center; color:${isRemove ? '#aaa' : Menu.getRarityColor(newItem.rarity)}; font-weight:bold; margin-bottom:8px;">
-                ${isRemove ? '(装備を外す)' : MenuAllies.escapeHtml(newItem.name)}
+            <div style="font-weight:bold; margin-bottom:8px;">
+                ${isRemove ? '<div style="text-align:center;color:#aaa;">(装備を外す)</div>' : Menu.getEquipmentNameLineHTML(newItem)}
             </div>
             ${!isRemove ? `<div style="margin-bottom:10px;">${MenuAllies.getEquipFullDetailHTML(newItem)}</div>` : ''}
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:10px;">${stats}</div>

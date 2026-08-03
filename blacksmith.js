@@ -25,6 +25,74 @@ const MenuBlacksmith = {
         return false;
     },
 
+    getMaster: () => window.PRISMA_BLACKSMITH_MASTER || null,
+
+    findEquipmentMaster: (equip) => {
+        const masters = Array.isArray(window.EQUIP_MASTER) ? window.EQUIP_MASTER : [];
+        const explicitId = Number(equip?.eid ?? equip?.masterEid ?? equip?.equipMasterId);
+        if (Number.isFinite(explicitId)) {
+            const explicit = masters.find(entry => Number(entry?.eid) === explicitId);
+            if (explicit) return explicit;
+        }
+        const cleanName = String(equip?.name || '').replace(/^真・/, '').replace(/\+\d+$/, '');
+        return masters.find(entry => String(entry?.name || '') === cleanName && String(entry?.type || '') === String(equip?.type || ''))
+            || masters.find(entry => Number(entry?.rank) === Number(equip?.rank)
+                && String(entry?.type || '') === String(equip?.type || '')
+                && String(entry?.baseName || '') === String(equip?.baseName || ''))
+            || null;
+    },
+
+    getMaterialUpgradeRecipe: (equip) => {
+        const master = MenuBlacksmith.getMaster();
+        const rank = Math.max(1, Math.floor(Number(equip?.rank) || 1));
+        return master?.materialUpgradeRecipes?.find(record => record.part === equip?.type && rank >= record.minRank && rank <= record.maxRank) || null;
+    },
+
+    buildMaterialUpgradePreview: (equip) => {
+        const currentPlus = Math.max(0, Math.floor(Number(equip?.plus) || 0));
+        if (![1, 2].includes(currentPlus)) return { ok:false, reason:'plus' };
+        const targetPlus = currentPlus + 1;
+        const recipe = MenuBlacksmith.getMaterialUpgradeRecipe(equip);
+        const requirements = recipe?.requirementsByTargetPlus?.[String(targetPlus)];
+        if (!recipe || !Array.isArray(requirements) || requirements.length === 0) return { ok:false, reason:'recipe' };
+        const plusMultipliers = MenuBlacksmith.getMaster()?.plusMultipliers || { 1:1.1, 2:1.3, 3:1.5 };
+        const currentMult = Math.max(0.01, Number(plusMultipliers[currentPlus]) || 1);
+        const targetMult = Math.max(currentMult, Number(plusMultipliers[targetPlus]) || currentMult);
+        const ratio = targetMult / currentMult;
+        const scalableKeys = new Set(MenuBlacksmith.getMaster()?.scalableStatKeys || ['atk','def','mag','mdef','spd','hp','mp']);
+        const equipmentMaster = MenuBlacksmith.findEquipmentMaster(equip);
+        const nextData = JSON.parse(JSON.stringify(equip?.data || {}));
+        if (equipmentMaster?.data && typeof equipmentMaster.data === 'object') {
+            scalableKeys.forEach(key => {
+                if (typeof equipmentMaster.data[key] === 'number') nextData[key] = Math.floor(equipmentMaster.data[key] * targetMult);
+            });
+        } else {
+            Object.keys(nextData).forEach(key => {
+                if (scalableKeys.has(key) && typeof nextData[key] === 'number') nextData[key] = Math.floor(nextData[key] * ratio);
+            });
+        }
+        const baseName = String(equip?.name || '装備').replace(/\+\d+$/, '');
+        const formalRank = Math.max(1, Math.floor(Number(equipmentMaster?.rank ?? equip?.rank) || 1));
+        return {
+            ok:true, currentPlus, targetPlus, recipe, requirements, nextData,
+            oldName:String(equip?.name || baseName), newName:`${baseName}+${targetPlus}`,
+            nextVal:equipmentMaster
+                ? Math.floor(formalRank * 150 * (1 + targetPlus * 0.5))
+                : Math.floor((Number(equip?.val) || 0) * ratio)
+        };
+    },
+
+    getRequirementStatus: requirements => (requirements || []).map(req => {
+        const item = (DB.ITEMS || []).find(entry => Number(entry?.id) === Number(req.itemId));
+        const owned = Math.max(0, Math.floor(Number(App.data?.items?.[req.itemId]) || 0));
+        return { ...req, item, owned, enough:owned >= Number(req.count || 0) };
+    }),
+
+    getBaseStatSummary: data => {
+        const labels = { atk:'攻', def:'防', mag:'魔', mdef:'魔防', spd:'速', hp:'HP', mp:'MP' };
+        return Object.entries(labels).filter(([key]) => Number(data?.[key])).map(([key, label]) => `${label}${Number(data[key]) >= 0 ? '+' : ''}${data[key]}`).join(' ') || '変化なし';
+    },
+
     init: (options = {}) => {
         const sub = document.getElementById('sub-screen-blacksmith');
         if(!sub) return;
@@ -64,9 +132,10 @@ const MenuBlacksmith = {
         MenuBlacksmith.returnContext = 'main';
         MenuBlacksmith.setFacilityTopExitVisible(true);
         const commands = `
-            <button class="menu-btn" style="background:#2b160f;border:1px solid #ff8a55;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('synthesis')">装備合成</button>
-            <button class="menu-btn" style="background:#111a32;border:1px solid #87a8ff;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('refine')">装備精錬</button>
-            <button class="menu-btn" style="background:#102619;border:1px solid #79d99a;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('enhance')">装備強化</button>`;
+            <button class="menu-btn" style="background:#4a2d0c;border:1px solid #ffb347;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('materialUpgrade')">素材鍛造 ＋1～＋3</button>
+            <button class="menu-btn" style="background:#2b160f;border:1px solid #ff8a55;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('synthesis')">装備合成 ＋3～＋4</button>
+            <button class="menu-btn" style="background:#111a32;border:1px solid #87a8ff;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('refine')">オプション精錬</button>
+            <button class="menu-btn" style="background:#102619;border:1px solid #79d99a;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('enhance')">オプション強化</button>`;
         Facilities.setupBaseLayout('blacksmith-scene', '炎の里イグニシア 鍛冶屋', 'facility_bg_blacksmith', commands, "App.changeScene('field')");
         MenuBlacksmith.renderFacilityHome();
     },
@@ -258,9 +327,10 @@ const MenuBlacksmith = {
                     </div>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:12px; width: 100%; max-width:320px; margin:0 auto;">
-                    ${MenuBlacksmith.renderMenuBtn('synthesis', '装備合成', '＋３装備を＋４へ進化させ、新たな能力を継承します', 'linear-gradient(135deg, #411, #200)', '#f44')}
-                    ${MenuBlacksmith.renderMenuBtn('refine', '装備精錬', 'オプションのレアリティを上昇させます (GEM消費)', 'linear-gradient(135deg, #114, #002)', '#44f')}
-                    ${MenuBlacksmith.renderMenuBtn('enhance', '装備強化', 'オプションの数値を素材を使って上昇させます', 'linear-gradient(135deg, #131, #020)', '#4f4')}
+                    ${MenuBlacksmith.renderMenuBtn('materialUpgrade', '素材鍛造 ＋1～＋3', '部位・Rank帯に対応する正式素材で装備本体を段階強化します', 'linear-gradient(135deg, #543510, #211000)', '#ffb347')}
+                    ${MenuBlacksmith.renderMenuBtn('synthesis', '上位合成 ＋3→＋4', '＋3装備同士を合成し、新たな能力を継承します', 'linear-gradient(135deg, #411, #200)', '#f44')}
+                    ${MenuBlacksmith.renderMenuBtn('refine', 'オプション精錬', 'オプションのレアリティを上昇させます (GEM消費)', 'linear-gradient(135deg, #114, #002)', '#44f')}
+                    ${MenuBlacksmith.renderMenuBtn('enhance', 'オプション強化', 'オプションの数値を装備素材で上昇させます', 'linear-gradient(135deg, #131, #020)', '#4f4')}
                 </div>
             </div>
 			<div class="sub-screen-bottom-panel">
@@ -349,8 +419,9 @@ const MenuBlacksmith = {
             const itemA = a.item || a;
             const itemB = b.item || b;
             if (MenuBlacksmith.sortMode === 'RANK') {
-                if (itemB.rank !== itemA.rank) return itemB.rank - itemA.rank;
-                return (rOrder[itemB.rarity]||0) - (rOrder[itemA.rarity]||0);
+                return typeof Menu?.compareEquipmentByRank === 'function'
+                    ? Menu.compareEquipmentByRank(itemA, itemB)
+                    : ((itemB.rank || 0) - (itemA.rank || 0)) || ((rOrder[itemB.rarity]||0) - (rOrder[itemA.rarity]||0));
             }
             return (b._originalIdx ?? 0) - (a._originalIdx ?? 0);
         });
@@ -370,6 +441,7 @@ const MenuBlacksmith = {
             });
         });
         candidates = candidates.filter(c => {
+            if (MenuBlacksmith.mode === 'materialUpgrade' && ![1, 2].includes(Math.floor(Number(c.item.plus) || 0))) return false;
             if (MenuBlacksmith.mode === 'synthesis' && c.item.plus !== 3) return false;
             if ((MenuBlacksmith.mode === 'refine' || MenuBlacksmith.mode === 'enhance') && (!c.item.opts || c.item.opts.length === 0)) return false;
             return true;
@@ -383,16 +455,82 @@ const MenuBlacksmith = {
             div.style.cssText = 'flex-direction:column; align-items:flex-start; background:rgba(255,255,255,0.02); margin-bottom:4px; border:1px solid #333;';
             
             div.innerHTML = `
-                <div style="font-weight:bold; color:${Menu.getRarityColor(item.rarity)}; border-bottom:1px solid #333; width:100%; padding-bottom:4px; margin-bottom:4px; display:flex; justify-content:space-between;">
-                    <span>${item.name} ${item.locked?'🔒':''}</span>
-                    ${c.owner ? `<span style="color:#f88; font-size:10px;">[${c.owner}]</span>` : ''}
+                <div style="border-bottom:1px solid #333;width:100%;padding-bottom:4px;margin-bottom:4px;">
+                    ${Menu.getEquipmentNameLineHTML(item, { suffixHTML: `${item.locked ? ' 🔒' : ''}${c.owner ? ` <span style="color:#f88;font-size:10px;">[${c.owner}]</span>` : ''}` })}
                 </div>
                 ${Menu.getEquipDetailHTML(item, false)}
             `;
-            div.onclick = () => { MenuBlacksmith.state.target = item; if (MenuBlacksmith.mode === 'synthesis') MenuBlacksmith.renderMaterialList_Synthesis(true); else if (MenuBlacksmith.mode === 'refine') MenuBlacksmith.renderOptionList_Refine(); else MenuBlacksmith.renderOptionList_Enhance(); };
+            div.onclick = () => {
+                MenuBlacksmith.state.target = item;
+                if (MenuBlacksmith.mode === 'materialUpgrade') MenuBlacksmith.renderMaterialUpgradeConfirm();
+                else if (MenuBlacksmith.mode === 'synthesis') MenuBlacksmith.renderMaterialList_Synthesis(true);
+                else if (MenuBlacksmith.mode === 'refine') MenuBlacksmith.renderOptionList_Refine();
+                else MenuBlacksmith.renderOptionList_Enhance();
+            };
             list.appendChild(div);
         });
-        footer.innerHTML = `<div style="text-align:center; color:#ffd700; font-size:11px; font-weight:bold;">${MenuBlacksmith.mode === 'synthesis' ? 'ベースにする＋３装備を選んでください' : '対象の装備を選んでください'}</div>`;
+        footer.innerHTML = `<div style="text-align:center; color:#ffd700; font-size:11px; font-weight:bold;">${MenuBlacksmith.mode === 'materialUpgrade' ? '＋1または＋2の対象装備を選んでください' : (MenuBlacksmith.mode === 'synthesis' ? 'ベースにする＋３装備を選んでください' : '対象の装備を選んでください')}</div>`;
+    },
+
+    renderMaterialUpgradeConfirm: () => {
+        const target = MenuBlacksmith.state.target;
+        const preview = MenuBlacksmith.buildMaterialUpgradePreview(target);
+        if (!preview.ok) return Menu.msg('この装備に対応する素材鍛造レシピがありません。', () => MenuBlacksmith.renderTargetList());
+        const requirements = MenuBlacksmith.getRequirementStatus(preview.requirements);
+        const enough = requirements.every(entry => entry.enough);
+        MenuBlacksmith.changeScreen('option');
+        document.getElementById('smith-option-header').innerHTML = `素材鍛造: ${preview.oldName} → ${preview.newName}`;
+        document.getElementById('smith-option-list').innerHTML = `
+            <div style="padding:12px;display:flex;flex-direction:column;gap:10px;">
+                <div style="border:1px solid #555;background:#171717;padding:10px;">
+                    <div style="color:#aaa;font-size:10px;">強化前</div>${Menu.getEquipmentNameLineHTML(target)}
+                    <div style="font-size:10px;color:#ccc;margin-top:4px;">${MenuBlacksmith.getBaseStatSummary(target.data)}</div>
+                    <div style="text-align:center;color:#ffd700;margin:7px 0;">▼</div>
+                    <div style="color:#aaa;font-size:10px;">強化後</div>${Menu.getEquipmentNameLineHTML({ ...target, name:preview.newName, plus:preview.targetPlus })}
+                    <div style="font-size:10px;color:#fff;margin-top:4px;">${MenuBlacksmith.getBaseStatSummary(preview.nextData)}</div>
+                </div>
+                <div style="border:1px solid #5a4320;background:#21180c;padding:10px;">
+                    <div style="color:#ffd86a;font-weight:bold;margin-bottom:5px;">必要素材（${preview.recipe.grade}帯）</div>
+                    ${requirements.map(entry => `<div style="display:flex;justify-content:space-between;color:${entry.enough ? '#ddd' : '#f66'};font-size:11px;"><span>${entry.item?.name || `Item ${entry.itemId}`}</span><span>${entry.owned} / ${entry.count}</span></div>`).join('')}
+                </div>
+                <button class="btn" style="width:100%;background:${enough ? 'linear-gradient(#875318,#4c2c0d)' : '#333'};border:1px solid ${enough ? '#ffb347' : '#555'};" ${enough ? '' : 'disabled'} onclick="MenuBlacksmith.confirmMaterialUpgrade()">内容を確認して鍛造する</button>
+            </div>`;
+    },
+
+    confirmMaterialUpgrade: () => {
+        const target = MenuBlacksmith.state.target;
+        const preview = MenuBlacksmith.buildMaterialUpgradePreview(target);
+        if (!preview.ok) return Menu.msg('対象装備の状態が変わったため中止しました。');
+        const requirements = MenuBlacksmith.getRequirementStatus(preview.requirements);
+        if (!requirements.every(entry => entry.enough)) return Menu.msg('必要素材が不足しています。');
+        Menu.confirm(`【素材鍛造】\n${preview.oldName} → ${preview.newName}\n装備UID・オプション・特性・ロック状態を維持して実行します。`, async () => {
+            await MenuBlacksmith.playStartSeAndWait();
+            const result = App.runAtomicSaveMutation(() => {
+                const livePreview = MenuBlacksmith.buildMaterialUpgradePreview(target);
+                const liveRequirements = MenuBlacksmith.getRequirementStatus(livePreview.requirements);
+                if (!livePreview.ok || !liveRequirements.every(entry => entry.enough)) return { ok:false, reason:'changed' };
+                liveRequirements.forEach(entry => {
+                    const next = Math.max(0, Number(App.data.items?.[entry.itemId] || 0) - Number(entry.count || 0));
+                    if (next > 0) App.data.items[entry.itemId] = next;
+                    else delete App.data.items[entry.itemId];
+                });
+                target.plus = livePreview.targetPlus;
+                target.name = livePreview.newName;
+                target.data = livePreview.nextData;
+                target.val = livePreview.nextVal;
+                App.refreshAllSynergies?.();
+                App.incrementLifetimeStat?.('totalBlacksmithActions', 1, { save:false });
+                App.incrementLifetimeStat?.('blacksmithMaterialUpgradeCount', 1, { save:false });
+                const levelUps = MenuBlacksmith.gainExp(30 * livePreview.targetPlus);
+                return { name:target.name, levelUps };
+            });
+            if (!result.ok) {
+                MenuBlacksmith.resetState();
+                return Menu.msg(result.saveFailed ? '保存に失敗したため、装備と素材の変更をすべて取り消しました。' : '装備または素材の状態が変わったため中止しました。', () => MenuBlacksmith.init());
+            }
+            const levelText = MenuBlacksmith.formatLevelUpText(result.result?.levelUps);
+            Menu.msg(`${preview.newName} が完成しました。${levelText}`, () => MenuBlacksmith.init());
+        });
     },
 
     renderMaterialList_Synthesis: (resetFilter = true) => {
@@ -409,7 +547,7 @@ const MenuBlacksmith = {
                 const div = document.createElement('div'); div.className = 'list-item'; div.style.cssText = 'flex-direction:column; align-items:flex-start;';
                 
                 div.innerHTML = `
-                    <div style="font-weight:bold; color:${Menu.getRarityColor(item.rarity)}; border-bottom:1px solid #333; width:100%; margin-bottom:4px;">${item.name}</div>
+                    <div style="border-bottom:1px solid #333;width:100%;margin-bottom:4px;">${Menu.getEquipmentNameLineHTML(item)}</div>
                     ${Menu.getEquipDetailHTML(item, false)}
                 `;
                 div.onclick = () => { MenuBlacksmith.state.material = item; MenuBlacksmith.renderOptionList_Synthesis(); };
@@ -475,67 +613,74 @@ const MenuBlacksmith = {
 
     confirmSynthesis: () => {
         const target = MenuBlacksmith.state.target;
-        const materialOpt = MenuBlacksmith.state.material.opts[MenuBlacksmith.state.targetOptIdx];
+        const material = MenuBlacksmith.state.material;
+        const selectedIndex = MenuBlacksmith.state.targetOptIdx;
         const lv = App.data.blacksmith.level;
         const rateObj = MenuBlacksmith.getRateObj(lv);
         const rarities = ['N', 'R', 'SR', 'SSR', 'UR', 'EX'];
 
         Menu.confirm(`【装備合成】＋４へ進化させ、新たな能力を継承します。`, async () => {
             await MenuBlacksmith.playStartSeAndWait();
-            // 1. 合成品質の抽選 (newR)
-            let r = Math.random()*100, current = 0, newR = 'R';
-            for(let k in rateObj){ if(r < current+rateObj[k]){ newR=k; break; } current+=rateObj[k]; }
-            
-            // 2. 継承オプションの作成
-            const rule = DB.OPT_RULES.find(r => r.key === materialOpt.key && (r.elm === materialOpt.elm || !r.elm));
-            const newInheritOpt = JSON.parse(JSON.stringify(materialOpt));
+            const result = App.runAtomicSaveMutation(() => {
+                if (!target || Number(target.plus) !== 3 || !material) return { ok:false, reason:'changed' };
+                const materialIndex = (App.data.inventory || []).findIndex(item => String(item?.id) === String(material.id));
+                const liveMaterial = materialIndex >= 0 ? App.data.inventory[materialIndex] : null;
+                const materialOpt = liveMaterial?.opts?.[selectedIndex];
+                if (!materialOpt) return { ok:false, reason:'changed' };
 
-            // ★修正：継承オプションのランクのみを個別にクランプ
-            if (rule && rule.allowed) {
-                const allowedIndices = rule.allowed.map(r => rarities.indexOf(r));
-                const minIdx = Math.min(...allowedIndices);
-                const maxIdx = Math.max(...allowedIndices);
-                let resultIdx = rarities.indexOf(newR);
+                let random = Math.random() * 100;
+                let current = 0;
+                let newRarity = 'R';
+                for (const [rarity, chance] of Object.entries(rateObj)) {
+                    if (random < current + chance) { newRarity = rarity; break; }
+                    current += chance;
+                }
 
-                // ルール1: 合成での継承上限は UR とする
-                if (resultIdx > 4) resultIdx = 4; // 4 = UR
-                // ルール2: オプション固有の最大ランクを超えない
-                if (resultIdx > maxIdx) resultIdx = maxIdx;
-                // ルール3: オプション固有の最低ランクを下回らない
-                if (resultIdx < minIdx) resultIdx = minIdx;
+                const rule = DB.OPT_RULES.find(entry => entry.key === materialOpt.key && (entry.elm === materialOpt.elm || !entry.elm));
+                const inheritedOption = JSON.parse(JSON.stringify(materialOpt));
+                if (rule && rule.allowed) {
+                    const allowedIndices = rule.allowed.map(rarity => rarities.indexOf(rarity));
+                    const minIndex = Math.min(...allowedIndices);
+                    const maxIndex = Math.max(...allowedIndices);
+                    let resultIndex = rarities.indexOf(newRarity);
+                    resultIndex = Math.min(4, maxIndex, Math.max(minIndex, resultIndex));
+                    inheritedOption.rarity = rarities[resultIndex];
+                    const min = rule.min[inheritedOption.rarity] || 0;
+                    const max = rule.max[inheritedOption.rarity] || 0;
+                    inheritedOption.val = Math.floor(Math.random() * (max - min + 1)) + min;
+                }
 
-                newInheritOpt.rarity = rarities[resultIdx];
-                
-                // ランクに応じた数値の再抽選
-                const min = rule.min[newInheritOpt.rarity] || 0;
-                const max = rule.max[newInheritOpt.rarity] || 0;
-                newInheritOpt.val = Math.floor(Math.random() * (max - min + 1)) + min;
+                target.plus = 4;
+                const oldRarityIndex = rarities.indexOf(target.rarity);
+                const newRarityIndex = rarities.indexOf(newRarity);
+                if (newRarityIndex > oldRarityIndex) target.rarity = newRarity;
+                target.name = String(target.name || '装備').replace(/\+\d+$/, '') + '+4';
+                if (!Array.isArray(target.opts)) target.opts = [];
+                target.opts.push(inheritedOption);
+                target.val = Math.floor((Number(target.val) || 0) * 1.5);
+                App.data.inventory.splice(materialIndex, 1);
+
+                App.refreshAllSynergies?.();
+                App.incrementLifetimeStat?.('totalBlacksmithActions', 1, { save:false });
+                App.incrementLifetimeStat?.('blacksmithSynthesisCount', 1, { save:false });
+                const levelUps = MenuBlacksmith.gainExp(50);
+                return { name:target.name, inheritedOption, levelUps };
+            });
+
+            if (!result.ok) {
+                MenuBlacksmith.resetState();
+                return Menu.msg(result.saveFailed
+                    ? '保存に失敗したため、合成前の装備と素材へ戻しました。'
+                    : '対象装備または素材の状態が変わったため中止しました。', () => MenuBlacksmith.init());
             }
-
-            // 3. ベース装備の更新 (レアリティは維持、または上位へのみ変化)
-            target.plus = 4;
-            // 装備自体のレアリティは、抽選結果が元より高い場合のみ上書き（格下げを防ぐ）
-            const oldRIdx = rarities.indexOf(target.rarity);
-            const newRIdx = rarities.indexOf(newR);
-            if (newRIdx > oldRIdx) target.rarity = newR;
-
-            target.name = target.name.replace(/\+\d+$/, "") + "+4";
-            target.opts.push(newInheritOpt);
-            target.val = Math.floor(target.val * 1.5);
-
-            // 4. 後処理
-            const matIdx = App.data.inventory.findIndex(i => i.id === MenuBlacksmith.state.material.id);
-            if (matIdx > -1) App.data.inventory.splice(matIdx, 1);
-            
-            App.refreshAllSynergies();
-            App.incrementLifetimeStat?.('totalBlacksmithActions', 1, { save: false });
-            App.incrementLifetimeStat?.('blacksmithSynthesisCount', 1, { save: false });
-            MenuBlacksmith.gainExp(50); 
-            App.save();
-            
-            Menu.msg(`合成成功！\n${target.name} が完成しました。\n継承: ${newInheritOpt.label} (${newInheritOpt.rarity})`, () => MenuBlacksmith.init());
+            const outcome = result.result || {};
+            const levelText = MenuBlacksmith.formatLevelUpText(outcome.levelUps);
+            Menu.msg(`合成成功！
+${outcome.name} が完成しました。
+継承: ${outcome.inheritedOption?.label || '能力'} (${outcome.inheritedOption?.rarity || '-'})${levelText}`, () => MenuBlacksmith.init());
         });
     },
+
 	
     renderOptionList_Refine: () => {
         MenuBlacksmith.changeScreen('option');
@@ -552,7 +697,8 @@ const MenuBlacksmith = {
 				}).join(' ') + `</div>`;
 		}
 		header.innerHTML = `
-			<div style="margin-bottom:4px;">${MenuBlacksmith.mode === 'refine' ? '精錬' : '強化'}対象: <span style="color:${Menu.getRarityColor(target.rarity)};">${target.name}</span></div>
+			<div style="margin-bottom:4px;">${MenuBlacksmith.mode === 'refine' ? '精錬' : '強化'}対象:</div>
+            ${Menu.getEquipmentNameLineHTML(target)}
 			${targetTraits}
 			<div style="font-size:10px; color:#aaa; margin-top:4px;">${MenuBlacksmith.mode === 'refine' ? '昇格させるオプションを選択' : '強化したい能力を選択'}</div>
 		`;
@@ -573,18 +719,36 @@ const MenuBlacksmith = {
     },
 
     confirmRefine: (gem, rate, nextR, rule) => {
-        if ((App.data.gems || 0) < gem) return Menu.msg("GEMが足りません");
-        Menu.confirm(`【精錬】費用: ${gem} GEM / 成功率: ${rate}%\n成功するとランクアップし数値が${nextR}の下限値へリセットされます。`, async () => {
+        if ((App.data.gems || 0) < gem) return Menu.msg('GEMが足りません');
+        Menu.confirm(`【精錬】費用: ${gem} GEM / 成功率: ${rate}%
+成功するとランクアップし数値が${nextR}の下限値へリセットされます。`, async () => {
             await MenuBlacksmith.playStartSeAndWait();
-            App.data.gems -= gem;
-            App.incrementLifetimeStat?.('totalBlacksmithActions', 1, { save: false });
-            App.incrementLifetimeStat?.('blacksmithRefineAttempts', 1, { save: false });
-            if (Math.random()*100 < rate) {
-                const opt = MenuBlacksmith.state.target.opts[MenuBlacksmith.state.targetOptIdx];
-                opt.rarity = nextR; opt.val = rule ? rule.min[nextR] : opt.val;
-                App.incrementLifetimeStat?.('blacksmithRefineSuccesses', 1, { save: false });
-                MenuBlacksmith.gainExp(60); App.save(); Menu.msg("精錬成功！", () => MenuBlacksmith.renderOptionList_Refine());
-            } else { MenuBlacksmith.gainExp(15); App.save(); Menu.msg("精錬失敗...", () => MenuBlacksmith.renderOptionList_Refine()); }
+            const target = MenuBlacksmith.state.target;
+            const optionIndex = MenuBlacksmith.state.targetOptIdx;
+            const result = App.runAtomicSaveMutation(() => {
+                if ((App.data.gems || 0) < gem) return { ok:false, reason:'gems' };
+                const option = target?.opts?.[optionIndex];
+                if (!option || option.rarity === 'EX') return { ok:false, reason:'changed' };
+                App.data.gems -= gem;
+                App.incrementLifetimeStat?.('totalBlacksmithActions', 1, { save:false });
+                App.incrementLifetimeStat?.('blacksmithRefineAttempts', 1, { save:false });
+                const success = Math.random() * 100 < rate;
+                if (success) {
+                    option.rarity = nextR;
+                    option.val = rule ? rule.min[nextR] : option.val;
+                    App.incrementLifetimeStat?.('blacksmithRefineSuccesses', 1, { save:false });
+                }
+                const levelUps = MenuBlacksmith.gainExp(success ? 60 : 15);
+                return { success, levelUps };
+            });
+            if (!result.ok) {
+                MenuBlacksmith.resetState();
+                return Menu.msg(result.saveFailed
+                    ? '保存に失敗したため、GEMと装備の変更を取り消しました。'
+                    : (result.reason === 'gems' ? 'GEMが足りません。' : '対象装備の状態が変わったため中止しました。'), () => MenuBlacksmith.init());
+            }
+            const levelText = MenuBlacksmith.formatLevelUpText(result.result?.levelUps);
+            Menu.msg(`${result.result?.success ? '精錬成功！' : '精錬失敗...'}${levelText}`, () => MenuBlacksmith.renderOptionList_Refine());
         });
     },
 
@@ -636,7 +800,7 @@ const MenuBlacksmith = {
                 refresh();
 
                 div.innerHTML = `
-                    <div style="font-weight:bold; color:${Menu.getRarityColor(item.rarity)};">${item.name}</div>
+                    ${Menu.getEquipmentNameLineHTML(item)}
                     ${Menu.getEquipDetailHTML(item, false)}
                 `;
                 div.onclick = () => { const idx = MenuBlacksmith.state.materials.indexOf(item.id); if(idx > -1) MenuBlacksmith.state.materials.splice(idx,1); else if(MenuBlacksmith.state.materials.length < req) MenuBlacksmith.state.materials.push(item.id); refresh(); updateFooter(); };
@@ -646,37 +810,42 @@ const MenuBlacksmith = {
     },
 
     confirmEnhance: () => {
-        const opt = MenuBlacksmith.state.target.opts[MenuBlacksmith.state.targetOptIdx];
-        const rule = DB.OPT_RULES.find(r => r.key === opt.key && (r.elm === opt.elm || !r.elm));
+        const target = MenuBlacksmith.state.target;
+        const optionIndex = MenuBlacksmith.state.targetOptIdx;
+        const selectedMaterialIds = [...MenuBlacksmith.state.materials];
+        const option = target?.opts?.[optionIndex];
+        const rule = DB.OPT_RULES.find(entry => entry.key === option?.key && (entry.elm === option?.elm || !entry.elm));
         const successRate = Math.min(95, 50 + (App.data.blacksmith.level * 5));
-        let inc = rule ? Math.max(1, Math.floor((rule.max[opt.rarity] - rule.min[opt.rarity]) * 0.1)) : 1;
+        const increment = rule ? Math.max(1, Math.floor((rule.max[option.rarity] - rule.min[option.rarity]) * 0.1)) : 1;
 
-        Menu.confirm(`【能力強化】成功率: ${successRate}% / 成功すると数値が ${inc} 上昇します。`, async () => {
+        Menu.confirm(`【能力強化】成功率: ${successRate}% / 成功すると数値が ${increment} 上昇します。`, async () => {
             await MenuBlacksmith.playStartSeAndWait();
-            // ★修正：素材消費の安全化と事後処理
-            MenuBlacksmith.state.materials.forEach(mid => {
-                const invIdx = App.data.inventory.findIndex(i => i.id === mid);
-                if (invIdx > -1) {
-                    App.data.inventory.splice(invIdx, 1);
+            const result = App.runAtomicSaveMutation(() => {
+                const liveOption = target?.opts?.[optionIndex];
+                if (!liveOption || selectedMaterialIds.length !== Number(MenuBlacksmith.state.requiredCount || 0)) return { ok:false, reason:'changed' };
+                const materialIndices = selectedMaterialIds.map(id => (App.data.inventory || []).findIndex(item => String(item?.id) === String(id)));
+                if (materialIndices.some(index => index < 0) || new Set(materialIndices).size !== materialIndices.length) return { ok:false, reason:'changed' };
+                materialIndices.sort((a, b) => b - a).forEach(index => App.data.inventory.splice(index, 1));
+                App.incrementLifetimeStat?.('totalBlacksmithActions', 1, { save:false });
+                App.incrementLifetimeStat?.('blacksmithEnhanceAttempts', 1, { save:false });
+                const success = Math.random() * 100 < successRate;
+                if (success) {
+                    App.incrementLifetimeStat?.('blacksmithEnhanceSuccesses', 1, { save:false });
+                    liveOption.val += increment;
+                    if (rule && liveOption.val > rule.max[liveOption.rarity]) liveOption.val = rule.max[liveOption.rarity];
                 }
+                const levelUps = MenuBlacksmith.gainExp(success ? 25 : 5);
+                return { success, levelUps };
             });
-            // ★重要：使用した素材リストを完全に空にする
-            MenuBlacksmith.state.materials = []; 
-
-            App.incrementLifetimeStat?.('totalBlacksmithActions', 1, { save: false });
-            App.incrementLifetimeStat?.('blacksmithEnhanceAttempts', 1, { save: false });
-            if (Math.random() * 100 < successRate) {
-                App.incrementLifetimeStat?.('blacksmithEnhanceSuccesses', 1, { save: false });
-                opt.val += inc; 
-                if (rule && opt.val > rule.max[opt.rarity]) opt.val = rule.max[opt.rarity];
-                MenuBlacksmith.gainExp(25); 
-                App.save(); 
-                Menu.msg("強化成功！", () => MenuBlacksmith.renderOptionList_Enhance());
-            } else { 
-                MenuBlacksmith.gainExp(5); 
-                App.save(); 
-                Menu.msg("強化失敗...", () => MenuBlacksmith.renderOptionList_Enhance()); 
+            MenuBlacksmith.state.materials = [];
+            if (!result.ok) {
+                MenuBlacksmith.resetState();
+                return Menu.msg(result.saveFailed
+                    ? '保存に失敗したため、装備と素材の変更をすべて取り消しました。'
+                    : '対象装備または素材の状態が変わったため中止しました。', () => MenuBlacksmith.init());
             }
+            const levelText = MenuBlacksmith.formatLevelUpText(result.result?.levelUps);
+            Menu.msg(`${result.result?.success ? '強化成功！' : '強化失敗...'}${levelText}`, () => MenuBlacksmith.renderOptionList_Enhance());
         });
     },
 
@@ -685,5 +854,20 @@ const MenuBlacksmith = {
     getRefineBaseRate: (r) => ({ N:80, R:60, SR:40, SSR:20, UR:10 }[r] || 5),
     getEnhanceCost: (r) => ({ N:1, R:1, SR:2, SSR:2, UR:3, EX:4 }[r] || 1),
     getRateObj: (v) => v>=10 ? {SSR:30,UR:50,EX:20} : (v>=5 ? {SR:20,SSR:50,UR:30} : {R:30,SR:50,SSR:20}),
-    gainExp: (v) => { if(!App.data.blacksmith) App.data.blacksmith = { level:1, exp:0 }; const s = App.data.blacksmith; s.exp += v; while(s.exp >= s.level*100){ s.exp -= s.level*100; s.level++; Menu.msg(`鍛冶レベルが ${s.level} に上がりました！`); } }
+    gainExp: (value) => {
+        if (!App.data.blacksmith) App.data.blacksmith = { level:1, exp:0 };
+        const state = App.data.blacksmith;
+        const levelUps = [];
+        state.exp += Math.max(0, Math.floor(Number(value) || 0));
+        while (state.exp >= state.level * 100) {
+            state.exp -= state.level * 100;
+            state.level++;
+            levelUps.push(state.level);
+        }
+        return levelUps;
+    },
+
+    formatLevelUpText: levels => Array.isArray(levels) && levels.length
+        ? `\n鍛冶レベルが ${levels[levels.length - 1]} に上がりました！`
+        : ''
 };

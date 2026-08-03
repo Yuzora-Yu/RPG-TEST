@@ -84,11 +84,10 @@ const MenuInventory = {
 
         items.sort((a, b) => {
             if (MenuInventory.sortMode === 'RANK') {
-                if (b.rank !== a.rank) return b.rank - a.rank;
-                const rA = MenuInventory.rarityOrder[a.rarity] || 0;
-                const rB = MenuInventory.rarityOrder[b.rarity] || 0;
-                if (rB !== rA) return rB - rA;
-                return (b.plus || 0) - (a.plus || 0);
+                const commonDiff = typeof Menu?.compareEquipmentByRank === 'function'
+                    ? Menu.compareEquipmentByRank(a, b)
+                    : (Number(b.rank || 0) - Number(a.rank || 0));
+                return commonDiff !== 0 ? commonDiff : (Number(b.plus || 0) - Number(a.plus || 0));
             }
             return b._originalIdx - a._originalIdx;
         });
@@ -201,11 +200,9 @@ const MenuInventory = {
 
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; width:100%; border-bottom:1px solid #333; padding-bottom:4px; margin-bottom:4px;">
-                    <div style="display:flex; align-items:center; gap:5px; min-width:0;">
+                    <div style="display:flex; align-items:center; gap:5px; min-width:0; flex:1;">
                         <input type="checkbox" ${selectedSet.has(String(item.id)) ? 'checked' : ''} ${item.locked || owner ? 'disabled' : ''}>
-                        <span style="color:${rarityColor}; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</span>
-                        ${item.locked ? '<span style="color:#ffd700; font-size:10px;">🔒</span>' : ''}
-                        ${owner ? `<span style="color:#f88; font-size:9px; flex-shrink:0;">[${owner.name}]</span>` : ''}
+                        ${Menu.getEquipmentNameLineHTML(item, { suffixHTML: `${item.locked ? ' <span style="color:#ffd700;font-size:10px;">🔒</span>' : ''}${owner ? ` <span style="color:#f88;font-size:9px;">[${owner.name}]</span>` : ''}` })}
                     </div>
                     <button class="btn" style="padding:2px 8px; font-size:9px; background:${item.locked ? '#644' : '#444'}; flex-shrink:0;"
                         onclick="event.stopPropagation(); MenuInventory.toggleLock('${item.id}')">${item.locked ? '解除' : 'ロック'}</button>

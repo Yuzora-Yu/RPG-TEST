@@ -3664,9 +3664,26 @@ window.ITEMS_DATA.push(
 
 
 /* スキル書・将来施設用の希少アイテム。IDは既存アイテム帯と分離する。 */
+window.PRISMA_DIVINE_ANVIL_ITEM_ID = 599998;
 window.PRISMA_SYNTHESIS_POT_ITEM_ID = 599999;
 window.PRISMA_SKILL_BOOK_ITEM_BASE = 600000;
 window.ITEMS_DATA.push(
+{
+    "consumable": true,
+    "id": 599998,
+    "rank": 120,
+    "name": "神鉄の鍛冶台",
+    "type": "鍛冶道具",
+    "target": "装備",
+    "battleUsable": false,
+    "fieldUsable": true,
+    "shopAvailable": false,
+    "abyssDrop": false,
+    "price": 0,
+    "sellPrice": 0,
+    "icon": "assets/ui/menu-icons/item-material.png",
+    "desc": "任意の通常装備を、同じ部位・武器種の約Rank+10に相当する次段階の正式装備へ変換する。一度の使用で1個消費する。"
+},
 {
     "consumable": true,
     "id": 599999,
@@ -7030,6 +7047,7 @@ window.ITEMS_DATA.push(
         '育成',
         'スキル書',
         '特性書',
+        '鍛冶道具',
         '攻撃道具',
         '強化道具',
         '弱体道具'

@@ -998,7 +998,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v35.20260803-runtime',
+    fullDataCacheName: 'prisma-abyss-v36.20260803-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -2592,6 +2592,31 @@ const App = {
         return changed;
     },
 
+    // 2026-08-15以降に段階削除できるよう、短期互換処理は明示ID付き台帳で一度だけ実行する。
+    compatibilityMigrationRemovalDate: '2026-08-15',
+
+    ensureCompatibilityMigrationLedger: (data = App.data) => {
+        if (!data || typeof data !== 'object') return null;
+        if (!data.system || typeof data.system !== 'object' || Array.isArray(data.system)) data.system = {};
+        if (!data.system.oneTimeMigrations || typeof data.system.oneTimeMigrations !== 'object' || Array.isArray(data.system.oneTimeMigrations)) {
+            data.system.oneTimeMigrations = {};
+        }
+        return data.system.oneTimeMigrations;
+    },
+
+    runOneTimeCompatibilityMigration: (data, migrationId, worker) => {
+        const ledger = App.ensureCompatibilityMigrationLedger(data);
+        if (!ledger || ledger[migrationId]) return { applied:false, changed:false, count:0 };
+        const result = (typeof worker === 'function' ? worker() : null) || {};
+        const count = Math.max(0, Math.floor(Number(result.count ?? (result.changed ? 1 : 0)) || 0));
+        ledger[migrationId] = {
+            completedAt: Date.now(),
+            changed: result.changed === true || count > 0,
+            count
+        };
+        return { applied:true, changed:result.changed === true || count > 0, count };
+    },
+
     // 終極形態302101の討伐済みセーブでは、旧版で欠落し得た関連3形態の討伐数を一度だけ救済する。
     migrateAbyssBossKillCountsV1: (data = App.data) => {
         if (!data || typeof data !== 'object') return false;
@@ -2608,6 +2633,118 @@ const App = {
         data.system.abyssBossKillCountRecoveryV1Completed = true;
         return true;
     },
+
+    // V1完了フラグが先行していたセーブも対象に、終極形態討伐から関連3体を再補正する。
+    migrateAbyssBossKillCountsV2: (data = App.data) => App.runOneTimeCompatibilityMigration(
+        data,
+        '20260803_abyssBossKillCountsV2',
+        () => {
+            if (!data.book || typeof data.book !== 'object' || Array.isArray(data.book)) data.book = { monsters: [], killCounts: {} };
+            if (!data.book.killCounts || typeof data.book.killCounts !== 'object' || Array.isArray(data.book.killCounts)) data.book.killCounts = {};
+            const kills = data.book.killCounts;
+            const finalKills = Math.max(0, Math.floor(Number(kills[302101] ?? kills['302101'] ?? 0) || 0));
+            let count = 0;
+            if (finalKills >= 1) {
+                [302100, 302000, 302001].forEach(id => {
+                    const current = Math.max(0, Math.floor(Number(kills[id] ?? kills[String(id)] ?? 0) || 0));
+                    if (current < 1) {
+                        kills[id] = 1;
+                        count++;
+                    }
+                });
+            }
+            return { changed: count > 0, count };
+        }
+    ),
+
+    getReincarnationLegacyGrowthWeight: (reincarnationCount, level, mode = 'legacy') => {
+        const cycles = Math.max(0, Math.floor(Number(reincarnationCount) || 0));
+        const currentLevelUps = Math.max(0, Math.min(99, Math.floor(Number(level) || 1) - 1));
+        const multiplier = cycle => mode === 'current'
+            ? 1 + Math.min(5, Math.max(0, cycle)) * 0.10
+            : 1 + Math.max(0, cycle);
+        let weight = 0;
+        for (let cycle = 0; cycle < cycles; cycle++) weight += 99 * multiplier(cycle);
+        weight += currentLevelUps * multiplier(cycles);
+        return weight;
+    },
+
+    // 旧「転生1回ごとに成長+100%」で増えた基礎能力を、新しい+10%（最大+50%）相当へ一度だけ縮尺補正する。
+    migrateReincarnationGrowthFormulaV1: (data = App.data) => App.runOneTimeCompatibilityMigration(
+        data,
+        '20260803_reincarnationGrowthRebuildV1',
+        () => {
+            if (!Array.isArray(data.characters)) return { changed:false, count:0 };
+            const statKeys = ['hp', 'mp', 'atk', 'def', 'spd', 'mag', 'mdef'];
+            let count = 0;
+            data.characters.forEach(char => {
+                if (!char || char.isMonsterAlly === true) return;
+                const reincarnationCount = Math.max(0, Math.floor(Number(char.reincarnationCount) || 0));
+                if (reincarnationCount < 1) return;
+                const legacyWeight = App.getReincarnationLegacyGrowthWeight(reincarnationCount, char.level, 'legacy');
+                const currentWeight = App.getReincarnationLegacyGrowthWeight(reincarnationCount, char.level, 'current');
+                if (!(legacyWeight > 0) || !(currentWeight > 0) || currentWeight >= legacyWeight) return;
+                const ratio = currentWeight / legacyWeight;
+                const master = (window.CHARACTERS_DATA || []).find(entry => Number(entry?.id) === Number(char.charId));
+                if (!master) return;
+                let changed = false;
+                statKeys.forEach(key => {
+                    const base = Math.max(key === 'mp' ? 0 : 1, Math.floor(Number(master[key]) || 0));
+                    const before = Math.max(base, Math.floor(Number(char[key]) || base));
+                    const permanentBonus = Math.max(0, Math.floor(Number(char.permanentStatBonuses?.[key]) || 0));
+                    const scalableGrowth = Math.max(0, before - base - permanentBonus);
+                    const after = Math.max(base + permanentBonus, base + permanentBonus + Math.floor(scalableGrowth * ratio));
+                    if (after !== before) {
+                        char[key] = after;
+                        changed = true;
+                    }
+                });
+                if (changed) {
+                    char.currentHp = Math.min(Math.max(0, Number(char.currentHp) || 0), Math.max(1, Number(char.hp) || 1));
+                    char.currentMp = Math.min(Math.max(0, Number(char.currentMp) || 0), Math.max(0, Number(char.mp) || 0));
+                    count++;
+                }
+            });
+            return { changed: count > 0, count };
+        }
+    ),
+
+    // 完了済みのルーナ／ゼノンクエストに紐づく旧戦後ボス描画コンテキストを一度だけ掃除する。
+    migrateLunaZenonBossVisualCleanupV1: (data = App.data) => App.runOneTimeCompatibilityMigration(
+        data,
+        '20260803_lunaZenonBossVisualCleanupV1',
+        () => {
+            const progress = data.progress && typeof data.progress === 'object' ? data.progress : null;
+            if (!progress) return { changed:false, count:0 };
+            const completed = questId => progress.quests?.[questId]?.state === 'completed';
+            const targets = {
+                luna_hidden_dark_shrine: { eventId:'quest_luna_hidden_clear', monsterId:401170 },
+                zenon_hidden_grezelia: { eventId:'quest_zenon_hidden_clear', monsterId:401180 }
+            };
+            const completedTargets = Object.entries(targets).filter(([questId]) => completed(questId)).map(([, value]) => value);
+            if (completedTargets.length === 0) return { changed:false, count:0 };
+            const matches = value => completedTargets.some(target => {
+                const eventId = String(value?.eventId || value?.storyEventId || value?.fixedStoryEventId || value?.storyWinEventId || '');
+                const ids = (Array.isArray(value?.monsterIds) ? value.monsterIds : [value?.monsterId, value?.fixedBossId])
+                    .flat().map(Number).filter(Number.isFinite);
+                return eventId === target.eventId || ids.includes(target.monsterId);
+            });
+            let count = 0;
+            ['pendingPostBattleBossVisual', 'lastFixedBossEvent', 'activeFixedBossContext'].forEach(key => {
+                if (progress[key] && matches(progress[key])) {
+                    delete progress[key];
+                    count++;
+                }
+            });
+            if (data.battle && matches(data.battle) && data.battle.active !== true) {
+                ['fixedBossId', 'fixedBossPosition', 'fixedBossProgressKey', 'fixedStoryEventId', 'storyWinEventId'].forEach(key => {
+                    if (data.battle[key] !== undefined) delete data.battle[key];
+                });
+                count++;
+            }
+            return { changed: count > 0, count };
+        }
+    ),
 
     // 完全削除した旧深淵ボスが保存中の戦闘・図鑑・依頼へ残っている場合は参照ごと除去する。
     purgeRemovedLegacyAbyssBossReferences: (data = App.data) => {
@@ -3302,6 +3439,98 @@ const App = {
         return Array.from(ids);
     },
 
+    projectCharacterBaseStatsAtLevel: (charId, level) => {
+        const master = (window.CHARACTERS_DATA || []).find(entry => Number(entry?.id) === Number(charId));
+        if (!master) return null;
+        const targetLevel = Math.max(1, Math.min(100, Math.floor(Number(level) || 1)));
+        const result = {
+            hp: Math.max(1, Math.floor(Number(master.hp) || 1)),
+            mp: Math.max(0, Math.floor(Number(master.mp) || 0)),
+            atk: Math.max(1, Math.floor(Number(master.atk) || 1)),
+            def: Math.max(1, Math.floor(Number(master.def) || 1)),
+            spd: Math.max(1, Math.floor(Number(master.spd) || 1)),
+            mag: Math.max(1, Math.floor(Number(master.mag) || 1)),
+            mdef: Math.max(1, Math.floor(Number(master.mdef) || 1))
+        };
+        const growth = master.growthBase || master;
+        for (let nextLevel = 2; nextLevel <= targetLevel; nextLevel++) {
+            const milestone = nextLevel === 50 || nextLevel === 100 ? 5.5 : 1;
+            result.hp += Math.max(1, Math.floor((Number(growth.hp) || result.hp) * 0.06 * 2 * milestone)) + 3;
+            result.mp += Math.max(1, Math.floor((Number(growth.mp) || Math.max(1, result.mp)) * 0.06 * 2 * milestone)) + 3;
+            ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+                result[key] += Math.max(1, Math.floor((Number(growth[key]) || result[key]) * 0.06 * milestone)) + 1;
+            });
+        }
+        return result;
+    },
+
+    getComparableCharacterBaseStats: (charId, level, data = App.data) => {
+        const targetLevel = Math.max(1, Math.min(100, Math.floor(Number(level) || 1)));
+        const saved = Array.isArray(data?.characters)
+            ? data.characters.find(char => Number(char?.charId) === Number(charId) && Number(char?.level) === targetLevel)
+            : null;
+        const projected = App.projectCharacterBaseStatsAtLevel(charId, targetLevel);
+        if (!saved) return projected;
+        const keys = ['hp', 'mp', 'atk', 'def', 'spd', 'mag', 'mdef'];
+        return Object.fromEntries(keys.map(key => [key, Math.max(Number(saved[key]) || 0, Number(projected?.[key]) || 0)]));
+    },
+
+    applyMonsterAllyStatFloor: (char, sourceMonster = null, data = App.data) => {
+        if (!App.isMonsterAlly(char)) return { changed:false, count:0 };
+        const master = sourceMonster || App.getMonsterMasterForAlly(char);
+        const rules = master?.specialBossRules || {};
+        const floorCharacterId = Number(rules.allyStatFloorCharacterId || 0);
+        if (!Number.isFinite(floorCharacterId) || floorCharacterId <= 0) return { changed:false, count:0 };
+        const reference = App.getComparableCharacterBaseStats(floorCharacterId, char.level, data);
+        if (!reference) return { changed:false, count:0 };
+        const multiplier = Math.max(1.01, Number(rules.allyStatFloorMultiplier || 1.10));
+        const keys = ['hp', 'mp', 'atk', 'def', 'spd', 'mag', 'mdef'];
+        const oldMaxHp = Math.max(1, Number(char.hp) || 1);
+        const oldMaxMp = Math.max(0, Number(char.mp) || 0);
+        const oldCurrentHp = Math.max(0, Number(char.currentHp) || 0);
+        const oldCurrentMp = Math.max(0, Number(char.currentMp) || 0);
+        const hpRatio = Math.min(1, oldCurrentHp / oldMaxHp);
+        const mpRatio = oldMaxMp > 0 ? Math.min(1, oldCurrentMp / oldMaxMp) : 1;
+        let count = 0;
+        keys.forEach(key => {
+            const minimum = Math.max(key === 'mp' ? 0 : 1, Math.ceil((Number(reference[key]) || 0) * multiplier));
+            if ((Number(char[key]) || 0) < minimum) {
+                char[key] = minimum;
+                count++;
+            }
+        });
+        if (count > 0) {
+            char.currentHp = oldCurrentHp >= oldMaxHp
+                ? Math.max(1, Number(char.hp) || 1)
+                : Math.max(1, Math.min(Number(char.hp) || 1, Math.floor((Number(char.hp) || 1) * hpRatio)));
+            char.currentMp = oldCurrentMp >= oldMaxMp
+                ? Math.max(0, Number(char.mp) || 0)
+                : Math.max(0, Math.min(Number(char.mp) || 0, Math.floor((Number(char.mp) || 0) * mpRatio)));
+        }
+        if (!char.monsterAllyMeta || typeof char.monsterAllyMeta !== 'object' || Array.isArray(char.monsterAllyMeta)) char.monsterAllyMeta = {};
+        char.monsterAllyMeta.statFloorProfileVersion = 1;
+        char.monsterAllyMeta.statFloorCharacterId = floorCharacterId;
+        char.monsterAllyMeta.statFloorMultiplier = multiplier;
+        return { changed: count > 0, count };
+    },
+
+    migrateGilgameshAllyDominanceV1: (data = App.data) => App.runOneTimeCompatibilityMigration(
+        data,
+        '20260803_gilgameshAllyDominanceV1',
+        () => {
+            if (!Array.isArray(data.characters)) return { changed:false, count:0 };
+            let count = 0;
+            data.characters.forEach(char => {
+                if (!App.isMonsterAlly(char) || Number(char.monsterId || char.sourceMonsterId) !== 902000) return;
+                const master = App.getMonsterMasterForAlly(902000);
+                App.applyMonsterAllyGrowthProfile(char, { sourceMonster: master, growthType:'ALL_SPECIAL' });
+                const result = App.applyMonsterAllyStatFloor(char, master, data);
+                if (result.changed) count++;
+            });
+            return { changed: count > 0, count };
+        }
+    ),
+
     createMonsterAllyData: (enemy, baseMonster = null) => {
         if (!App.data || !enemy) return null;
         const base = baseMonster || (typeof Battle !== 'undefined' && Battle.getMonsterBaseById ? Battle.getMonsterBaseById(enemy.baseId || enemy.id) : null) || enemy;
@@ -3395,6 +3624,7 @@ const App = {
             }
         };
 
+        App.applyMonsterAllyStatFloor(saveAlly, base, App.data);
         saveAlly.currentHp = saveAlly.hp;
         saveAlly.currentMp = saveAlly.mp;
         return saveAlly;
@@ -4784,6 +5014,45 @@ load: () => {
     cancelSaveTransaction: () => {
         App.saveTransactionDepth = 0;
         App.saveTransactionPending = false;
+    },
+
+    restoreSaveDataSnapshot: (snapshot) => {
+        const restored = typeof snapshot === 'string' ? JSON.parse(snapshot) : snapshot;
+        if (!restored || typeof restored !== 'object') return false;
+        if (!App.data || typeof App.data !== 'object') {
+            App.data = restored;
+            return true;
+        }
+        Object.keys(App.data).forEach(key => { delete App.data[key]; });
+        Object.assign(App.data, restored);
+        return true;
+    },
+
+    // 装備・素材・通貨を伴う処理向け。保存失敗時は同じ App.data 参照へ全状態を戻す。
+    runAtomicSaveMutation: (mutator) => {
+        if (!App.data || typeof mutator !== 'function') return { ok:false, reason:'invalid' };
+        let snapshot;
+        try {
+            snapshot = App.serializeSaveData(App.data);
+        } catch (error) {
+            return { ok:false, reason:'snapshot', error };
+        }
+        try {
+            const result = mutator();
+            if (result && result.ok === false) {
+                App.restoreSaveDataSnapshot(snapshot);
+                return result;
+            }
+            if (App.save()) return { ok:true, result };
+            App.restoreSaveDataSnapshot(snapshot);
+            App.updateHUD?.();
+            return { ok:false, reason:'save', saveFailed:true };
+        } catch (error) {
+            App.restoreSaveDataSnapshot(snapshot);
+            App.updateHUD?.();
+            console.error('[ATOMIC SAVE] 処理を取り消しました。', error);
+            return { ok:false, reason:'mutation', error };
+        }
     },
 
     save: () => {
@@ -6451,7 +6720,7 @@ load: () => {
         totalSteps: 0, totalBattles: 0, totalChestsOpened: 0, totalMedals: 0, totalCoinsSpent: 0,
         totalQuestCompletions: 0, totalGuildQuestCompletions: 0,
         totalAlchemyCrafts: 0, totalAlchemyItemsCrafted: 0,
-        totalBlacksmithActions: 0, blacksmithSynthesisCount: 0,
+        totalBlacksmithActions: 0, blacksmithSynthesisCount: 0, blacksmithMaterialUpgradeCount: 0,
         blacksmithRefineAttempts: 0, blacksmithRefineSuccesses: 0,
         blacksmithEnhanceAttempts: 0, blacksmithEnhanceSuccesses: 0
     }),
@@ -6679,6 +6948,10 @@ load: () => {
         if (!Array.isArray(data.book.monsters)) data.book.monsters = [];
         if (!data.book.killCounts || typeof data.book.killCounts !== 'object' || Array.isArray(data.book.killCounts)) data.book.killCounts = {};
         App.migrateAbyssBossKillCountsV1(data);
+        App.migrateAbyssBossKillCountsV2(data);
+        App.migrateReincarnationGrowthFormulaV1(data);
+        App.migrateGilgameshAllyDominanceV1(data);
+        App.migrateLunaZenonBossVisualCleanupV1(data);
         App.purgeRemovedLegacyAbyssBossReferences(data);
         App.reconcileCarmenaGateProgress(data);
 
@@ -9898,10 +10171,7 @@ const Field = {
                 if (Dungeon.prepareFixedTileAction(tile, x, y, { silent })) return true;
             }
 
-            // 泉がイベント・階段・装飾と同じマスに置かれて通行不能でも、隣接マスから利用できる。
-            // 現在地固有のイベントを優先した後に評価し、通常の階段や会話ボタンを奪わない。
-            if (typeof Dungeon !== 'undefined' && typeof Dungeon.prepareAdjacentHealSpringAction === 'function' &&
-                Dungeon.prepareAdjacentHealSpringAction({ silent })) return true;
+            // 回復の泉は足元にある場合だけ利用可能。隣接マスからはアクションを出さない。
 
             if (tile === 'V' || tile === 'H' || tile === 'A' || tile === 'J' || tile === 'R' || tile === 'B') {
                 logIfNeeded('何か気になるものがある。');

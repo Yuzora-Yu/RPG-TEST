@@ -4005,6 +4005,7 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "quest_zenon_hidden_clear": {
+                "postBattleBossSprite": false,
                 "actions": [
                         { "type": "CONV", "value": "QUEST_ZENON_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "zenon_hidden_grezelia" }

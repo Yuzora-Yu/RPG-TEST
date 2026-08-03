@@ -668,6 +668,31 @@ const Menu = {
         return '#fff';
     },
 
+    getEquipmentRank: (equip) => Math.max(0, Math.floor(Number(equip?.rank) || 0)),
+
+    getEquipmentRankBadgeHTML: (equip, options = {}) => {
+        const rank = Menu.getEquipmentRank(equip);
+        const extraStyle = String(options.style || '');
+        return `<span class="equip-rank-badge" style="font-size:9px;color:#aaa;white-space:nowrap;flex-shrink:0;margin-left:auto;${extraStyle}">Rank ${rank}</span>`;
+    },
+
+    getEquipmentNameLineHTML: (equip, options = {}) => {
+        const rarityColor = options.color || Menu.getRarityColor(equip?.rarity || 'N');
+        const suffix = String(options.suffixHTML || '');
+        const nameStyle = String(options.nameStyle || '');
+        const safeName = typeof Menu.escapeHtml === 'function' ? Menu.escapeHtml(equip?.name || '装備') : String(equip?.name || '装備');
+        return `<div class="equip-name-rank-line" style="display:flex;align-items:center;gap:5px;min-width:0;width:100%;"><span style="color:${rarityColor};font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;${nameStyle}">${safeName}${suffix}</span>${Menu.getEquipmentRankBadgeHTML(equip)}</div>`;
+    },
+
+    compareEquipmentByRank: (left, right) => {
+        const rankDiff = Menu.getEquipmentRank(right) - Menu.getEquipmentRank(left);
+        if (rankDiff !== 0) return rankDiff;
+        const rarityOrder = { EX:6, UR:5, SSR:4, SR:3, R:2, N:1 };
+        const rarityDiff = (rarityOrder[right?.rarity] || 0) - (rarityOrder[left?.rarity] || 0);
+        if (rarityDiff !== 0) return rarityDiff;
+        return String(left?.name || '').localeCompare(String(right?.name || ''), 'ja');
+    },
+
 	getStatusEffectLabel: (key) => {
         const labels = {
             Poison: '毒', ToxicPoison: '猛毒', Shock: '感電', Fear: '怯え',
@@ -776,10 +801,7 @@ const Menu = {
         }
 
         if (showName) {
-            html += `
-                <div style="font-size:12px; font-weight:bold; color:${rarityColor}; margin-bottom:2px;">
-                    ${equip.name} 
-                </div>`;
+            html += `<div style="font-size:12px;margin-bottom:2px;">${Menu.getEquipmentNameLineHTML(equip)}</div>`;
         }
 
         html += `

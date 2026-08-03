@@ -1430,15 +1430,54 @@ const Battle = {
         if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('battle_heal');
     },
 
-    playResultSeAndWait: async (key) => {
+    updateResultLevelSkipButton: () => {
+        const button = Battle.getEl?.('btn-result-level-skip') || document.getElementById('btn-result-level-skip');
+        if (!button) return;
+        const visible = Battle.phase === 'result' && Battle.resultLevelSkipActive === true && Battle.resultReadyToEnd !== true;
+        button.style.display = visible ? 'block' : 'none';
+        button.disabled = !visible || Battle.resultSkipRequested === true;
+        button.textContent = Battle.resultSkipRequested ? 'スキップ中' : 'スキップ';
+    },
+
+    setResultLevelSkipActive: (active) => {
+        Battle.resultLevelSkipActive = active === true;
+        if (!Battle.resultLevelSkipActive) Battle.resultSkipRequested = false;
+        Battle.updateResultLevelSkipButton();
+    },
+
+    requestResultLevelSkip: () => {
+        if (Battle.phase !== 'result' || Battle.resultLevelSkipActive !== true) return false;
+        Battle.resultSkipRequested = true;
+        Battle.updateResultLevelSkipButton();
+        if (typeof Battle.resultAdvanceResolver === 'function') {
+            const resolveAdvance = Battle.resultAdvanceResolver;
+            Battle.resultAdvanceResolver = null;
+            try { resolveAdvance(); } catch (error) {}
+        }
+        if (Array.isArray(Battle.resultWaiters)) {
+            const waiters = Battle.resultWaiters.splice(0);
+            waiters.forEach(resolve => { try { resolve(); } catch (error) {} });
+        }
+        return true;
+    },
+
+    playResultSeAndWait: async (key, options = {}) => {
         if (typeof AudioManager === 'undefined') return false;
-        if (typeof AudioManager.playSeAndWait === 'function') return AudioManager.playSeAndWait(key);
-        AudioManager.playSe?.(key);
-        return false;
+        const playback = typeof AudioManager.playSeAndWait === 'function'
+            ? Promise.resolve(AudioManager.playSeAndWait(key))
+            : Promise.resolve(AudioManager.playSe?.(key));
+        if (options.levelSkippable !== true || Battle.resultSkipRequested) return Battle.resultSkipRequested ? false : playback;
+        return Promise.race([
+            playback,
+            new Promise(resolve => {
+                if (!Array.isArray(Battle.resultWaiters)) Battle.resultWaiters = [];
+                Battle.resultWaiters.push(() => resolve(false));
+            })
+        ]);
     },
 
     waitForResultAdvance: () => {
-        if (Battle.phase !== 'result') return Promise.resolve();
+        if (Battle.phase !== 'result' || (Battle.resultLevelSkipActive && Battle.resultSkipRequested)) return Promise.resolve();
         return new Promise(resolve => {
             Battle.resultAdvanceResolver = () => {
                 Battle.resultAdvanceResolver = null;
@@ -1535,7 +1574,9 @@ const Battle = {
         Battle.resultInputLocked = false;
         Battle.resultAdvanceResolver = null;
         Battle.resultSkipRequested = false;
+        Battle.resultLevelSkipActive = false;
         Battle.resultWaiters = [];
+        Battle.updateResultLevelSkipButton?.();
         
         const logEl = Battle.getEl('battle-log');
         if(logEl) logEl.innerHTML = '';
@@ -3326,7 +3367,9 @@ const Battle = {
         Battle.resultInputLocked = false;
         Battle.resultAdvanceResolver = null;
         Battle.resultSkipRequested = false;
+        Battle.resultLevelSkipActive = false;
         Battle.resultWaiters = [];
+        Battle.updateResultLevelSkipButton?.();
         Battle.finishState = 'idle';
         Battle.finishToken = null;
         Battle.finishTimerId = null;
@@ -7329,7 +7372,9 @@ findNextActor: () => {
         Battle.resultInputLocked = false;
         Battle.resultAdvanceResolver = null;
 		Battle.resultSkipRequested = false;
+        Battle.resultLevelSkipActive = false;
 		Battle.resultWaiters = [];
+        Battle.updateResultLevelSkipButton?.();
 		if (App.data.battle) App.data.battle.active = false;
         // 保存トランザクションは開始済み。
 
@@ -7842,28 +7887,35 @@ findNextActor: () => {
         });
 
 
-        for (const event of resultLevelEvents) {
-            Battle.log(event.notification);
-            Battle.resultInputLocked = true;
-            try {
-                await Battle.playResultSeAndWait('battle_level_up');
-            } finally {
-                Battle.resultInputLocked = false;
+        Battle.setResultLevelSkipActive(resultLevelEvents.length > 0 || resultLevelLooseLogs.length > 0 || resultTraitGrowthLogs.length > 0);
+        try {
+            for (const event of resultLevelEvents) {
+                Battle.log(event.notification);
+                Battle.resultInputLocked = true;
+                try {
+                    await Battle.playResultSeAndWait('battle_level_up', { levelSkippable:true });
+                } finally {
+                    Battle.resultInputLocked = false;
+                }
+                for (const detail of event.details) Battle.log(detail);
+                if (!Battle.resultSkipRequested) {
+                    Battle.log(`<span style="color:#aaa; font-size:0.85em;">▼</span>`);
+                    await Battle.waitForResultAdvance();
+                }
             }
-            for (const detail of event.details) Battle.log(detail);
-            Battle.log(`<span style="color:#aaa; font-size:0.85em;">▼</span>`);
-            await Battle.waitForResultAdvance();
-        }
 
-        for (const msg of resultLevelLooseLogs) {
-            Battle.log(msg);
-            await Battle.resultWait(350);
-        }
+            for (const msg of resultLevelLooseLogs) {
+                Battle.log(msg);
+                await Battle.resultWait(350);
+            }
 
-		for (const msg of resultTraitGrowthLogs) {
-			Battle.log(msg);
-			await Battle.resultWait(250);
-		}
+		    for (const msg of resultTraitGrowthLogs) {
+			    Battle.log(msg);
+			    await Battle.resultWait(250);
+		    }
+        } finally {
+            Battle.setResultLevelSkipActive(false);
+        }
 
         const monsterSkillEvolutionLog = await Battle.tryMonsterSkillEvolutionAfterBattle();
         if (monsterSkillEvolutionLog) {
@@ -8065,7 +8117,9 @@ findNextActor: () => {
         Battle.resultInputLocked = false;
         Battle.resultAdvanceResolver = null;
         Battle.resultSkipRequested = false;
+        Battle.resultLevelSkipActive = false;
         Battle.resultWaiters = [];
+        Battle.updateResultLevelSkipButton?.();
         if (!App.data.battle) App.data.battle = {};
         App.data.battle.active = false;
         if (typeof App.beginSaveTransaction === 'function') App.beginSaveTransaction();
@@ -8255,6 +8309,9 @@ findNextActor: () => {
             Battle.resultEndIsGameOver = false;
             Battle.resultInputLocked = false;
             Battle.resultSkipRequested = false;
+            Battle.resultLevelSkipActive = false;
+            Battle.resultWaiters = [];
+            Battle.updateResultLevelSkipButton?.();
             App.save();
             Battle.schedule(() => {
                 App.changeScene('field');
@@ -8271,6 +8328,8 @@ findNextActor: () => {
         Battle.resultEndIsGameOver = false;
         Battle.resultInputLocked = false;
         Battle.resultSkipRequested = false;
+        Battle.resultLevelSkipActive = false;
+        Battle.updateResultLevelSkipButton?.();
         if (typeof Battle.resultAdvanceResolver === 'function') {
             const resolveAdvance = Battle.resultAdvanceResolver;
             Battle.resultAdvanceResolver = null;
@@ -8390,12 +8449,6 @@ findNextActor: () => {
         }
         if (Battle.resultReadyToEnd) {
             Battle.endBattle(Battle.resultEndIsGameOver === true);
-            return;
-        }
-        Battle.resultSkipRequested = true;
-        if (Array.isArray(Battle.resultWaiters)) {
-            const waiters = Battle.resultWaiters.splice(0);
-            waiters.forEach(fn => { try { fn(); } catch(e) {} });
         }
     },
 
@@ -8404,7 +8457,7 @@ findNextActor: () => {
         // ただし戦闘中に resultWait() を使っている箇所は従来通り battleSpeed の影響を受ける。
         if (Battle.phase !== 'result') return Battle.wait(ms);
         const waitMs = Math.max(0, Math.floor(Number(ms) || 0));
-        if (waitMs <= 0 || Battle.resultSkipRequested) return Promise.resolve();
+        if (waitMs <= 0 || (Battle.resultLevelSkipActive && Battle.resultSkipRequested)) return Promise.resolve();
         return new Promise(resolve => {
             let done = false;
             const finish = () => {

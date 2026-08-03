@@ -1606,7 +1606,7 @@
                     const result = Guild.reportQuest(button.dataset.guildQuestId);
                     if (!result) return;
                     Guild.initFacility();
-                    const equipmentText = (result.equipmentRewards || []).map(equip => `装備獲得: ${equip.name}${Number(equip.plus || 0) > 0 ? ` +${equip.plus}` : ''}`).join('<br>');
+                    const equipmentText = (result.equipmentRewards || []).map(equip => `装備獲得: ${equip.name}${Number(equip.plus || 0) > 0 ? ` +${equip.plus}` : ''}（Rank ${Number(equip.rank || 0)}）`).join('<br>');
                     Facilities.showModal('guild-scene', '報告完了', `<div style="line-height:1.7;">${App.escapeHtml(result.def.completeText || '依頼を達成した。')}<br><br><span style="color:#ffd56b;">ギルド経験値 +${result.guildExp}<br>ギルドポイント +${result.guildPoints}${equipmentText ? `<br>${App.escapeHtml(equipmentText).replace(/&lt;br&gt;/g, '<br>')}` : ''}</span></div>`);
                 };
             });

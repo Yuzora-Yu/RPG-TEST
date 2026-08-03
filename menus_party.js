@@ -378,7 +378,7 @@ const MenuParty = {
 				return `<div class="list-item" style="align-items:center; opacity:${isLocked ? 0.5 : 1}; padding:9px;" ${isLocked ? '' : `onclick="MenuParty.openEquipmentSlot('${label}')"`}>
 					<div style="width:48px; flex:0 0 auto; font-size:11px; color:#ffd700; font-weight:bold;">${MenuParty.escapeHtml(label)}</div>
 					<div style="flex:1; min-width:0;">
-						<div style="font-size:12px; font-weight:bold; color:${rarityColor}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${eq ? MenuParty.escapeHtml(eq.name) : (isLocked ? '両手持ち中' : 'なし')}</div>
+						${eq ? Menu.getEquipmentNameLineHTML(eq, { nameStyle:'font-size:12px;' }) : `<div style="font-size:12px;font-weight:bold;color:${rarityColor};">${isLocked ? '両手持ち中' : 'なし'}</div>`}
 						${eq ? MenuAllies.getEquipFullDetailHTML(eq) : ''}
 					</div>
 					<div style="font-size:16px; color:#b9a58a; margin-left:5px;">${isLocked ? '' : '›'}</div>

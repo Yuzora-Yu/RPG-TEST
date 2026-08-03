@@ -2683,30 +2683,11 @@ const Dungeon = {
 
     isHealSpringAt: (x, y) => !!Dungeon.getHealSpringAt(x, y),
 
-    getAdjacentHealSpring: (x = Field.x, y = Field.y) => {
-        const points = [
-            { x:Number(x), y:Number(y) - 1 },
-            { x:Number(x) + 1, y:Number(y) },
-            { x:Number(x), y:Number(y) + 1 },
-            { x:Number(x) - 1, y:Number(y) }
-        ];
-        for (const point of points) {
-            const spring = Dungeon.getHealSpringAt(point.x, point.y);
-            if (spring) return { ...spring, x:point.x, y:point.y };
-        }
-        return null;
-    },
-
     prepareHealSpringActionAt: (x, y, options = {}) => {
         if (!Dungeon.isHealSpringAt(x, y)) return false;
         if (options.silent === false) App.log('<span style="color:#80ffb0;">清らかな泉が湧いている。</span>');
         App.setAction('泉で回復', () => Dungeon.useHealSpring(x, y));
         return true;
-    },
-
-    prepareAdjacentHealSpringAction: (options = {}) => {
-        const spring = Dungeon.getAdjacentHealSpring(Field.x, Field.y);
-        return spring ? Dungeon.prepareHealSpringActionAt(spring.x, spring.y, options) : false;
     },
 
     isAbyssRiftAt: (x, y) => {

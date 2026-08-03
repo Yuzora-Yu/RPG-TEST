@@ -155,6 +155,7 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <div id="battle-scene" class="scene-layer">
+        <button id="btn-result-level-skip" class="btn" type="button" onclick="Battle.requestResultLevelSkip()" aria-label="レベルアップ演出をスキップ">スキップ</button>
         <div id="battle-top-controls" aria-label="戦闘設定">
             <button id="btn-battle-speed" class="btn" type="button" onclick="Battle.cycleBattleSpeed()" aria-label="戦闘速度: 普通" title="戦闘速度: 普通">▶</button>
             <button id="btn-auto" class="btn" type="button" onclick="Battle.toggleAuto()" aria-pressed="false">AUTO: OFF</button>
@@ -539,6 +540,7 @@ if ('serviceWorker' in navigator) {
 <script src="alchemy.js"></script>
 <script src="monster_nursery.js"></script>
 <script src="boss_training.js"></script>
+<script src="blacksmith_master.js"></script>
 <script src="blacksmith.js"></script>
 <script src="save_crypto.js"></script>
 <script src="audio_manifest.js"></script>

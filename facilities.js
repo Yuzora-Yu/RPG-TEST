@@ -262,7 +262,7 @@ const Facilities = {
                 : (equipMaster ? `Rank.${equipMaster.rank} ${equipMaster.baseName || equipMaster.type}の特殊装備` : '特殊装備');
             html += `<div style="border: 1px solid #444; margin-bottom: 8px; padding: 10px; opacity:${can?1:0.5}; background:rgba(255,255,255,0.05);">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
-                    <div style="font-weight:bold; font-size:14px; color:#fff;">${r.name}</div>
+                    <div style="font-weight:bold;font-size:14px;color:#fff;display:flex;align-items:center;gap:7px;min-width:0;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.name}</span>${equipMaster ? `<small style="color:#aaa;white-space:nowrap;">Rank ${Number(equipMaster.rank || 0)}</small>` : ''}</div>
                     <button class="btn" style="min-width:75px; height:30px;" ${can?'':'disabled'} onclick="Facilities.execMedal(${JSON.stringify(r).replace(/"/g, '&quot;')})">${owned ? '入手済み' : `${r.medals}枚`}</button>
                 </div>
                 <div style="font-size:10px; color:#aaa; line-height:1.4;">${detail}</div>
@@ -284,7 +284,7 @@ const Facilities = {
             }
             if (reward.type === 'EQUIP') {
                 const equip = window.EQUIP_MASTER?.find(entry => Number(entry.eid) === Number(reward.eid));
-                return `${equip?.name || `装備ID:${reward.eid}`}${reward.plus ? `+${reward.plus}` : ''}`;
+                return `${equip?.name || `装備ID:${reward.eid}`}${reward.plus ? `+${reward.plus}` : ''}（Rank ${Number(equip?.rank || 0)}）`;
             }
             return String(reward.type || '報酬');
         }).join('、');
@@ -1217,7 +1217,7 @@ const Facilities = {
         const price = Facilities.getEquipShopPrice(base);
         Facilities.setShopHelp(`
             <div class="shop-detail-titlebar">
-                <div class="shop-detail-name">${Facilities.escapeAttr(base.name)}</div>
+                <div class="shop-detail-name" style="display:flex;gap:8px;align-items:center;min-width:0;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${Facilities.escapeAttr(base.name)}</span><small style="color:#aaa;white-space:nowrap;">Rank ${Number(base.rank || 0)}</small></div>
                 <div class="shop-detail-price">${price.toLocaleString()} G</div>
             </div>
             <div class="shop-detail-meta">${Facilities.escapeAttr(Facilities.getEquipShopCategory(base))}</div>
@@ -1497,7 +1497,7 @@ const Facilities = {
             const effectSummary = Facilities.getEquipBaseSummary(base, 0);
             return `<button class="shop-row equip" data-shop-key="${Facilities.escapeAttr(key)}" onclick="Facilities.selectShopBuyEquip(${Number(base.eid)})" onmouseenter="Facilities.showShopEquipHelp(${Number(base.eid)})" onfocus="Facilities.showShopEquipHelp(${Number(base.eid)})">
                 <span class="shop-type-pill">${Facilities.escapeAttr(Facilities.getEquipShopCategory(base))}</span>
-                <span class="shop-row-name">${Facilities.escapeAttr(base.name)}<span class="shop-row-effect">${Facilities.escapeAttr(effectSummary)}</span></span>
+                <span class="shop-row-name"><span style="display:flex;align-items:center;gap:6px;min-width:0;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${Facilities.escapeAttr(base.name)}</span><small style="color:#aaa;white-space:nowrap;margin-left:auto;">Rank ${Number(base.rank || 0)}</small></span><span class="shop-row-effect">${Facilities.escapeAttr(effectSummary)}</span></span>
                 <span class="shop-price">${cost.toLocaleString()} G</span>
             </button>`;
         }).join('');
@@ -1526,7 +1526,7 @@ const Facilities = {
         if ((App.data.gold || 0) < price) return Menu.msg('ゴールドが 足りません。');
         Facilities.showModal('shop-scene', '購入確認', `
             <div class="shop-confirm-card">
-                <div class="shop-confirm-title">${Facilities.escapeAttr(base.name)}</div>
+                <div class="shop-confirm-title" style="display:flex;justify-content:space-between;gap:8px;"><span>${Facilities.escapeAttr(base.name)}</span><small style="color:#aaa;white-space:nowrap;">Rank ${Number(base.rank || 0)}</small></div>
                 <div class="shop-confirm-meta">${Facilities.escapeAttr(Facilities.getEquipShopCategory(base))}</div>
                 <div class="shop-confirm-box">${Facilities.escapeAttr(Facilities.getEquipBaseSummary(base, 0))}</div>
                 <div class="shop-total-line">${price.toLocaleString()} G</div>
@@ -1715,18 +1715,30 @@ const Facilities = {
             const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(id));
             if (!Facilities.isSellableItemDef(item)) return;
             entries.push({
-                kind: 'item',
-                key: `sell-item-${Number(item.id)}`,
-                type: item.type || '道具',
-                name: item.name,
-                price: Facilities.getItemSellPrice(item),
-                count,
-                item
+                kind:'item', key:`sell-item-${Number(item.id)}`, type:item.type || '道具',
+                name:item.name, price:Facilities.getItemSellPrice(item), count, item
+            });
+        });
+
+        const equippedIds = Facilities.getEquippedIdSet();
+        (App.data.inventory || []).forEach(equip => {
+            if (!equip || equip.locked || equippedIds.has(String(equip.id))) return;
+            entries.push({
+                kind:'equip', key:`sell-equip-${String(equip.id)}`, type:equip.type || '装備',
+                name:equip.name || '装備', price:Facilities.getEquipSellPrice(equip), count:1, equip
             });
         });
 
         const itemTypeOrder = ['HP回復', 'MP回復', '状態異常回復', '蘇生', '移動', '換金'];
         return entries.sort((a, b) => {
+            if (a.kind !== b.kind) return a.kind === 'item' ? -1 : 1;
+            if (a.kind === 'equip') {
+                const commonDiff = typeof Menu?.compareEquipmentByRank === 'function'
+                    ? Menu.compareEquipmentByRank(a.equip, b.equip)
+                    : Number(b.equip?.rank || 0) - Number(a.equip?.rank || 0);
+                if (commonDiff !== 0) return commonDiff;
+                return String(a.name || '').localeCompare(String(b.name || ''), 'ja');
+            }
             const ai = itemTypeOrder.includes(a.type) ? itemTypeOrder.indexOf(a.type) : 99;
             const bi = itemTypeOrder.includes(b.type) ? itemTypeOrder.indexOf(b.type) : 99;
             if (ai !== bi) return ai - bi;
@@ -1741,18 +1753,26 @@ const Facilities = {
         if (!list) return;
         const entries = Facilities.getShopSellEntries();
         if (entries.length === 0) {
-            list.innerHTML = `<div class="shop-empty-list">売れる道具がありません。</div>`;
-            Facilities.setShopHelp('売れる道具がありません。');
+            list.innerHTML = `<div class="shop-empty-list">売れる道具・装備がありません。</div>`;
+            Facilities.setShopHelp('売れる道具・装備がありません。');
             return;
         }
         list.innerHTML = Facilities.renderShopColumnHeader('', '名前', '売値', 'item') + entries.map(entry => {
+            if (entry.kind === 'equip') {
+                const rank = Number(entry.equip?.rank || 0);
+                return `<button class="shop-row item" data-shop-key="${Facilities.escapeAttr(entry.key)}" onclick='Facilities.selectShopSellEquip(${Facilities.jsArg(entry.equip.id)})' onmouseenter='Facilities.showShopSellEquipHelp(${Facilities.jsArg(entry.equip.id)})' onfocus='Facilities.showShopSellEquipHelp(${Facilities.jsArg(entry.equip.id)})'>
+                    <span class="shop-row-name"><span style="display:flex;align-items:center;gap:6px;min-width:0;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${Facilities.escapeAttr(entry.name)}</span><small style="color:#aaa;white-space:nowrap;margin-left:auto;">Rank ${rank}</small></span></span>
+                    <span class="shop-owned">装備</span>
+                    <span class="shop-price">${entry.price.toLocaleString()} G</span>
+                </button>`;
+            }
             return `<button class="shop-row item" data-shop-key="${Facilities.escapeAttr(entry.key)}" onclick="Facilities.selectShopSellItem(${Number(entry.item.id)})" onmouseenter="Facilities.showShopSellItemHelp(${Number(entry.item.id)})" onfocus="Facilities.showShopSellItemHelp(${Number(entry.item.id)})">
                 <span class="shop-row-name">${Facilities.escapeAttr(entry.name)}</span>
                 <span class="shop-owned">${Number(entry.count || 0).toLocaleString()}</span>
                 <span class="shop-price">${entry.price.toLocaleString()} G</span>
             </button>`;
         }).join('');
-        Facilities.setShopHelp('売る道具を選んでください。');
+        Facilities.setShopHelp('売る道具・装備を選んでください。');
     },
 
     selectShopSellItem: (itemId) => {
@@ -1870,7 +1890,7 @@ const Facilities = {
             : Facilities.escapeAttr(equip.name || '装備');
         Facilities.setShopHelp(`
             <div class="shop-detail-titlebar">
-                <div class="shop-detail-name">${Facilities.escapeAttr(equip.name || '装備')}</div>
+                <div class="shop-detail-name" style="display:flex;gap:8px;align-items:center;min-width:0;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${Facilities.escapeAttr(equip.name || '装備')}</span><small style="color:#aaa;white-space:nowrap;">Rank ${Number(equip.rank || 0)}</small></div>
                 <div class="shop-detail-price">${price.toLocaleString()} G</div>
             </div>
             <div class="shop-detail-meta">${Facilities.escapeAttr(equip.type || '装備')}</div>
@@ -1887,7 +1907,7 @@ const Facilities = {
             : Facilities.escapeAttr(equip.name || '装備');
         Facilities.showModal('shop-scene', '売却確認', `
             <div class="shop-confirm-card">
-                <div class="shop-confirm-title">${Facilities.escapeAttr(equip.name || '装備')}</div>
+                <div class="shop-confirm-title" style="display:flex;justify-content:space-between;gap:8px;"><span>${Facilities.escapeAttr(equip.name || '装備')}</span><small style="color:#aaa;white-space:nowrap;">Rank ${Number(equip.rank || 0)}</small></div>
                 <div class="shop-confirm-meta">${Facilities.escapeAttr(equip.type || '装備')}</div>
                 <div class="shop-confirm-box">${detailHtml}</div>
                 <div class="shop-total-line">${price.toLocaleString()} G</div>
@@ -1971,7 +1991,7 @@ const Facilities = {
                 return `<div style="border-bottom:1px solid #333; padding:10px 0;">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                         <div>
-                            <div style="font-weight:bold; color:#fff;">${Facilities.escapeAttr(reward.label)}</div>
+                            <div style="font-weight:bold; color:#fff; display:flex; align-items:center; gap:6px; min-width:0;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${Facilities.escapeAttr(reward.label)}</span>${reward.kind === 'equip' ? `<small style="color:#aaa;white-space:nowrap;margin-left:auto;">Rank ${Number(reward.rank || 0)}</small>` : ''}</div>
                             <div style="font-size:10px; color:#aaa;">${Facilities.escapeAttr(reward.desc || '')}</div>
                         </div>
                         <button class="btn" style="min-width:92px; height:32px; border:1px solid #4af; background:#000; color:${color};" ${disabled} onclick="Facilities.exchangeCasinoReward(${index})">${reward.cost.toLocaleString()}GEM</button>

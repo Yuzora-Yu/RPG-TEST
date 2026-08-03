@@ -394,8 +394,10 @@ const AchievementManager = {
         return item ? item.name : `アイテムID:${id}`;
     },
 
+    getEquipMaster: (eid) => (window.EQUIP_MASTER || []).find(e => Number(e.eid) === Number(eid)) || null,
+
     getEquipName: (eid) => {
-        const eq = (window.EQUIP_MASTER || []).find(e => Number(e.eid) === Number(eid));
+        const eq = AchievementManager.getEquipMaster(eid);
         return eq ? eq.name : `装備ID:${eid}`;
     },
 
@@ -405,7 +407,10 @@ const AchievementManager = {
             if (r.type === 'GEM') return `${r.val || 0} GEM`;
             if (r.type === 'GOLD') return `${r.val || 0} GOLD`;
             if (r.type === 'ITEM') return `${AchievementManager.getItemName(r.id)} x${r.val || 1}`;
-            if (r.type === 'EQUIP') return `${AchievementManager.getEquipName(r.eid)}${r.plus ? `+${r.plus}` : ''}`;
+            if (r.type === 'EQUIP') {
+                const equip = AchievementManager.getEquipMaster(r.eid);
+                return `${AchievementManager.getEquipName(r.eid)}${r.plus ? `+${r.plus}` : ''}（Rank ${Number(equip?.rank || 0)}）`;
+            }
             return r.type;
         }).join('、');
     },
@@ -438,7 +443,7 @@ const AchievementManager = {
                     const newEq = App.createEquipById(r.eid, r.plus || 0, r.opts || null, r.traits || null);
                     if (newEq) {
                         App.data.inventory.push(newEq);
-                        msgParts.push(newEq.name);
+                        msgParts.push(`${newEq.name}（Rank ${Number(newEq.rank || 0)}）`);
                     }
                     break;
                 }
