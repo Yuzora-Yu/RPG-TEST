@@ -56,7 +56,7 @@ function readJson(file) {
 function getNextExp(charData) {
   const baseExp = 100;
   const level = charData.level || 1;
-  const reincCount = charData.reincarnationCount || 0;
+  const reincCount = charData.isMonsterAlly ? (charData.monsterFusionCount || 0) : (charData.reincarnationCount || 0);
   const eLevel = level + reincCount * 100;
   const rarityMult = RARITY_EXP_MULT[charData.rarity] || 1.0;
   const pEarly = 0.8;

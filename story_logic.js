@@ -854,6 +854,12 @@ const StoryManager = {
         const source = battle || App?.data?.battle || null;
         const targetEventId = String(eventId || '');
         if (!source?.isBossBattle || !targetEventId) return false;
+        const event = this.events?.[targetEventId] || null;
+        if (!this.resolvePostBattleBossSpriteConfig(event).enabled) {
+            const pending = App?.data?.progress?.pendingPostBattleBossVisual;
+            if (pending && String(pending.eventId || '') === targetEventId) delete App.data.progress.pendingPostBattleBossVisual;
+            return false;
+        }
 
         const ids = (Array.isArray(source.fixedBossId) ? source.fixedBossId : [source.fixedBossId])
             .map(id => Number(id))
@@ -879,6 +885,7 @@ const StoryManager = {
     getPostBattleBossVisualContext: function(eventId, event = null, phase = 'actions') {
         const targetEventId = String(eventId || '');
         const spriteConfig = this.resolvePostBattleBossSpriteConfig(event);
+        if (!spriteConfig.enabled) return null;
         const pending = App?.data?.progress?.pendingPostBattleBossVisual || null;
         const pendingMatches = pending && String(pending.eventId || '') === targetEventId &&
             String(pending.phase || 'actions') === String(phase || 'actions');

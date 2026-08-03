@@ -3977,6 +3977,7 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "quest_luna_hidden_clear": {
+                "postBattleBossSprite": false,
                 "actions": [
                         { "type": "CONV", "value": "QUEST_LUNA_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "luna_hidden_dark_shrine" }

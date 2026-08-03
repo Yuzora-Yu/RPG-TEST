@@ -24,6 +24,35 @@
             V('origin-dew', '始原の調合', [[2054, 8], [2023, 2], [2063, 1]])
         ]),
 
+        R('blazing-pot', 1001, '攻撃', [
+            V('ember-clay', '火精式', [[2019, 3], [2035, 2], [2050, 2]]),
+            V('beast-flame', '獣炎式', [[2003, 3], [2036, 2], [2051, 1]])
+        ]),
+        R('torrent-pot', 1006, '攻撃', [
+            V('water-spirit-pot', '水精式', [[2051, 3], [2020, 2], [2043, 2]]),
+            V('shell-current', '水殻式', [[2044, 2], [2052, 2], [2011, 2]])
+        ]),
+        R('lightning-pot', 1011, '攻撃', [
+            V('thunder-ore-pot', '雷鉱式', [[2003, 3], [2019, 2], [2035, 2]]),
+            V('sky-feather-pot', '天羽式', [[2028, 2], [2020, 2], [2051, 2]])
+        ]),
+        R('tempest-pot', 1016, '攻撃', [
+            V('wind-feather-pot', '風羽式', [[2028, 3], [2012, 2], [2051, 2]]),
+            V('beast-wind-pot', '獣風式', [[2035, 3], [2036, 2], [2020, 2]])
+        ]),
+        R('holy-light-pot', 1021, '攻撃', [
+            V('holy-water-pot', '聖水式', [[2030, 2], [2052, 2], [2012, 2]]),
+            V('light-crystal-pot', '光晶式', [[2019, 3], [2051, 2], [2021, 1]])
+        ]),
+        R('darkness-pot', 1026, '攻撃', [
+            V('shadow-claw-pot', '影爪式', [[2036, 3], [2050, 2], [2059, 2]]),
+            V('abyss-hide-pot', '深皮式', [[2044, 2], [2052, 2], [2059, 2]])
+        ]),
+        R('collapse-pot', 1031, '攻撃', [
+            V('chaos-fragment-pot', '混沌式', [[2059, 3], [2021, 2], [2004, 2]]),
+            V('rift-crystal-pot', '裂晶式', [[2019, 3], [2060, 1], [2052, 2]])
+        ]),
+
         R('inferno-vessel', 1003, '攻撃', [
             V('flame-core', '炎核式', [[2020, 4], [2036, 3], [2050, 3]]),
             V('black-iron-flame', '黒鉄式', [[2004, 3], [2021, 2], [2052, 2]])
@@ -426,7 +455,7 @@
                 Alchemy.selectedVariantIndex = 0;
                 Alchemy.quantity = 1;
             }
-            Alchemy.renderRecipeModal();
+            Alchemy.renderRecipeModal({ preserveScroll:false });
         },
 
         selectRecipe: (id) => {
@@ -447,9 +476,11 @@
             Alchemy.renderRecipeModal();
         },
 
-        renderRecipeModal: () => {
+        renderRecipeModal: (options = {}) => {
             const title = document.getElementById('alchemy-scene-modal-title');
             const body = document.getElementById('alchemy-scene-modal-body');
+            const previousList = document.getElementById('alchemy-recipe-list');
+            const previousScrollTop = options.preserveScroll === false ? 0 : Number(previousList?.scrollTop || 0);
             if (!title || !body) return;
             title.textContent = '錬金レシピ';
             const categories = ['回復', '攻撃', '強化', '弱体', '育成'];
@@ -475,7 +506,9 @@
                 return `<div style="display:flex;justify-content:space-between;border-bottom:1px dotted #555;padding:5px 0;color:${owned >= need ? '#fff' : '#ff7777'};"><span>${esc(item?.name || `ID ${part.itemId}`)}</span><span>${owned} / ${need}</span></div>`;
             }).join('');
             const available = Alchemy.canCraft(recipe, variant, Alchemy.quantity);
-            body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-bottom:8px;">${tabs}</div><div style="max-height:150px;overflow:auto;margin-bottom:10px;">${list}</div><div style="border:1px solid #777;padding:9px;background:#080808;"><div style="font-size:15px;color:#ffd700;font-weight:bold;">${esc(output?.name || recipe.id)} × ${recipe.outputCount * Alchemy.quantity}</div><div style="font-size:10px;color:#aaa;margin-bottom:7px;">${esc(output?.desc || '')}</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;">${variants}</div>${ingredientRows}<div style="display:grid;grid-template-columns:42px 1fr 42px;gap:6px;align-items:center;margin-top:9px;"><button class="btn" onclick="Alchemy.adjustQuantity(-1)">－</button><div style="text-align:center;color:#ffd700;">${Alchemy.quantity}回分</div><button class="btn" onclick="Alchemy.adjustQuantity(1)">＋</button></div><button class="menu-btn" ${available ? '' : 'disabled'} onclick="Alchemy.confirmCraft()" style="width:100%;height:42px;margin-top:9px;background:${available ? '#665000' : '#222'};border:2px solid ${available ? '#ffd700' : '#555'};color:${available ? '#fff' : '#777'};">${available ? '錬成する' : '素材が足りない'}</button></div>`;
+            body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-bottom:8px;">${tabs}</div><div id="alchemy-recipe-list" style="max-height:150px;overflow:auto;margin-bottom:10px;">${list}</div><div style="border:1px solid #777;padding:9px;background:#080808;"><div style="font-size:15px;color:#ffd700;font-weight:bold;">${esc(output?.name || recipe.id)} × ${recipe.outputCount * Alchemy.quantity}</div><div style="font-size:10px;color:#aaa;margin-bottom:7px;">${esc(output?.desc || '')}</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;">${variants}</div>${ingredientRows}<div style="display:grid;grid-template-columns:42px 1fr 42px;gap:6px;align-items:center;margin-top:9px;"><button class="btn" onclick="Alchemy.adjustQuantity(-1)">－</button><div style="text-align:center;color:#ffd700;">${Alchemy.quantity}回分</div><button class="btn" onclick="Alchemy.adjustQuantity(1)">＋</button></div><button class="menu-btn" ${available ? '' : 'disabled'} onclick="Alchemy.confirmCraft()" style="width:100%;height:42px;margin-top:9px;background:${available ? '#665000' : '#222'};border:2px solid ${available ? '#ffd700' : '#555'};color:${available ? '#fff' : '#777'};">${available ? '錬成する' : '素材が足りない'}</button></div>`;
+            const restoredList = document.getElementById('alchemy-recipe-list');
+            if (restoredList) restoredList.scrollTop = previousScrollTop;
         },
 
         confirmCraft: () => {

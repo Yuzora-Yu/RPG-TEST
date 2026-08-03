@@ -365,16 +365,21 @@ const MenuItems = {
         const characters = MenuItems.getTraitBookOwnedCharacters();
         const choices = characters.map(character => {
             const slots = MenuItems.getTraitBookEligibleSlots(character, item);
-            const canUse = slots.some(entry => entry.check.ok);
+            const addCheck = PassiveSkill.canAddTraitWithBook?.(character, Number(item.traitId)) || { ok:false };
+            const canReplace = slots.some(entry => entry.check.ok);
+            const canUse = addCheck.ok || canReplace;
             const duplicate = Array.isArray(character.traits) && character.traits.some(trait => Number(trait?.id) === Number(item.traitId));
             const typeLabel = PassiveSkill.getTraitBookCharacterTypeLabel?.(character) || '仲間';
-            let suffix = `${slots.length}枠`;
+            const traitCount = Array.isArray(character.traits) ? character.traits.length : 0;
+            let suffix = addCheck.ok ? `追加 ${traitCount}/7` : `${slots.length}交換枠`;
             if (duplicate) suffix = '同じ特性を所持';
-            else if (!slots.length) suffix = '交換可能枠なし';
+            else if (!canUse) suffix = '使用不可';
             return {
                 label: `${character.name || '名前なし'}［${typeLabel}／${suffix}］`,
                 disabled: !canUse,
-                callback: () => MenuItems.openTraitBookSlotSelection(item, character)
+                callback: () => addCheck.ok
+                    ? MenuItems.applyTraitBook(item, character, null)
+                    : MenuItems.openTraitBookSlotSelection(item, character)
             };
         });
         if (!choices.length) {
@@ -408,24 +413,31 @@ const MenuItems = {
 ※元の特性Lvを引き継ぎます。`, choices);
     },
 
-    applyTraitBook: (item, character, slotIndex) => {
+    applyTraitBook: (item, character, slotIndex = null) => {
         const targetMaster = PassiveSkill.MASTER?.[Number(item?.traitId)];
-        const current = character?.traits?.[Number(slotIndex)];
+        const isAdding = slotIndex == null;
+        const current = isAdding ? null : character?.traits?.[Number(slotIndex)];
         const currentMaster = PassiveSkill.MASTER?.[Number(current?.id)];
-        const level = Math.max(1, Number(current?.level || current?.lv || 1));
-        if (!item || !character || !current || !targetMaster) {
-            Menu.msg('特性交換の対象を確認できませんでした。');
+        const level = isAdding ? 1 : Math.max(1, Number(current?.level || current?.lv || 1));
+        if (!item || !character || !targetMaster || (!isAdding && !current)) {
+            Menu.msg('特性書の対象を確認できませんでした。');
             return;
         }
-        Menu.confirm(`${character.name}の「${currentMaster?.name || '特性'}」Lv${level}を「${targetMaster.name}」Lv${level}へ交換しますか？
-特性書は1冊消費されます。`, () => {
+        const prompt = isAdding
+            ? `${character.name}に「${targetMaster.name}」Lv1を追加しますか？
+特性書は1冊消費されます。`
+            : `${character.name}の「${currentMaster?.name || '特性'}」Lv${level}を「${targetMaster.name}」Lv${level}へ交換しますか？
+特性書は1冊消費されます。`;
+        Menu.confirm(prompt, () => {
             if (!Number(App.data?.items?.[item.id] || 0)) {
                 Menu.msg('アイテムを持っていません。');
                 return;
             }
-            const result = PassiveSkill.replaceTraitWithBook(character, slotIndex, Number(item.traitId));
+            const result = isAdding
+                ? PassiveSkill.addTraitWithBook(character, Number(item.traitId))
+                : PassiveSkill.replaceTraitWithBook(character, slotIndex, Number(item.traitId));
             if (!result.success) {
-                Menu.msg(result.message || '特性を交換できませんでした。');
+                Menu.msg(result.message || '特性書を使用できませんでした。');
                 return;
             }
             App.data.items[item.id] -= 1;
@@ -528,6 +540,8 @@ const MenuItems = {
                             MenuItems.playUseSe(item);
                             if (typeof Menu !== 'undefined' && typeof Menu.closeAll === 'function') Menu.closeAll();
                             if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
+                            if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') Field.refreshCurrentAction({ silent:true });
+                            if (typeof Field !== 'undefined' && typeof Field.startIdleStep === 'function') Field.startIdleStep();
                             if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
                             // 成功時は App.useSkyPrismTo() 側の App.log のみ表示する。
                             // 追加の「〇〇へ移動した！」モーダルは出さない。

@@ -1023,7 +1023,7 @@ const MenuAllies = {
                             <button class="btn" style="margin-left:5px; padding:2px 6px; font-size:10px;" onclick="window.saveName()">OK</button>
                         </div>
 
-                        <div style="font-size:11px; color:#aaa; margin-bottom:4px;">${c.job} Lv.${c.level} / ${c.rarity} Rank${c.reincarnationCount > 0 ? `  ★${c.reincarnationCount}` : ''}</div>
+                        <div style="font-size:11px; color:#aaa; margin-bottom:4px;">${c.job} Lv.${c.level} / ${c.rarity} Rank${App.isMonsterAlly?.(c) ? ((c.monsterFusionCount || 0) > 0 ? `  ◆合成${c.monsterFusionCount}` : '') : (c.reincarnationCount > 0 ? `  ★${c.reincarnationCount}` : '')}</div>
 
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;">
                             <div style="background:#333; padding:2px 4px; border-radius:3px; line-height:1.1;">
@@ -1900,7 +1900,7 @@ const MenuAllies = {
 
         for (let key in CONST.SKILL_TREES) {
             const treeDef = CONST.SKILL_TREES[key];
-            if ((treeDef.reqReincarnation || 0) > (c.reincarnationCount || 0)) continue;
+            if ((treeDef.reqReincarnation || 0) > App.getReincarnationEquivalentCount(c)) continue;
             const currentLevel = c.tree[key] || 0;
             const maxLevel = treeDef.steps.length;
             const div = document.createElement('div');

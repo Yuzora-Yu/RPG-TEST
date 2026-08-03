@@ -158,7 +158,8 @@ class Player extends Entity {
         }
 
         // ★修正: 転生回数を考慮した「実効レベル」を計算してスキル習得判定に使用
-        const effectiveLevel = data.level + (100 * (data.reincarnationCount || 0));
+        const equivalentCycles = data.isMonsterAlly === true ? (data.monsterFusionCount || 0) : (data.reincarnationCount || 0);
+        const effectiveLevel = data.level + (100 * equivalentCycles);
         const table = JOB_SKILLS[data.job];
         if (table) {
             for (let lv = 1; lv <= effectiveLevel; lv++) {
@@ -996,7 +997,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v27.20260802-runtime',
+    fullDataCacheName: 'prisma-abyss-v28.20260803-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -2370,6 +2371,9 @@ const App = {
             }
             if (typeof Facilities !== 'undefined') Facilities.closeModal?.('guild-scene');
             Menu.closeAll?.();
+            Field.render?.();
+            Field.refreshCurrentAction?.({ silent:true });
+            Field.startIdleStep?.();
         });
         return true;
     },
@@ -2646,145 +2650,136 @@ const App = {
 
     isMonsterAlly: (char) => !!(char && char.isMonsterAlly === true),
 
-    // 仲間モンスターの成長係数は、加入時の実ステータスそのものを使わない。
-    // 高Rank個体の数百～数千という値をそのまま growthBase にすると、通常仲間の数倍～数十倍成長するため、
-    // 通常仲間の growthBase 中央値を総量の基準にし、モンスター固有の得意・苦手だけを比率として残す。
+    // 通常仲間の転生回数と、仲間モンスターの合成回数を同じ育成周期として扱う。
+    getReincarnationEquivalentCount: (charData) => {
+        if (!charData) return 0;
+        const raw = App.isMonsterAlly(charData) ? charData.monsterFusionCount : charData.reincarnationCount;
+        return Math.max(0, Math.floor(Number(raw) || 0));
+    },
+
+    // 永続能力を維持したまま周回するため、旧仕様の「1回ごとに+100%」は廃止。
+    // 1回につき+10%、5回で最大+50%とし、通常仲間と仲間モンスターで共通化する。
+    getReincarnationGrowthMultiplier: (charData) => {
+        const count = Math.min(5, App.getReincarnationEquivalentCount(charData));
+        return 1 + count * 0.10;
+    },
+
+    // 仲間モンスターの成長型は monsters.js の各レコードへ明示する。
+    // ゲーム実行時には能力値から型を推測せず、マスターの allyGrowthType を正本として扱う。
     monsterAllyGrowthConfig: Object.freeze({
-        schemaVersion: 1,
+        schemaVersion: 2,
         stats: Object.freeze(['hp', 'mp', 'atk', 'def', 'mag', 'mdef', 'spd']),
+        combatStats: Object.freeze(['atk', 'def', 'mag', 'mdef', 'spd']),
         labels: Object.freeze({ hp:'HP', mp:'MP', atk:'攻撃', def:'防御', mag:'魔力', mdef:'魔防', spd:'速さ' }),
-        minMultiplier: 0.62,
-        maxMultiplier: 1.42
+        fallbackType: 'BALANCE_A'
     }),
 
-    getMedianNumber: (values, fallback = 1) => {
-        const sorted = (Array.isArray(values) ? values : [])
-            .map(Number).filter(Number.isFinite).sort((a, b) => a - b);
-        if (!sorted.length) return Number(fallback) || 1;
-        const mid = Math.floor(sorted.length / 2);
-        return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    getMonsterAllyGrowthTypeMaster: (growthType) => {
+        const registry = globalThis.MONSTER_ALLY_GROWTH_TYPE_MASTER;
+        const fallback = App.monsterAllyGrowthConfig.fallbackType;
+        const normalized = String(growthType || fallback).toUpperCase();
+        return {
+            registry,
+            id: registry?.types?.[normalized] ? normalized : fallback,
+            data: registry?.types?.[normalized] || registry?.types?.[fallback] || null
+        };
     },
 
-    getMonsterAllyGrowthBenchmarks: () => {
-        if (App._monsterAllyGrowthBenchmarks) return App._monsterAllyGrowthBenchmarks;
-        const keys = App.monsterAllyGrowthConfig.stats;
-        const fallbackGrowth = { hp:43, mp:17, atk:42, def:27, mag:38, mdef:34, spd:32 };
-        const fallbackInitial = { hp:35, mp:12, atk:20, def:18, mag:20, mdef:19, spd:18 };
-        const masters = (window.CHARACTERS_DATA || []).filter(master => master && master.growthBase);
-        const growthBase = {};
-        const initialBase = {};
-        keys.forEach(key => {
-            growthBase[key] = Math.max(1, Math.round(App.getMedianNumber(
-                masters.map(master => master.growthBase?.[key]), fallbackGrowth[key]
-            )));
-            initialBase[key] = Math.max(key === 'mp' ? 0 : 1, Math.round(App.getMedianNumber(
-                masters.map(master => master[key]), fallbackInitial[key]
-            )));
-        });
-        App._monsterAllyGrowthBenchmarks = Object.freeze({
-            growthBase: Object.freeze(growthBase),
-            initialBase: Object.freeze(initialBase)
-        });
-        return App._monsterAllyGrowthBenchmarks;
+    getMonsterMasterForAlly: (charOrMonsterId) => {
+        const monsterId = Number(typeof charOrMonsterId === 'object'
+            ? (charOrMonsterId?.monsterId ?? charOrMonsterId?.sourceMonsterId)
+            : charOrMonsterId);
+        if (!Number.isFinite(monsterId)) return null;
+        if (globalThis.MonsterData?.getMonsterById) return globalThis.MonsterData.getMonsterById(monsterId);
+        return (globalThis.MONSTERS_DATA || []).find(monster => Number(monster?.id) === monsterId) || null;
     },
 
-    // 同レベルの通常仲間が持つ、おおよその素ステータス中央値を決定論的に求める。
-    // 実キャラクターをランダム成長させて比較しないため、セーブ移行時にも同じ結果になる。
-    getMonsterAllyGrowthReferenceStats: (level = 1) => {
-        const lv = Math.max(1, Math.min(100, Math.floor(Number(level) || 1)));
-        const keys = App.monsterAllyGrowthConfig.stats;
-        const benchmarks = App.getMonsterAllyGrowthBenchmarks();
-        const masters = (window.CHARACTERS_DATA || []).filter(master => master && master.growthBase);
-        const result = {};
-        keys.forEach(key => {
-            const statMult = (key === 'hp' || key === 'mp') ? 2.0 : 1.0;
-            const flatAverage = (key === 'hp' || key === 'mp') ? 3.0 : 1.0;
-            const estimates = masters.map(master => {
-                const initial = Math.max(key === 'mp' ? 0 : 1, Number(master[key] ?? benchmarks.initialBase[key]) || 0);
-                const growth = Math.max(1, Number(master.growthBase?.[key] ?? benchmarks.growthBase[key]) || 1);
-                return initial + (lv - 1) * (growth * 0.06 * statMult + flatAverage);
-            });
-            const fallback = benchmarks.initialBase[key] + (lv - 1) * (benchmarks.growthBase[key] * 0.06 * statMult + flatAverage);
-            result[key] = Math.max(key === 'mp' ? 1 : 1, App.getMedianNumber(estimates, fallback));
-        });
-        return result;
+    getMonsterAllyGrowthReferenceCharacter: (referenceKey) => {
+        const registry = globalThis.MONSTER_ALLY_GROWTH_TYPE_MASTER;
+        const key = String(referenceKey || 'BALANCE').toUpperCase();
+        const id = Number(registry?.referenceCharacterIds?.[key] || registry?.referenceCharacterIds?.BALANCE || 301);
+        return (window.CHARACTERS_DATA || []).find(character => Number(character?.id) === id)
+            || (window.CHARACTERS_DATA || []).find(character => Number(character?.id) === 301)
+            || null;
     },
 
-    buildMonsterAllyGrowthProfile: (sourceStats = {}, level = 1) => {
-        const keys = App.monsterAllyGrowthConfig.stats;
-        const benchmarks = App.getMonsterAllyGrowthBenchmarks();
-        const reference = App.getMonsterAllyGrowthReferenceStats(level);
-        const ratios = {};
-        keys.forEach(key => {
-            const value = Math.max(0, Number(sourceStats[key]) || 0);
-            ratios[key] = Math.max(0.03, value / Math.max(1, Number(reference[key]) || 1));
-        });
+    getMonsterAllyNeutralCombatGrowth: () => {
+        if (App._monsterAllyNeutralCombatGrowth) return App._monsterAllyNeutralCombatGrowth;
+        const registry = globalThis.MONSTER_ALLY_GROWTH_TYPE_MASTER;
+        const ids = Object.values(registry?.referenceCharacterIds || { BALANCE:301, PHYSICAL:109, MAGIC:110 }).map(Number);
+        const refs = ids.map(id => (window.CHARACTERS_DATA || []).find(character => Number(character?.id) === id)).filter(Boolean);
+        const combatStats = App.monsterAllyGrowthConfig.combatStats;
+        const total = refs.reduce((sum, character) => {
+            return sum + combatStats.reduce((subTotal, key) => subTotal + Math.max(1, Number(character?.growthBase?.[key]) || 1), 0);
+        }, 0);
+        const fallbackPerStat = 29;
+        const perStat = refs.length > 0
+            ? Math.max(1, Math.round(total / (refs.length * combatStats.length)))
+            : fallbackPerStat;
+        // バランス型Aを全能力ほぼ同等にし、A/B/Cの特化比率をマスターの重みどおり表現する。
+        const result = Object.fromEntries(combatStats.map(key => [key, perStat]));
+        App._monsterAllyNeutralCombatGrowth = Object.freeze(result);
+        return App._monsterAllyNeutralCombatGrowth;
+    },
 
-        // 全体的に強い／弱いという加入時パワー差は初期値へ残し、成長総量には持ち込まない。
-        // 幾何平均からの相対比だけを使うことで、モンスターらしい能力配分を成長へ写す。
-        const geometricMean = Math.exp(keys.reduce((sum, key) => sum + Math.log(ratios[key]), 0) / keys.length);
-        const relative = {};
-        keys.forEach(key => { relative[key] = ratios[key] / Math.max(0.0001, geometricMean); });
-
-        const ordered = [...keys].sort((a, b) => relative[b] - relative[a]);
-        const strengths = ordered.slice(0, 2);
-        const weaknesses = ordered.slice(-2).reverse();
-        const multipliers = {};
-        keys.forEach(key => {
-            multipliers[key] = Math.max(0.68, Math.min(1.32, Math.pow(relative[key], 0.72)));
-        });
-
-        // 上位2項目と下位2項目には最低限の差を保証し、得意・苦手が成長結果で埋もれないようにする。
-        if (strengths[0]) multipliers[strengths[0]] = Math.max(multipliers[strengths[0]], 1.30);
-        if (strengths[1]) multipliers[strengths[1]] = Math.max(multipliers[strengths[1]], 1.17);
-        if (weaknesses[0]) multipliers[weaknesses[0]] = Math.min(multipliers[weaknesses[0]], 0.70);
-        if (weaknesses[1]) multipliers[weaknesses[1]] = Math.min(multipliers[weaknesses[1]], 0.84);
-
-        // 通常仲間の中央値と総成長量を揃えた後、個性の範囲だけを残す。
-        const baseTotal = keys.reduce((sum, key) => sum + benchmarks.growthBase[key], 0);
-        const weightedTotal = keys.reduce((sum, key) => sum + benchmarks.growthBase[key] * multipliers[key], 0);
+    buildMonsterAllyGrowthProfile: (growthType = null) => {
+        const typeMaster = App.getMonsterAllyGrowthTypeMaster(growthType);
+        const data = typeMaster.data || { hpMpReference:'BALANCE', weights:{ atk:1, def:1, mag:1, mdef:1, spd:1 }, label:'バランス型A' };
+        const hpMpRef = App.getMonsterAllyGrowthReferenceCharacter(data.hpMpReference);
+        const neutral = App.getMonsterAllyNeutralCombatGrowth();
+        const weights = data.weights || {};
+        const baseTotal = App.monsterAllyGrowthConfig.combatStats.reduce((sum, key) => sum + Math.max(1, Number(neutral[key]) || 1), 0);
+        const weightedTotal = App.monsterAllyGrowthConfig.combatStats.reduce((sum, key) => {
+            return sum + Math.max(1, Number(neutral[key]) || 1) * Math.max(0.01, Number(weights[key]) || 1);
+        }, 0);
         const normalize = weightedTotal > 0 ? baseTotal / weightedTotal : 1;
-        keys.forEach(key => {
-            multipliers[key] = Math.max(
-                App.monsterAllyGrowthConfig.minMultiplier,
-                Math.min(App.monsterAllyGrowthConfig.maxMultiplier, multipliers[key] * normalize)
-            );
+        const growthBase = {
+            hp: Math.max(1, Math.round(Number(hpMpRef?.growthBase?.hp) || 50)),
+            mp: Math.max(1, Math.round(Number(hpMpRef?.growthBase?.mp) || 18))
+        };
+        App.monsterAllyGrowthConfig.combatStats.forEach(key => {
+            growthBase[key] = Math.max(1, Math.round((Number(neutral[key]) || 1) * (Number(weights[key]) || 1) * normalize));
         });
-
-        const growthBase = {};
-        keys.forEach(key => {
-            growthBase[key] = Math.max(1, Math.round(benchmarks.growthBase[key] * multipliers[key]));
-        });
-        return { growthBase, strengths, weaknesses, multipliers, reference };
+        const ordered = App.monsterAllyGrowthConfig.combatStats
+            .map(key => ({ key, weight:Number(weights[key]) || 1 }))
+            .sort((a, b) => b.weight - a.weight || a.key.localeCompare(b.key));
+        const strengths = ordered.filter(entry => entry.weight > 1).map(entry => entry.key);
+        const weaknesses = ordered.filter(entry => entry.weight < 1).reverse().map(entry => entry.key);
+        return {
+            growthType: typeMaster.id,
+            label: data.label || typeMaster.id,
+            hpMpReference: data.hpMpReference || 'BALANCE',
+            growthBase,
+            strengths,
+            weaknesses,
+            multipliers: Object.fromEntries(App.monsterAllyGrowthConfig.combatStats.map(key => [key, Number(((Number(weights[key]) || 1) * normalize).toFixed(4))]))
+        };
     },
 
     applyMonsterAllyGrowthProfile: (char, options = {}) => {
         if (!App.isMonsterAlly(char)) return { changed:false, profile:null };
-        const level = Math.max(1, Math.min(100, Math.floor(Number(char.level) || 1)));
-        const source = options.sourceStats || {
-            hp: char.hp, mp: char.mp, atk: char.atk, def: char.def,
-            mag: char.mag, mdef: char.mdef, spd: char.spd
-        };
-        const profile = App.buildMonsterAllyGrowthProfile(source, level);
+        const sourceMaster = options.sourceMonster || App.getMonsterMasterForAlly(char);
+        const requestedType = options.growthType
+            || sourceMaster?.allyGrowthType
+            || char.monsterAllyMeta?.growthType
+            || App.monsterAllyGrowthConfig.fallbackType;
+        const profile = App.buildMonsterAllyGrowthProfile(requestedType);
         char.growthBase = { ...profile.growthBase };
-        if (!char.monsterAllyMeta || typeof char.monsterAllyMeta !== 'object' || Array.isArray(char.monsterAllyMeta)) {
-            char.monsterAllyMeta = {};
-        }
+        if (!char.monsterAllyMeta || typeof char.monsterAllyMeta !== 'object' || Array.isArray(char.monsterAllyMeta)) char.monsterAllyMeta = {};
         char.monsterAllyMeta.growthProfileVersion = App.monsterAllyGrowthConfig.schemaVersion;
+        char.monsterAllyMeta.growthType = profile.growthType;
+        char.monsterAllyMeta.growthTypeLabel = profile.label;
+        char.monsterAllyMeta.growthHpMpReference = profile.hpMpReference;
         char.monsterAllyMeta.growthStrengths = [...profile.strengths];
         char.monsterAllyMeta.growthWeaknesses = [...profile.weaknesses];
-        char.monsterAllyMeta.growthMultipliers = Object.fromEntries(
-            Object.entries(profile.multipliers).map(([key, value]) => [key, Number(value.toFixed(4))])
-        );
+        char.monsterAllyMeta.growthMultipliers = { ...profile.multipliers };
         return { changed:true, profile };
     },
 
     migrateMonsterAllyGrowthV1: (data = App.data) => {
         if (!data || typeof data !== 'object') return { changed:false, count:0 };
         if (!data.system || typeof data.system !== 'object' || Array.isArray(data.system)) data.system = {};
-        if (Number(data.system.monsterAllyGrowthSchemaVersion || 0) >= App.monsterAllyGrowthConfig.schemaVersion) {
-            return { changed:false, count:0 };
-        }
+        if (Number(data.system.monsterAllyGrowthSchemaVersion || 0) >= App.monsterAllyGrowthConfig.schemaVersion) return { changed:false, count:0 };
         let count = 0;
         if (Array.isArray(data.characters)) {
             data.characters.forEach(char => {
@@ -3218,10 +3213,8 @@ const App = {
 
         const traits = App.generateMonsterRecruitTraitsForLevel(joinLevel, base, enemy);
         const monsterImage = App.getMonsterRecruitImagePath(base, enemy);
-        const growthProfile = App.buildMonsterAllyGrowthProfile({
-            hp: hpMp.hp, mp: hpMp.mp, atk: atkMag.atk, def: defMdef.def,
-            mag: atkMag.mag, mdef: defMdef.mdef, spd
-        }, joinLevel);
+        const growthType = base.allyGrowthType || enemy.allyGrowthType || App.monsterAllyGrowthConfig.fallbackType;
+        const growthProfile = App.buildMonsterAllyGrowthProfile(growthType);
 
         const saveAlly = {
             uid,
@@ -3278,11 +3271,12 @@ const App = {
                 skillPointLevelTarget: Math.max(0, joinLevel - 1),
                 joinLevel,
                 growthProfileVersion: App.monsterAllyGrowthConfig.schemaVersion,
+                growthType: growthProfile.growthType,
+                growthTypeLabel: growthProfile.label,
+                growthHpMpReference: growthProfile.hpMpReference,
                 growthStrengths: [...growthProfile.strengths],
                 growthWeaknesses: [...growthProfile.weaknesses],
-                growthMultipliers: Object.fromEntries(
-                    Object.entries(growthProfile.multipliers).map(([key, value]) => [key, Number(value.toFixed(4))])
-                )
+                growthMultipliers: { ...growthProfile.multipliers }
             }
         };
 
@@ -5383,8 +5377,8 @@ load: () => {
         const silent = options.silent === true;
         const logs = [];
 
-        // 転生回数による補正倍率の計算
-        const reincMult = 1 + (charData.reincarnationCount || 0);
+        // 転生・モンスター合成による共通の成長補正。
+        const reincMult = App.getReincarnationGrowthMultiplier(charData);
 
         charData.level++;
 
@@ -5404,27 +5398,29 @@ load: () => {
         let magBonus = 0;  // 魔力用 (魔の極み)
         let mdefBonus = 0; // 魔法防御用 (魔の極み)
 
-        if (typeof PassiveSkill !== 'undefined' && PassiveSkill.getSumValue) {
-            // ID 58 大器晩成: stat_bonus_mult は 0.1(10%) 単位
-            statBonus = PassiveSkill.getSumValue(charData, 'stat_bonus_mult');
-
-            // ID 59 武の極み: 1(1%) 単位
-            atkBonus = PassiveSkill.getSumValue(charData, 'atk_growth_bonus') / 100;
-            defBonus = PassiveSkill.getSumValue(charData, 'def_growth_bonus') / 100;
-
-            // ID 60 魔の極み: 1(1%) 単位
-            magBonus = PassiveSkill.getSumValue(charData, 'mag_growth_bonus') / 100;
-            mdefBonus = PassiveSkill.getSumValue(charData, 'mdef_growth_bonus') / 100;
+        if (typeof PassiveSkill !== 'undefined') {
+            const getGrowthValue = typeof PassiveSkill.getOwnSumValue === 'function'
+                ? PassiveSkill.getOwnSumValue
+                : PassiveSkill.getSumValue;
+            if (typeof getGrowthValue === 'function') {
+                // 永続成長は本人が習得した特性だけを参照し、装備特性は含めない。
+                statBonus = getGrowthValue(charData, 'stat_bonus_mult');
+                atkBonus = getGrowthValue(charData, 'atk_growth_bonus') / 100;
+                defBonus = getGrowthValue(charData, 'def_growth_bonus') / 100;
+                magBonus = getGrowthValue(charData, 'mag_growth_bonus') / 100;
+                mdefBonus = getGrowthValue(charData, 'mdef_growth_bonus') / 100;
+            }
         }
 
-        // 各倍率の決定 (1.0 + 全体ボーナス + 個別ボーナス)
-        const hpMult   = 2.0 + statBonus;
-        const mpMult   = 2.0 + statBonus;
-        const atkMult  = 1.0 + statBonus + atkBonus;
-        const defMult  = 1.0 + statBonus + defBonus;
-        const magMult  = 1.0 + statBonus + magBonus;
-        const mdefMult = 1.0 + statBonus + mdefBonus;
-        const spdMult  = 1.0 + statBonus;
+        // 大器晩成は「全能力の最終成長量+10%/Lv」として乗算し、HP/MPだけ効果が半減する旧挙動を解消。
+        const allStatMult = 1.0 + Math.max(0, statBonus);
+        const hpMult   = 2.0 * allStatMult;
+        const mpMult   = 2.0 * allStatMult;
+        const atkMult  = (1.0 + atkBonus) * allStatMult;
+        const defMult  = (1.0 + defBonus) * allStatMult;
+        const magMult  = (1.0 + magBonus) * allStatMult;
+        const mdefMult = (1.0 + mdefBonus) * allStatMult;
+        const spdMult  = 1.0 * allStatMult;
 
         // 各ステータス上昇量の計算
         let incHp   = Math.max(1, Math.floor(((growthRef.hp || master.hp || 100) * reincMult) * r() * hpMult));
@@ -5953,7 +5949,7 @@ load: () => {
 		const level = charData.level || 1;
 
 		// 転生回数
-		const reincCount = charData.reincarnationCount || 0;
+		const reincCount = App.getReincarnationEquivalentCount(charData);
 
 		// 実質レベル（転生を考慮した内部レベル）
 		// 例：転生1回・表示Lv1 => eL=101
@@ -6065,12 +6061,13 @@ load: () => {
 		/* =====================================================
 		 * 特性補正：「58 大器晩成」の反映
 		 * ===================================================== */
-		// 特性による必要経験値の増加率を取得（スキルLv * 10%）
-		if (typeof PassiveSkill !== 'undefined' && PassiveSkill.getSumValue) {
-			// 修正後のキー 'exp_need_mult' を指定して合計値を取得
-			const expAddPct = PassiveSkill.getSumValue(charData, 'exp_need_mult');
+		// 特性による必要経験値の増加率を取得（スキルLv * 5%）
+		if (typeof PassiveSkill !== 'undefined' && (PassiveSkill.getOwnSumValue || PassiveSkill.getSumValue)) {
+			// 必要経験値補正も本人が習得した大器晩成だけを参照する。
+			const expValueGetter = PassiveSkill.getOwnSumValue || PassiveSkill.getSumValue;
+			const expAddPct = expValueGetter(charData, 'exp_need_mult');
 			if (expAddPct > 0) {
-				// 例: スキルLv1(10%)なら、必要経験値を1.1倍にする
+				// 例: スキルLv1(5%)なら、必要経験値を1.05倍にする
 				needExp = needExp * (1 + expAddPct / 100); 
 			}
 }
@@ -6202,87 +6199,139 @@ load: () => {
         return next;
     },
 
-    getMonsterFusionPreview: (primaryUid, materialUid, selectedSkillIds = null) => {
+    getMonsterFusionPreview: (primaryUid, materialUid, selectedSkillIds = null, selectedTraitIds = null) => {
         const primary = App.getChar(primaryUid);
         const material = App.getChar(materialUid);
         if (!primary || !material || primary.uid === material.uid || !App.isMonsterAlly(primary) || !App.isMonsterAlly(material)) {
-            return { ok: false, message: '合成する仲間モンスターを確認できません。' };
+            return { ok:false, message:'合成する仲間モンスターを確認できません。' };
         }
+
         const allSkills = Array.from(new Set([...(primary.skills || []), ...(material.skills || [])]
             .map(Number).filter(id => Number.isFinite(id) && id >= 100)));
-        let skills = allSkills.length <= 8
+        const selectedSkills = allSkills.length <= 8
             ? allSkills.slice()
-            : (Array.isArray(selectedSkillIds)
-                ? Array.from(new Set(selectedSkillIds.map(Number).filter(id => allSkills.includes(id))))
-                : []);
-        if (skills.length > 8) skills = skills.slice(0, 8);
+            : Array.from(new Set((Array.isArray(selectedSkillIds) ? selectedSkillIds : [])
+                .map(Number).filter(id => allSkills.includes(id)))).slice(0, 8);
+
+        const traitById = new Map();
+        [...(primary.traits || []), ...(material.traits || [])].forEach(trait => {
+            const id = Number(trait?.id);
+            if (!Number.isFinite(id) || id <= 0) return;
+            const current = traitById.get(id);
+            const level = Math.max(1, Math.floor(Number(trait?.level ?? trait?.lv) || 1));
+            const battleCount = Math.max(0, Math.floor(Number(trait?.battleCount) || 0));
+            if (!current || level > current.level || (level === current.level && battleCount > current.battleCount)) {
+                traitById.set(id, { id, level, battleCount });
+            }
+        });
+        const allTraits = Array.from(traitById.values());
+        const selectedTraitSet = new Set((Array.isArray(selectedTraitIds) ? selectedTraitIds : []).map(Number));
+        const traits = allTraits.length <= 6
+            ? allTraits.map(trait => ({ ...trait }))
+            : allTraits.filter(trait => selectedTraitSet.has(trait.id)).slice(0, 6).map(trait => ({ ...trait }));
+
         const stats = {};
         ['hp', 'mp', 'atk', 'def', 'mag', 'mdef', 'spd'].forEach(key => {
             const minimum = key === 'mp' ? 0 : 1;
-            stats[key] = Math.max(minimum, Math.floor((Number(primary[key] || 0) + Number(material[key] || 0)) / 4));
+            const primaryValue = Math.max(minimum, Math.floor(Number(primary[key]) || 0));
+            const materialBonus = Math.max(0, Math.floor((Number(material[key]) || 0) * 0.10));
+            stats[key] = Math.max(minimum, primaryValue + materialBonus);
         });
-        return { ok: true, primary, material, allSkills, skills, stats, requiresSkillSelection: allSkills.length > 8 };
+
+        return {
+            ok:true,
+            primary,
+            material,
+            allSkills,
+            skills:selectedSkills,
+            allTraits,
+            traits,
+            stats,
+            requiresSkillSelection:allSkills.length > 8,
+            requiresTraitSelection:allTraits.length > 6,
+            nextFusionCount:Math.max(0, Math.floor(Number(primary.monsterFusionCount) || 0)) + 1
+        };
     },
 
-    fuseMonsterAllies: (primaryUid, materialUid, selectedSkillIds = null) => {
-        const preview = App.getMonsterFusionPreview(primaryUid, materialUid, selectedSkillIds);
+    fuseMonsterAllies: (primaryUid, materialUid, selectedSkillIds = null, selectedTraitIds = null) => {
+        const preview = App.getMonsterFusionPreview(primaryUid, materialUid, selectedSkillIds, selectedTraitIds);
         if (!preview.ok) return preview;
-        if (preview.requiresSkillSelection && (!Array.isArray(selectedSkillIds) || preview.skills.length !== 8)) {
-            return { ...preview, ok: false, reason: 'needsSkillSelection', message: '引き継ぐスキルを8個選んでください。' };
+        if (preview.requiresSkillSelection && preview.skills.length !== 8) {
+            return { ...preview, ok:false, reason:'needsSkillSelection', message:'引き継ぐスキルを8個選んでください。' };
+        }
+        if (preview.requiresTraitSelection && preview.traits.length !== 6) {
+            return { ...preview, ok:false, reason:'needsTraitSelection', message:'引き継ぐ特性を6個選んでください。' };
         }
         const potId = Number(window.PRISMA_SYNTHESIS_POT_ITEM_ID || 599999);
-        if (Number(App.data?.items?.[potId] || 0) <= 0) return { ok: false, reason: 'noPot', message: '合成の壺を持っていません。' };
+        if (Number(App.data?.items?.[potId] || 0) <= 0) return { ok:false, reason:'noPot', message:'合成の壺を持っていません。' };
 
-        const { primary, material, skills, stats } = preview;
-        const returnedEquipment = Array.from(new Set(Object.values(material.equips || {}).filter(Boolean)));
+        const { primary, material, skills, traits, stats, nextFusionCount } = preview;
         if (!Array.isArray(App.data.inventory)) App.data.inventory = [];
+        const returnedEquipment = [];
+        const seenEquipment = new Set();
+        [primary, material].forEach(character => {
+            Object.values(character.equips || {}).forEach(equip => {
+                if (!equip || seenEquipment.has(equip)) return;
+                seenEquipment.add(equip);
+                returnedEquipment.push(equip);
+            });
+        });
         returnedEquipment.forEach(equip => App.data.inventory.push(equip));
 
         const retainedSkillSet = new Set(skills.map(Number));
+        const retainedTraitSet = new Set(traits.map(trait => Number(trait.id)));
         const oldConfig = (primary.config && typeof primary.config === 'object') ? primary.config : {};
+        const oldMeta = (primary.monsterAllyMeta && typeof primary.monsterAllyMeta === 'object') ? primary.monsterAllyMeta : {};
+        const primaryGrowthBase = primary.growthBase ? { ...primary.growthBase } : null;
+        const emptyEquips = { '武器':null, '盾':null, '頭':null, '体':null, '足':null };
+
         Object.assign(primary, stats, {
-            level: 1,
-            exp: 0,
-            sp: 0,
-            currentHp: stats.hp,
-            currentMp: stats.mp,
-            skills: skills.slice(0, 8),
-            skillBookSkills: [],
-            limitBreak: 0,
-            lbProgress: {
-                counters: { battleWins: 0 },
-                sources: { story: 0, battle: 0, dungeon: 0, quest: 0, boss: 0, prism: 0, random: 0, gacha: 0, monster: 0, trial: 0, item: 0, legacy: 0 },
-                trials: { mid: false, final: false, midClearedAt: null, finalClearedAt: null }
-            },
-            reincarnationCount: 0,
-            growthBase: { ...stats },
-            config: {
+            level:1,
+            exp:0,
+            currentHp:stats.hp,
+            currentMp:stats.mp,
+            skills:skills.slice(0, 8),
+            skillBookSkills:[],
+            traits:traits.map(trait => ({ ...trait })),
+            disabledTraits:(primary.disabledTraits || []).map(Number).filter(id => retainedTraitSet.has(id)),
+            equips:emptyEquips,
+            reincarnationCount:0,
+            monsterFusionCount:nextFusionCount,
+            config:{
                 ...oldConfig,
-                hiddenSkills: (oldConfig.hiddenSkills || []).map(Number).filter(id => retainedSkillSet.has(id)),
-                autoDisabledSkills: (oldConfig.autoDisabledSkills || []).map(Number).filter(id => retainedSkillSet.has(id))
-            },
-            monsterFusionCount: Math.max(0, Number(primary.monsterFusionCount || 0)) + 1
+                hiddenSkills:(oldConfig.hiddenSkills || []).map(Number).filter(id => retainedSkillSet.has(id)),
+                autoDisabledSkills:(oldConfig.autoDisabledSkills || []).map(Number).filter(id => retainedSkillSet.has(id))
+            }
         });
+        if (primaryGrowthBase) primary.growthBase = primaryGrowthBase;
+        else App.applyMonsterAllyGrowthProfile(primary);
         primary.monsterAllyMeta = {
-            ...(primary.monsterAllyMeta || {}),
-            fusedAt: Date.now(),
-            absorbedMonsterId: material.monsterId || material.sourceMonsterId || null,
-            absorbedName: material.name || ''
+            ...oldMeta,
+            growthProfileVersion:App.monsterAllyGrowthConfig.schemaVersion,
+            fusedAt:Date.now(),
+            fusionCount:nextFusionCount,
+            absorbedMonsterId:material.monsterId || material.sourceMonsterId || null,
+            absorbedName:material.name || ''
         };
+
         App.data.characters = (App.data.characters || []).filter(character => character && character.uid !== material.uid);
-        if (Array.isArray(App.data.party)) {
-            App.data.party = App.data.party.map(uid => uid === material.uid ? null : uid);
-        }
+        if (Array.isArray(App.data.party)) App.data.party = App.data.party.map(uid => uid === material.uid ? null : uid);
         App.data.items[potId]--;
         if (App.data.items[potId] <= 0) delete App.data.items[potId];
         App.ensureCharacterBattleConfig?.(primary);
+        if (typeof PassiveSkill !== 'undefined') PassiveSkill.normalizeDisabledTraits?.(primary);
+        const fusedStats = typeof App.calcStats === 'function'
+            ? App.calcStats(primary)
+            : { maxHp:primary.hp, maxMp:primary.mp };
+        primary.currentHp = Math.max(1, Math.floor(Number(fusedStats?.maxHp ?? primary.hp) || 1));
+        primary.currentMp = Math.max(0, Math.floor(Number(fusedStats?.maxMp ?? primary.mp) || 0));
         App.save();
         return {
-            ok: true,
-            character: primary,
-            consumedUid: material.uid,
-            returnedEquipmentCount: returnedEquipment.length,
-            message: `${primary.name}は新たな力を得てレベル1になった！`
+            ok:true,
+            character:primary,
+            consumedUid:material.uid,
+            returnedEquipmentCount:returnedEquipment.length,
+            message:`${primary.name}は新たな力を得てレベル1になった！\n合成回数: ${nextFusionCount}回`
         };
     },
 
@@ -6473,6 +6522,7 @@ load: () => {
                     char.skills = uniqueCharacterSkills(char.skills).filter(id => id >= 100).slice(0, 8);
                     char.skillBookSkills = [];
                     char.reincarnationCount = 0;
+                    char.monsterFusionCount = Math.max(0, Math.floor(Number(char.monsterFusionCount) || 0));
                 } else {
                     char.skills = uniqueCharacterSkills(char.skills);
                     char.skillBookSkills = uniqueBookSkills(char.skillBookSkills)
@@ -7069,6 +7119,7 @@ load: () => {
         if(sceneId === 'shop') Facilities.initShop();
         if(sceneId === 'alchemy' && typeof Alchemy !== 'undefined') Alchemy.init();
         if(sceneId === 'blacksmith' && typeof MenuBlacksmith !== 'undefined' && typeof MenuBlacksmith.initFacility === 'function') MenuBlacksmith.initFacility();
+        if(sceneId === 'monster-nursery' && typeof MonsterNursery !== 'undefined') MonsterNursery.init();
         if(sceneId === 'guild' && typeof Guild !== 'undefined' && typeof Guild.initFacility === 'function') Guild.initFacility();
     }
 };
@@ -9502,6 +9553,11 @@ const Field = {
 
         if (action.type === 'blacksmith' && typeof MenuBlacksmith !== 'undefined' && typeof MenuBlacksmith.openFromField === 'function') {
             MenuBlacksmith.openFromField(action);
+            return;
+        }
+
+        if (action.type === 'monsterNursery' && typeof MonsterNursery !== 'undefined' && typeof MonsterNursery.openFromField === 'function') {
+            MonsterNursery.openFromField(action);
             return;
         }
 

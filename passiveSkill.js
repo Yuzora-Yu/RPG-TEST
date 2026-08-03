@@ -131,9 +131,46 @@ PassiveSkill.getTraitBookCharacterTypeLabel = function(char) {
     return '仲間';
 };
 
+PassiveSkill.TRAIT_BOOK_MAX_TRAITS = 7;
+
+PassiveSkill.canAddTraitWithBook = function(char, traitId) {
+    const normalizedTraitId = Number(traitId);
+    if (!char) return { ok:false, reason:'特性データがありません。' };
+    if (!Array.isArray(char.traits)) char.traits = [];
+    if (!PassiveSkill.TRAIT_BOOK_TRAIT_IDS.includes(normalizedTraitId) || !PassiveSkill.MASTER[normalizedTraitId]) {
+        return { ok:false, reason:'この特性書は使用できません。' };
+    }
+    if (char.traits.some(trait => Number(trait?.id) === normalizedTraitId)) {
+        return { ok:false, reason:'同じ特性をすでに所持しています。' };
+    }
+    if (char.traits.length >= PassiveSkill.TRAIT_BOOK_MAX_TRAITS) {
+        return { ok:false, reason:'特性枠が上限です。' };
+    }
+    // レベルアップで取得する6枠を先に確保し、特性書による追加は7枠目だけに限定する。
+    if (char.traits.length !== PassiveSkill.TRAIT_BOOK_MAX_TRAITS - 1) {
+        return { ok:false, reason:'7つ目の特性は、特性を6個習得してから追加できます。' };
+    }
+    return { ok:true };
+};
+
+PassiveSkill.addTraitWithBook = function(char, traitId) {
+    const check = PassiveSkill.canAddTraitWithBook(char, traitId);
+    if (!check.ok) return { success:false, message:check.reason };
+    const normalizedTraitId = Number(traitId);
+    const newMaster = PassiveSkill.MASTER[normalizedTraitId];
+    char.traits.push({ id:normalizedTraitId, level:1, battleCount:0 });
+    PassiveSkill.normalizeDisabledTraits(char);
+    return {
+        success:true,
+        newTraitId:normalizedTraitId,
+        level:1,
+        message:`${char.name || '対象'}は「${newMaster?.name || '特性'}」Lv1を習得した！`
+    };
+};
+
 PassiveSkill.getTraitBookReplaceableSlots = function(char) {
     const traits = Array.isArray(char?.traits) ? char.traits : [];
-    const maxIndex = Math.min(5, traits.length - 1);
+    const maxIndex = Math.min(PassiveSkill.TRAIT_BOOK_MAX_TRAITS - 1, traits.length - 1);
     if (maxIndex < 0) return [];
     let startIndex = 4;
     if (PassiveSkill.isMonsterAllyCharacter(char)) startIndex = 0;
@@ -355,6 +392,24 @@ PassiveSkill.getUniqueEquips = function(entity) {
     return result;
 };
 
+
+/**
+ * キャラクター本人が習得している特性だけから補正値を算出する。
+ * 永続成長へ装備の付け替えが影響しないよう、レベルアップ成長専用で使用する。
+ */
+PassiveSkill.getOwnSumValue = function(entity, key) {
+    if (!entity || !key) return 0;
+    PassiveSkill.normalizeDisabledTraits(entity);
+    const disabled = new Set((entity.disabledTraits || []).map(Number));
+    return (Array.isArray(entity.traits) ? entity.traits : []).reduce((total, trait) => {
+        const id = Number(trait?.id);
+        if (!id || disabled.has(id)) return total;
+        const master = PassiveSkill.MASTER[id];
+        const value = Number(master?.params?.[key]);
+        const level = Math.max(0, Number(trait?.level ?? trait?.lv) || 0);
+        return Number.isFinite(value) ? total + value * level : total;
+    }, 0);
+};
 
 /**
  * 特定の補正項目の合計値を算出する

@@ -3248,6 +3248,13 @@ const FIXED_MAPS = {
                 "suppressEventMarker": true
             },
             {
+                "x": 15,
+                "y": 25,
+                "type": "monsterNursery",
+                "label": "モンスター育成所へ",
+                "suppressEventMarker": true
+            },
+            {
                 "x": 24,
                 "y": 5,
                 "type": "fixedMap",
