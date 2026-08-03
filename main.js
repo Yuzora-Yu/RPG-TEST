@@ -998,7 +998,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v36.20260803-runtime',
+    fullDataCacheName: 'prisma-abyss-v37.20260803-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -2930,10 +2930,23 @@ const App = {
         };
     },
 
+    getMonsterAllySourceId: (charOrMonsterId) => {
+        if (charOrMonsterId && typeof charOrMonsterId === 'object') {
+            const directId = Number(charOrMonsterId.monsterId ?? charOrMonsterId.sourceMonsterId);
+            if (Number.isFinite(directId) && directId > 0) return directId;
+            const encodedCharId = Number(charOrMonsterId.charId);
+            if (Number.isFinite(encodedCharId) && encodedCharId >= 900000000) {
+                const inferredId = encodedCharId - 900000000;
+                if (inferredId > 0) return inferredId;
+            }
+            return null;
+        }
+        const directId = Number(charOrMonsterId);
+        return Number.isFinite(directId) && directId > 0 ? directId : null;
+    },
+
     getMonsterMasterForAlly: (charOrMonsterId) => {
-        const monsterId = Number(typeof charOrMonsterId === 'object'
-            ? (charOrMonsterId?.monsterId ?? charOrMonsterId?.sourceMonsterId)
-            : charOrMonsterId);
+        const monsterId = App.getMonsterAllySourceId(charOrMonsterId);
         if (!Number.isFinite(monsterId)) return null;
         if (globalThis.MonsterData?.getMonsterById) return globalThis.MonsterData.getMonsterById(monsterId);
         return (globalThis.MONSTERS_DATA || []).find(monster => Number(monster?.id) === monsterId) || null;
@@ -3487,8 +3500,10 @@ const App = {
         const keys = ['hp', 'mp', 'atk', 'def', 'spd', 'mag', 'mdef'];
         const oldMaxHp = Math.max(1, Number(char.hp) || 1);
         const oldMaxMp = Math.max(0, Number(char.mp) || 0);
-        const oldCurrentHp = Math.max(0, Number(char.currentHp) || 0);
-        const oldCurrentMp = Math.max(0, Number(char.currentMp) || 0);
+        const hasCurrentHp = Number.isFinite(Number(char.currentHp));
+        const hasCurrentMp = Number.isFinite(Number(char.currentMp));
+        const oldCurrentHp = hasCurrentHp ? Math.max(0, Number(char.currentHp) || 0) : oldMaxHp;
+        const oldCurrentMp = hasCurrentMp ? Math.max(0, Number(char.currentMp) || 0) : oldMaxMp;
         const hpRatio = Math.min(1, oldCurrentHp / oldMaxHp);
         const mpRatio = oldMaxMp > 0 ? Math.min(1, oldCurrentMp / oldMaxMp) : 1;
         let count = 0;
@@ -3508,7 +3523,7 @@ const App = {
                 : Math.max(0, Math.min(Number(char.mp) || 0, Math.floor((Number(char.mp) || 0) * mpRatio)));
         }
         if (!char.monsterAllyMeta || typeof char.monsterAllyMeta !== 'object' || Array.isArray(char.monsterAllyMeta)) char.monsterAllyMeta = {};
-        char.monsterAllyMeta.statFloorProfileVersion = 1;
+        char.monsterAllyMeta.statFloorProfileVersion = 2;
         char.monsterAllyMeta.statFloorCharacterId = floorCharacterId;
         char.monsterAllyMeta.statFloorMultiplier = multiplier;
         return { changed: count > 0, count };
@@ -3526,6 +3541,32 @@ const App = {
                 App.applyMonsterAllyGrowthProfile(char, { sourceMonster: master, growthType:'ALL_SPECIAL' });
                 const result = App.applyMonsterAllyStatFloor(char, master, data);
                 if (result.changed) count++;
+            });
+            return { changed: count > 0, count };
+        }
+    ),
+
+    // V1済みセーブや旧形式のcharIdのみを持つ加入済み個体も、一度だけ確実に再補正する。
+    migrateGilgameshAllyDominanceV2: (data = App.data) => App.runOneTimeCompatibilityMigration(
+        data,
+        '20260803_gilgameshAllyDominanceV2',
+        () => {
+            if (!Array.isArray(data.characters)) return { changed:false, count:0 };
+            const master = App.getMonsterMasterForAlly(902000);
+            if (!master) return { changed:false, count:0 };
+            let count = 0;
+            data.characters.forEach(char => {
+                if (!char || typeof char !== 'object') return;
+                const sourceId = App.getMonsterAllySourceId(char);
+                const encodedGilgamesh = Number(char.charId) === 900902000;
+                if (sourceId !== 902000 && !encodedGilgamesh) return;
+                if (!App.isMonsterAlly(char) && !encodedGilgamesh) return;
+                char.isMonsterAlly = true;
+                char.monsterId = 902000;
+                char.sourceMonsterId = 902000;
+                App.applyMonsterAllyGrowthProfile(char, { sourceMonster: master, growthType:'ALL_SPECIAL' });
+                App.applyMonsterAllyStatFloor(char, master, data);
+                count++;
             });
             return { changed: count > 0, count };
         }
@@ -6950,7 +6991,7 @@ load: () => {
         App.migrateAbyssBossKillCountsV1(data);
         App.migrateAbyssBossKillCountsV2(data);
         App.migrateReincarnationGrowthFormulaV1(data);
-        App.migrateGilgameshAllyDominanceV1(data);
+        App.migrateGilgameshAllyDominanceV2(data);
         App.migrateLunaZenonBossVisualCleanupV1(data);
         App.purgeRemovedLegacyAbyssBossReferences(data);
         App.reconcileCarmenaGateProgress(data);

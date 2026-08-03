@@ -49,6 +49,7 @@ for (const [name, source] of [['inventory', inventory], ['allies', allies], ['pa
   assert(source.includes('getEquipmentNameLineHTML'), `${name} equipment list does not use the common Rank renderer.`);
 }
 assert(inventory.includes('compareEquipmentByRank'), 'Inventory Rank sort is not commonized.');
+assert(inventory.includes('flex:1; margin-right:4px;'), 'Inventory Rank label does not keep a dedicated gap from the lock button.');
 assert(allies.includes('compareEquipmentByRank'), 'Ally equipment Rank sort is not commonized.');
 assert(allies.includes("Menu.getEquipmentNameLineHTML(newItem)"), 'Ally equipment confirmation does not show Rank on the equipment name row.');
 assert(blacksmith.includes('compareEquipmentByRank'), 'Blacksmith Rank sort is not commonized.');

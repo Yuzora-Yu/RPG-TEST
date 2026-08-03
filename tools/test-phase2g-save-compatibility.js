@@ -97,14 +97,19 @@ const savedZenon = {
   hp: 12000, mp: 3500, atk: 2500, def: 2200, spd: 2100, mag: 2600, mdef: 2300
 };
 const gilgamesh = {
-  uid: 'gil-saved', charId: 902000, monsterId: 902000, sourceMonsterId: 902000,
+  uid: 'gil-saved', charId: 900902000,
   isMonsterAlly: true, name: 'ギルガメッシュ', level: 100,
   hp: 100, mp: 10, atk: 10, def: 10, spd: 10, mag: 10, mdef: 10,
   currentHp: 100, currentMp: 10, monsterAllyMeta: {}, growthBase: {}
 };
-const gilData = { system: {}, characters: [savedZenon, gilgamesh] };
-const gilResult = App.migrateGilgameshAllyDominanceV1(gilData);
+const gilData = {
+  system: { oneTimeMigrations: { '20260803_gilgameshAllyDominanceV1': { completedAt: 1, changed: false, count: 0 } } },
+  characters: [savedZenon, gilgamesh]
+};
+const gilResult = App.migrateGilgameshAllyDominanceV2(gilData);
 assert.strictEqual(gilResult.changed, true);
+assert.strictEqual(gilgamesh.monsterId, 902000, 'Legacy Gilgamesh monsterId was not restored.');
+assert.strictEqual(gilgamesh.sourceMonsterId, 902000, 'Legacy Gilgamesh sourceMonsterId was not restored.');
 assert.strictEqual(gilgamesh.monsterAllyMeta.growthType, 'ALL_SPECIAL');
 for (const key of statKeys) {
   assert(gilgamesh[key] > savedZenon[key], `Gilgamesh ${key} does not exceed same-level Zenon.`);
@@ -113,6 +118,9 @@ for (const key of statKeys) {
 assert.strictEqual(gilgamesh.currentHp, gilgamesh.hp, 'Full HP was not preserved after stat migration.');
 assert.strictEqual(gilgamesh.currentMp, gilgamesh.mp, 'Full MP was not preserved after stat migration.');
 assert.strictEqual(gilgameshMaster.specialBossRules.allyStatFloorCharacterId, 402);
+const gilAfterV2 = Object.fromEntries(statKeys.map(key => [key, gilgamesh[key]]));
+assert.strictEqual(App.migrateGilgameshAllyDominanceV2(gilData).applied, false, 'Gilgamesh V2 migration ran twice.');
+assert.deepStrictEqual(Object.fromEntries(statKeys.map(key => [key, gilgamesh[key]])), gilAfterV2, 'Gilgamesh stats changed after the one-time migration completed.');
 
 // Completed Luna/Zenon quests clear only their stale persistent boss visuals.
 const visualData = {

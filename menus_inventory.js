@@ -200,7 +200,7 @@ const MenuInventory = {
 
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; width:100%; border-bottom:1px solid #333; padding-bottom:4px; margin-bottom:4px;">
-                    <div style="display:flex; align-items:center; gap:5px; min-width:0; flex:1;">
+                    <div style="display:flex; align-items:center; gap:5px; min-width:0; flex:1; margin-right:4px;">
                         <input type="checkbox" ${selectedSet.has(String(item.id)) ? 'checked' : ''} ${item.locked || owner ? 'disabled' : ''}>
                         ${Menu.getEquipmentNameLineHTML(item, { suffixHTML: `${item.locked ? ' <span style="color:#ffd700;font-size:10px;">🔒</span>' : ''}${owner ? ` <span style="color:#f88;font-size:9px;">[${owner.name}]</span>` : ''}` })}
                     </div>
