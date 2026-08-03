@@ -1041,9 +1041,17 @@ const Facilities = {
         const title = config.title || Facilities.shopTypeLabels[type] || '店';
         const rank = Math.max(1, Number(config.shopRank || config.rank || Facilities.getCurrentAreaShopRank()) || 1);
         const area = App?.data?.location?.area || 'WORLD';
-        App.data.currentShop = { type, title, rank, area, itemIds: Array.isArray(config.itemIds) ? config.itemIds.map(Number).filter(Number.isFinite) : null, mode: 'home', openedAt: Date.now() };
+        App.data.currentShop = {
+            type, title, rank, area,
+            itemIds: Array.isArray(config.itemIds) ? config.itemIds.map(Number).filter(Number.isFinite) : null,
+            priceByItem: config.priceByItem && typeof config.priceByItem === 'object'
+                ? Object.fromEntries(Object.entries(config.priceByItem).map(([id, price]) => [String(Number(id)), Math.max(1, Math.floor(Number(price) || 1))]))
+                : null,
+            mode: 'home', openedAt: Date.now()
+        };
         Facilities.shopSelectedKey = null;
         Facilities.shopPendingTrade = null;
+        App.save?.();
         App.changeScene('shop');
     },
 
@@ -1072,6 +1080,16 @@ const Facilities = {
             Facilities.openShopLineup('sell');
             Facilities.renderShopSellList();
         } else Facilities.renderShopHome();
+    },
+
+    getShopItemPrice: (itemOrId, config = App?.data?.currentShop) => {
+        const item = typeof itemOrId === 'object'
+            ? itemOrId
+            : (DB.ITEMS || []).find(entry => Number(entry.id) === Number(itemOrId));
+        if (!item) return 0;
+        const override = config?.priceByItem?.[String(Number(item.id))];
+        if (Number.isFinite(Number(override)) && Number(override) > 0) return Math.max(1, Math.floor(Number(override)));
+        return Math.max(0, Math.floor(Number(item.price || 0)));
     },
 
     getShopTalk: (type) => {
@@ -1198,7 +1216,7 @@ const Facilities = {
     showShopItemHelp: (itemId) => {
         const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(itemId));
         if (!item) return;
-        const cost = Number(item.price || 0);
+        const cost = Facilities.getShopItemPrice(item);
         const owned = Number(App.data.items?.[item.id] || 0);
         Facilities.setShopHelp(`
             <div class="shop-detail-titlebar">
@@ -1277,7 +1295,7 @@ const Facilities = {
             return;
         }
         list.innerHTML = Facilities.renderShopColumnHeader('', '名前', '買値', 'item') + items.map(item => {
-            const cost = Number(item.price || 0);
+            const cost = Facilities.getShopItemPrice(item);
             const owned = Number(App.data.items?.[item.id] || 0);
             const key = `buy-item-${Number(item.id)}`;
             return `<button class="shop-row item" data-shop-key="${Facilities.escapeAttr(key)}" onclick="Facilities.selectShopBuyItem(${Number(item.id)})" onmouseenter="Facilities.showShopItemHelp(${Number(item.id)})" onfocus="Facilities.showShopItemHelp(${Number(item.id)})">
@@ -1305,7 +1323,7 @@ const Facilities = {
     openShopItemBuyModal: (itemId) => {
         const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(itemId));
         if (!item) return Menu.msg('その品物は見つかりません。');
-        const price = Math.max(0, Number(item.price || 0));
+        const price = Facilities.getShopItemPrice(item);
         if (price <= 0) return Menu.msg('その品物は購入できません。');
         const affordable = Math.floor((App.data.gold || 0) / price);
         if (affordable <= 0) return Menu.msg('ゴールドが 足りません。');
@@ -1315,7 +1333,7 @@ const Facilities = {
     },
 
     renderShopItemBuyModalHtml: (item) => {
-        const price = Math.max(0, Number(item.price || 0));
+        const price = Facilities.getShopItemPrice(item);
         return `
             <div class="shop-confirm-card">
                 <div class="shop-confirm-title">${Facilities.escapeAttr(item.name)}</div>

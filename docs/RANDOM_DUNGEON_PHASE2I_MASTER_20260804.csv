@@ -1,0 +1,16 @@
+category,id,label,rate_or_value,target_floor,enemy_count,stat_multiplier,reward_or_effect,notes
+spirit_fragment,resistance_per_fragment,各属性結晶片の全体耐性,20%,,,,+20%対応属性耐性,現在・将来加入仲間へ動的適用
+angel_trial,angel_trial,天使の試練,,current+15,3,1.35,永続能力上昇3回,専用戦闘コンテキスト
+abyss_rift,abyss_rift,深淵の亀裂,,current+10,3,1.25,+3装備,結果ジャーナルと受取待ちを保存
+adventurer,equipment,装備取得,30%,current+5,,,+3装備1個,話しかけた時点で結果確定
+adventurer,duel,腕試し,30%,current+10,1,階層補正,monster ID302001 深淵門将ガレオン,形態移行なし
+adventurer,shop,道具屋,20%,,, ,5商品・価格50%～300%,各商品枠5%で特性書候補
+adventurer,hunters,ハンター召喚,10%,current+20,3,通常階層補正,フロアへ5体,移動速度1.5倍
+adventurer,rare_ambush,レア奇襲,10%,current,5,レア個体,プレイヤー先制,オート戦闘強制解除
+map,reused_map,既存マップ流用,10%,,,,地形のみ流用,開始位置と階段を到達可能領域へランダム配置
+floor_modifier,danger_treasure,強敵の財宝階,5%,,,1.35,レアドロップ2倍・+3抽選+20pt,通常新規階のみ
+floor_modifier,rare_surge,希少種の気配,4%,,,,レア遭遇2倍,通常新規階のみ
+floor_modifier,story_boss_echo,物語の残響,3%,,,1.15,遭遇率0.45倍・HP通常敵基準2倍,物語ボス外見だが通常敵報酬
+boss_drop,endless_wedge,災厄の楔追加,10%,display>=101,,,item ID98×1,ランダム深淵通常ボスのみ
+ex_equipment,base_stat_scale,【EX】基礎7能力,55%,,,,HP/MP/攻/防/速/魔/魔防,オプションと特性は維持
+ex_equipment,reward_floor,【EX】報酬生成階層,,250+defeats*5,,,上限400,完了討伐数を使用

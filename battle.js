@@ -170,8 +170,147 @@ const Battle = {
         return Math.max(0, Math.min(100, configuredRate + Number(bonus || 0)));
     },
 
-    rollConfiguredDrop: (drop, bonus = 0) => {
-        return Math.random() * 100 < Battle.getConfiguredDropRate(drop, bonus);
+    rollConfiguredDrop: (drop, bonus = 0, rateMultiplier = 1) => {
+        const rate = Math.max(0, Math.min(100, Battle.getConfiguredDropRate(drop, bonus) * Math.max(0, Number(rateMultiplier || 1))));
+        return Math.random() * 100 < rate;
+    },
+
+    getEndlessBossWedgeDropRule: (data = App.data) => {
+        const master = globalThis.ABYSS_REGION_CONTENT?.randomDungeonPhase2IMaster?.endlessBossWedge || {};
+        const battle = data?.battle || {};
+        const mode = battle.abyssMode || data?.dungeon?.abyssMode || null;
+        const displayFloor = Math.max(1, Math.floor(Number(battle.abyssFloor || data?.dungeon?.floor || data?.progress?.floor || 1) || 1));
+        const minimumDisplayFloor = Math.max(1, Math.floor(Number(master.minimumDisplayFloor || 101) || 101));
+        const isRandomMode = globalThis.ABYSS_FLOOR_RULES?.isRandomMode
+            ? globalThis.ABYSS_FLOOR_RULES.isRandomMode(mode)
+            : String(mode) === 'random';
+        const excluded = battle.isSpecialBoss === true || battle.isEstark === true
+            || battle.randomAdventurerDuel != null || battle.randomHunter != null
+            || battle.randomRareAmbush != null || battle.riftRewardId != null
+            || battle.angelTrial != null || battle.guildQuestRun != null
+            || battle.storyBossTraining === true;
+        return {
+            itemId:Number(master.itemId || 98),
+            rate:Math.max(0, Math.min(1, Number(master.rate || 0.10))),
+            displayFloor,
+            minimumDisplayFloor,
+            eligible:data?.location?.area === 'ABYSS' && isRandomMode && battle.isBossBattle === true
+                && displayFloor >= minimumDisplayFloor && !excluded
+        };
+    },
+
+    applyEndlessBossWedgeDrop: (drops = [], options = {}) => {
+        const rule = Battle.getEndlessBossWedgeDropRule(options.data || App.data);
+        const random = typeof options.random === 'function' ? options.random : Math.random;
+        const outcome = {
+            version:1,
+            itemId:rule.itemId,
+            rate:rule.rate,
+            displayFloor:rule.displayFloor,
+            eligible:rule.eligible,
+            granted:false
+        };
+        if (!rule.eligible || random() >= rule.rate) return outcome;
+        const itemDef = DB.ITEMS.find(item => Number(item.id) === Number(rule.itemId));
+        if (!itemDef) return { ...outcome, missingItemMaster:true };
+        if (!App.data.items || typeof App.data.items !== 'object') App.data.items = {};
+        App.data.items[rule.itemId] = Math.max(0, Number(App.data.items[rule.itemId]) || 0) + 1;
+        if (Array.isArray(drops)) drops.push({ name:itemDef.name, isRare:true, type:'kai', kind:'item', endlessBossWedge:true });
+        return { ...outcome, granted:true, itemName:itemDef.name };
+    },
+
+    scaleEnemyCombatStats: (enemy, multiplier = 1, marker = null) => {
+        if (!enemy) return enemy;
+        const mult = Math.max(0.01, Number(multiplier || 1));
+        if (marker && enemy[marker]) return enemy;
+        enemy.hp = Math.max(1, Math.floor(Number(enemy.hp || 1) * mult));
+        enemy.baseMaxHp = Math.max(1, Math.floor(Number(enemy.baseMaxHp || enemy.hp || 1) * mult));
+        enemy.mp = Math.max(0, Math.floor(Number(enemy.mp || 0) * mult));
+        enemy.baseMaxMp = Math.max(0, Math.floor(Number(enemy.baseMaxMp || enemy.mp || 0) * mult));
+        ['atk','def','spd','mag','mdef'].forEach(key => {
+            if (enemy.baseStats?.[key] !== undefined) enemy.baseStats[key] = Math.max(0, Math.floor(Number(enemy.baseStats[key] || 0) * mult));
+            if (enemy[key] !== undefined) enemy[key] = Math.max(0, Math.floor(Number(enemy[key] || 0) * mult));
+        });
+        if (marker) enemy[marker] = mult;
+        return enemy;
+    },
+
+    getDeepNormalBaseCandidates: () => {
+        let candidates = [];
+        if (window.MonsterData && typeof window.MonsterData.getDeepFloorNormalBaseCandidates === 'function') {
+            candidates = window.MonsterData.getDeepFloorNormalBaseCandidates() || [];
+        }
+        if (!candidates.length && window.MonsterData && typeof window.MonsterData.generateBandMonster === 'function') {
+            const fallback = window.MonsterData.generateBandMonster(200);
+            if (fallback) candidates = [fallback];
+        }
+        return candidates.filter(base => base && !base.isBoss && !base.isRare && !Battle.isSpecialBossBase(base));
+    },
+
+    createDeepNormalEnemy: (targetFloor, options = {}) => {
+        const floor = Math.max(1, Number(targetFloor) || 1);
+        let base = null;
+        if (floor < 201 && window.MonsterData && typeof window.MonsterData.generateEnemyForFloor === 'function') {
+            base = window.MonsterData.generateEnemyForFloor(floor, { allowRare:false });
+        }
+        if (!base) {
+            const candidates = Battle.getDeepNormalBaseCandidates();
+            base = candidates[Math.floor(Math.random() * candidates.length)] || null;
+        }
+        if (!base && Array.isArray(DB.MONSTERS)) {
+            const candidates = DB.MONSTERS.filter(entry => entry && !entry.isBoss && !entry.isRare && !Battle.isSpecialBossBase(entry));
+            base = candidates[Math.floor(Math.random() * candidates.length)] || null;
+        }
+        if (!base) return null;
+        const enemy = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), floor, false)
+            || Battle.createMonsterFromBase(base, { isBossBattle:false });
+        if (!enemy) return null;
+        if (options.statMultiplier) Battle.scaleEnemyCombatStats(enemy, options.statMultiplier, options.marker || null);
+        return enemy;
+    },
+
+    createStoryBossEchoEnemy: (targetFloor, index = 0, total = 1) => {
+        const master = globalThis.ABYSS_REGION_CONTENT?.randomDungeonPhase2IMaster || {};
+        const ids = Array.isArray(master.storyBossEchoIds) ? master.storyBossEchoIds : [];
+        const bossBase = Battle.getMonsterBaseById(ids[Math.floor(Math.random() * ids.length)]);
+        const reference = Battle.createDeepNormalEnemy(targetFloor);
+        if (!bossBase || !reference) return reference;
+        const enemy = Battle.createMonsterFromBase(bossBase, {
+            isBossBattle:false,
+            name:`${bossBase.name || '物語の残響'}${total > 1 ? String.fromCharCode(65 + index) : ''}`
+        });
+        if (!enemy) return reference;
+        const modifier = App.data?.battle?.randomDungeonModifier || {};
+        const statMult = Math.max(1, Number(modifier.normalStatMultiplier || 1.15));
+        const hpMult = Math.max(1, Number(modifier.hpNormalMultiplier || 2));
+        enemy.hp = Math.max(1, Math.floor(Number(reference.baseMaxHp || reference.hp || 1) * hpMult));
+        enemy.baseMaxHp = enemy.hp;
+        enemy.mp = Math.max(0, Math.floor(Number(reference.baseMaxMp || reference.mp || 0) * statMult));
+        enemy.baseMaxMp = enemy.mp;
+        ['atk','def','spd','mag','mdef'].forEach(key => {
+            const value = Math.max(0, Math.floor(Number(reference.baseStats?.[key] ?? reference[key] ?? 0) * statMult));
+            if (!enemy.baseStats) enemy.baseStats = {};
+            enemy.baseStats[key] = value;
+            enemy[key] = value;
+        });
+        enemy.exp = Math.max(1, Math.floor(Number(reference.exp || 0) * 1.5));
+        enemy.gold = Math.max(0, Math.floor(Number(reference.gold || 0) * 1.5));
+        enemy.isBoss = false;
+        enemy.isStoryBossEcho = true;
+        enemy.storyBossEchoSourceId = Number(bossBase.id);
+        delete enemy.phaseTransition;
+        delete enemy.phaseTransitionMonsterId;
+        delete enemy.phaseTransitionConversation;
+        return enemy;
+    },
+
+    applyRandomDungeonModifier: (enemy, modifier = App.data?.battle?.randomDungeonModifier) => {
+        if (!enemy || !modifier?.id) return enemy;
+        if (modifier.id === 'dangerTreasure') {
+            Battle.scaleEnemyCombatStats(enemy, Math.max(1, Number(modifier.enemyStatMultiplier || 1.35)), 'randomDungeonDangerScale');
+        }
+        enemy.randomDungeonModifierId = modifier.id;
+        return enemy;
     },
 
     getSurvivingPartyPassiveSum: (key) => {
@@ -1841,6 +1980,7 @@ const Battle = {
         Battle.commandQueue = [];
         Battle.currentActorIndex = 0;
         Battle.auto = options.forceManual === true ? false : Battle.getAutoStartSetting();
+        if (App.data?.battle?.forceAutoOff === true) Battle.auto = false;
         Battle.runAttemptCount = 0; 
         Battle.skillScrollPositions = {};
         Battle.updateAutoButton();
@@ -1992,6 +2132,9 @@ const Battle = {
             Battle.assignDuplicateMonsterSuffixes(Battle.enemies);
         } else {
             Battle.enemies = Battle.generateNewEnemies(isBoss || isSpecialBoss, fixedId);
+            if (App.data?.battle?.randomDungeonModifier) {
+                Battle.enemies.forEach(enemy => Battle.applyRandomDungeonModifier(enemy, App.data.battle.randomDungeonModifier));
+            }
             Battle.assignDuplicateMonsterSuffixes(Battle.enemies);
             Battle.enemies.forEach(e => Battle.initBattleStatus(e));
             
@@ -2450,6 +2593,25 @@ const Battle = {
         return Math.max(0, Math.min(rules.recruitMaxRate, chance));
     },
 
+    applySpecialBossEquipmentBalance: (equipment, options = {}) => {
+        if (!equipment || typeof equipment !== 'object') return equipment;
+        const scale = Math.max(0.01, Number(options.baseStatScale || 0.55));
+        const version = Math.max(2, Number(options.version || 2));
+        if (Number(equipment.specialBossEquipmentBalanceVersion || 0) >= version) return equipment;
+        const keys = ['hp','mp','atk','def','spd','mag','mdef'];
+        if (equipment.data && typeof equipment.data === 'object') {
+            keys.forEach(key => {
+                if (!Number.isFinite(Number(equipment.data[key]))) return;
+                const minimum = key === 'mp' ? 0 : 1;
+                equipment.data[key] = Math.max(minimum, Math.floor(Number(equipment.data[key]) * scale));
+            });
+        }
+        equipment.specialBossEquipmentBalanceVersion = version;
+        equipment.specialBossEquipmentBaseStatScale = scale;
+        equipment.specialBossMonsterId = Number(options.monsterId || equipment.specialBossMonsterId || 902000);
+        return equipment;
+    },
+
     applySpecialBossVictoryOutcome: (specialEnemy, options = {}) => {
         if (!specialEnemy || !App.data) return null;
         if (!App.data.battle) App.data.battle = {};
@@ -2484,16 +2646,28 @@ const Battle = {
         }
 
         let equipmentName = '';
+        let equipmentRewardFloor = null;
+        let equipmentBaseStatScale = null;
         const equipRule = rules.guaranteedEquipment;
         if (equipRule && typeof createEquipment === 'function') {
-            const baseRank = Math.max(1, Number(specialEnemy.rank || base.rank || 999));
-            const rewardFloor = baseRank + completedDefeats * 5;
+            const phase2IMaster = globalThis.ABYSS_REGION_CONTENT?.randomDungeonPhase2IMaster?.specialBossEquipment || {};
+            const floorBase = Math.max(1, Number(equipRule.rewardFloorBase || phase2IMaster.rewardFloorBase || 250));
+            const floorPerDefeat = Math.max(0, Number(equipRule.rewardFloorPerDefeat || phase2IMaster.rewardFloorPerDefeat || 5));
+            const floorCap = Math.max(floorBase, Number(equipRule.rewardFloorCap || phase2IMaster.rewardFloorCap || 400));
+            const rewardFloor = Math.min(floorCap, floorBase + Math.max(0, completedDefeats - 1) * floorPerDefeat);
+            equipmentRewardFloor = rewardFloor;
+            equipmentBaseStatScale = Number(equipRule.baseStatScale || phase2IMaster.baseStatScale || 0.55);
             const eq = createEquipment(
                 rewardFloor,
                 Math.max(0, Math.floor(Number(equipRule.plus) || 3)),
                 Array.isArray(equipRule.minRarities) && equipRule.minRarities.length ? equipRule.minRarities : ['UR', 'EX']
             );
             if (eq) {
+                Battle.applySpecialBossEquipmentBalance(eq, {
+                    baseStatScale:equipmentBaseStatScale,
+                    monsterId:specialId,
+                    version:2
+                });
                 if (Number.isFinite(Number(eq.val))) eq.val = Math.floor(Number(eq.val) * Math.max(1, Number(equipRule.valueMultiplier) || 1));
                 eq.name = `${equipRule.namePrefix || ''}${eq.name || '特殊装備'}`;
                 equipmentName = eq.name;
@@ -2542,6 +2716,8 @@ const Battle = {
             requiredItemName,
             gemReward:rules.gemReward,
             equipmentName,
+            equipmentRewardFloor,
+            equipmentBaseStatScale,
             rareDropId,
             normalDropId,
             linkedRareDropId,
@@ -2663,30 +2839,11 @@ const Battle = {
         return m;
     },
 
-    applyRiftEnemyBoost: (enemy) => {
+    applyRiftEnemyBoost: (enemy, multiplier = null) => {
         if (!enemy) return enemy;
-        const scaleNumber = (value, rate, min = 0) => {
-            const n = Number(value || 0);
-            if (!Number.isFinite(n)) return value;
-            const scaled = Math.floor(n * rate);
-            return Math.max(min, scaled);
-        };
-
+        const masterMultiplier = globalThis.ABYSS_REGION_CONTENT?.randomDungeonPhase2IMaster?.abyssRift?.statMultiplier || 1.25;
+        Battle.scaleEnemyCombatStats(enemy, Math.max(1, Number(multiplier || masterMultiplier)), 'riftStatMultiplier');
         enemy.isRiftEnemy = true;
-        enemy.hp = scaleNumber(enemy.hp, 1.5, 1);
-        enemy.baseMaxHp = scaleNumber(enemy.baseMaxHp || enemy.hp, 1.5, enemy.hp);
-        enemy.mp = scaleNumber(enemy.mp, 1.1, 0);
-        enemy.baseMaxMp = scaleNumber(enemy.baseMaxMp || enemy.mp, 1.1, enemy.mp);
-
-        if (enemy.baseStats) {
-            ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
-                enemy.baseStats[key] = scaleNumber(enemy.baseStats[key], 1.1, 0);
-            });
-        }
-        ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
-            if (enemy[key] !== undefined) enemy[key] = scaleNumber(enemy[key], 1.1, 0);
-        });
-
         return enemy;
     },
 
@@ -2800,6 +2957,93 @@ const Battle = {
             return m;
         };
 
+        // 試練の天使は現在階層の固定モンスターIDではなく、正式マスターの
+        // 階層差・個体数・倍率を使った通常深層敵として生成する。
+        if (!isBoss && battleData.angelTrial) {
+            const trial = battleData.angelTrial;
+            const total = Math.max(1, Number(trial.enemyCount || 3));
+            const targetFloor = Math.max(1, Number(trial.targetFloor || abyssBalanceFloor + 15));
+            Battle.log('<span style="color:#fff3a6;font-weight:bold;">天使の試練を担う強敵が現れた！</span>');
+            for (let i = 0; i < total; i++) {
+                const enemy = Battle.createDeepNormalEnemy(targetFloor, {
+                    statMultiplier:Math.max(1, Number(trial.statMultiplier || 1.35)),
+                    marker:'angelTrialStatMultiplier'
+                });
+                if (!enemy) continue;
+                Battle.applyMapEnemyBoost(enemy, trial.enemyBoost || null);
+                if (total > 1) enemy.name += String.fromCharCode(65 + i);
+                enemy.isAngelTrialEnemy = true;
+                newEnemies.push(enemy);
+            }
+            return newEnemies;
+        }
+
+        // 冒険者の腕試し。現行マスター上の正式ID302001（深淵門将ガレオン）を、
+        // 現在階層+10相当の深層ボスとして再構築する。
+        if (isBoss && battleData.randomAdventurerDuel) {
+            const duel = battleData.randomAdventurerDuel;
+            const base = Battle.getMonsterBaseById(Number(duel.bossId || 302001));
+            const targetFloor = Math.max(1, Number(duel.targetFloor || abyssBalanceFloor + 10));
+            if (base) {
+                const enemy = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), targetFloor, true)
+                    || Battle.createMonsterFromBase(base, { isBossBattle:true });
+                if (enemy) {
+                    enemy.name = `${base.name || '深淵門将ガレオン'}・腕試し`;
+                    enemy.isRandomAdventurerDuel = true;
+                    delete enemy.phaseTransition;
+                    delete enemy.phaseTransitionMonsterId;
+                    delete enemy.phaseTransitionConversation;
+                    newEnemies.push(enemy);
+                }
+            }
+            return newEnemies;
+        }
+
+        // 冒険者が呼び出した追跡者は、階層+20相当の通常深層敵3体で構成する。
+        if (!isBoss && battleData.randomHunter) {
+            const context = battleData.randomHunter;
+            const total = Math.max(1, Number(context.enemyCount || 3));
+            const targetFloor = Math.max(1, Number(context.targetFloor || abyssBalanceFloor + 20));
+            for (let i = 0; i < total; i++) {
+                const enemy = Battle.createDeepNormalEnemy(targetFloor);
+                if (!enemy) continue;
+                enemy.name += total > 1 ? String.fromCharCode(65 + i) : '';
+                enemy.isRandomHunterEnemy = true;
+                newEnemies.push(enemy);
+            }
+            return newEnemies;
+        }
+
+        // レアモンスター5体との即時戦闘。レア抽選率は使わず正式レア帯から直接選び、
+        // 深層階層へ能力を正規化する。先制・オート解除はBattle.initで確定する。
+        if (!isBoss && battleData.randomRareAmbush) {
+            const context = battleData.randomRareAmbush;
+            const total = Math.max(1, Number(context.enemyCount || 5));
+            const targetFloor = Math.max(1, Number(context.targetFloor || abyssBalanceFloor));
+            for (let i = 0; i < total; i++) {
+                let base = window.MonsterData?.tryGenerateRareMonster?.(targetFloor, { force:true }) || null;
+                let enemy = base ? Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), targetFloor, false) : null;
+                if (!enemy) enemy = Battle.createDeepNormalEnemy(targetFloor);
+                if (!enemy) continue;
+                enemy.isRare = true;
+                enemy.isRandomRareAmbushEnemy = true;
+                enemy.name += total > 1 ? String.fromCharCode(65 + i) : '';
+                newEnemies.push(enemy);
+            }
+            return newEnemies;
+        }
+
+        // 「物語の残響」階では通常敵抽選を完全に置き換え、能力だけを同階層雑魚基準へ
+        // ナーフした物語ボス1～2体を出す。
+        if (!isBoss && battleData.storyBossEchoFloor) {
+            const total = 1 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < total; i++) {
+                const enemy = Battle.createStoryBossEchoEnemy(abyssBalanceFloor, i, total);
+                if (enemy) newEnemies.push(enemy);
+            }
+            return newEnemies;
+        }
+
         // 深淵の裂け目戦は「10フロア先相当の通常強敵3体」を出す。
         // fixedBossId にIDを詰める方式だと、201階以降で generateEnemyForFloor() が null になり、
         // allowRare:true 経由でメタル系などのレアモンスターだけが選ばれる事故が起きる。
@@ -2808,46 +3052,15 @@ const Battle = {
         const isRiftBattle = !!(battleData.isRiftBattle || battleData.eventId === riftEventId);
         if (isRiftBattle) {
             const riftFloor = Math.max(1, Number(battleData.riftFloor) || (floor + 10));
+            const total = Math.max(1, Number(battleData.riftEnemyCount || 3));
+            const multiplier = Math.max(1, Number(battleData.riftStatMultiplier || 1.25));
             Battle.log('<span style="color:#c78cff; font-weight:bold;">亀裂の根源から強敵が現れた！</span>');
-            const total = 5;
-
-            if (riftFloor >= 201) {
-                let candidates = [];
-                if (window.MonsterData && typeof window.MonsterData.getDeepFloorNormalBaseCandidates === 'function') {
-                    candidates = window.MonsterData.getDeepFloorNormalBaseCandidates() || [];
-                }
-                if (candidates.length === 0 && window.MonsterData && typeof window.MonsterData.generateBandMonster === 'function') {
-                    const fallback = window.MonsterData.generateBandMonster(200);
-                    if (fallback) candidates = [fallback];
-                }
-
-                for (let i = 0; i < total; i++) {
-                    const base = candidates[Math.floor(Math.random() * candidates.length)];
-                    if (!base) continue;
-                    const m = Battle.applyRiftEnemyBoost(Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), riftFloor, false));
-                    if (m && total > 1) m.name += String.fromCharCode(65 + i);
-                    if (m) newEnemies.push(m);
-                }
-                return newEnemies;
-            }
-
             for (let i = 0; i < total; i++) {
-                let base = null;
-                if (window.MonsterData && typeof window.MonsterData.generateEnemyForFloor === 'function') {
-                    base = window.MonsterData.generateEnemyForFloor(riftFloor, { allowRare: false });
-                }
-                if (!base && window.MonsterData && typeof window.MonsterData.generateBandMonster === 'function') {
-                    base = window.MonsterData.generateBandMonster(Math.min(200, riftFloor));
-                }
-                if (!base && Array.isArray(DB.MONSTERS) && DB.MONSTERS.length) {
-                    const candidates = DB.MONSTERS.filter(m => !m.isBoss && !m.isRare && !Battle.isSpecialBossBase(m));
-                    base = candidates[Math.floor(Math.random() * candidates.length)] || null;
-                }
-                if (base) {
-                    const name = (base.name || '\u4e0d\u660e\u306a\u9b54\u7269') + suffix(i, total);
-                    const m = Battle.applyRiftEnemyBoost(Battle.createMonsterFromBase(base, { isBossBattle: false, name }));
-                    if (m) newEnemies.push(m);
-                }
+                const enemy = Battle.createDeepNormalEnemy(riftFloor);
+                if (!enemy) continue;
+                Battle.applyRiftEnemyBoost(enemy, multiplier);
+                enemy.name += total > 1 ? String.fromCharCode(65 + i) : '';
+                newEnemies.push(enemy);
             }
             return newEnemies;
         }
@@ -3027,8 +3240,10 @@ const Battle = {
         const hasConfiguredEncounterPool = !isBoss && Array.isArray(battleData.monsters) && battleData.monsters.length > 0;
         const rareEncounterRank = Math.max(1, Number(battleData.abyssBalanceFloor || battleData.encounterRank || floor) || 1);
         if (!isBoss && abyssMode !== 'memory' && window.MonsterData && typeof window.MonsterData.tryGenerateRareMonster === 'function') {
-            const rareBase = window.MonsterData.tryGenerateRareMonster(rareEncounterRank);
-            if (rareBase && Battle.isNormalEncounterBase(rareBase)) {
+            const rareBase = window.MonsterData.tryGenerateRareMonster(rareEncounterRank, {
+                rateMultiplier:Math.max(0, Number(battleData.rareEncounterRateMultiplier || 1))
+            });
+            if (rareBase && rareBase.isRare === true && !Battle.isSpecialBossBase(rareBase)) {
                 const rareEnemy = Battle.createMonsterFromBase(rareBase, { name: rareBase.name || '\u4e0d\u660e\u306a\u9b54\u7269' });
                 if (rareEnemy) {
                     newEnemies.push(rareEnemy);
@@ -7536,8 +7751,9 @@ findNextActor: () => {
         contentEl.innerHTML = html;
     },
 	
-    tryCreateSkillBookDrop: (enemy, drops) => {
-        if (!enemy || enemy.isFled || !enemy.isDead || Math.random() >= 0.005) return false;
+    tryCreateSkillBookDrop: (enemy, drops, rateMultiplier = 1) => {
+        const chance = Math.min(1, 0.005 * Math.max(0, Number(rateMultiplier || 1)));
+        if (!enemy || enemy.isFled || !enemy.isDead || Math.random() >= chance) return false;
         if (typeof App === 'undefined' || typeof App.extractMonsterSkillIds !== 'function' || typeof App.getSkillBookItemId !== 'function') return false;
         const base = Battle.getMonsterBaseById(enemy.baseId || enemy.id) || enemy;
         const skillIds = Array.from(new Set([
@@ -7802,6 +8018,19 @@ findNextActor: () => {
         if (!isTrainingBattle && typeof Dungeon !== 'undefined' && typeof Dungeon.completeAngelTrialIfNeeded === 'function') {
             lbGrowthLogs.push(...Dungeon.completeAngelTrialIfNeeded());
         }
+        const randomHunterContext = !isTrainingBattle && App.data?.battle?.randomHunter
+            ? JSON.parse(JSON.stringify(App.data.battle.randomHunter))
+            : null;
+        const randomHunterDefeated = randomHunterContext && typeof Dungeon !== 'undefined'
+            && typeof Dungeon.completeRandomHunterBattle === 'function'
+            ? Dungeon.completeRandomHunterBattle(randomHunterContext)
+            : false;
+        const randomHunterOutcome = randomHunterContext ? {
+            hunterId:String(randomHunterContext.id || ''),
+            defeated:randomHunterDefeated === true,
+            targetFloor:Math.max(1, Number(randomHunterContext.targetFloor || 1)),
+            enemyCount:Math.max(1, Number(randomHunterContext.enemyCount || 3))
+        } : null;
 		
 		// 特性「56:解体」のパーティ合計値算出
 		let bonusNormal = 0, bonusRare = 0, bonusPlus3 = 0;
@@ -7872,7 +8101,7 @@ findNextActor: () => {
 
 				// 1. レアドロップ判定 (独立)
 				if (monsterDrops && monsterDrops.rare) {
-					if (Battle.rollConfiguredDrop(monsterDrops.rare, bonusRare)) {
+					if (Battle.rollConfiguredDrop(monsterDrops.rare, bonusRare, rareDropMultiplier)) {
 						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.rare.id);
 						if (itemDef) {
 							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
@@ -7882,7 +8111,7 @@ findNextActor: () => {
 						}
 					}
 				} else if (floor >= 100) {
-					if (Math.random() * 100 < (0.5 + bonusRare)) {
+					if (Math.random() * 100 < Math.min(100, (0.5 + bonusRare) * rareDropMultiplier)) {
 						let sid = 100 + Math.floor(Math.random() * 6);
 						if (Math.random() < 0.1) sid = 106;
 						if (Math.random() < 0.05) sid = 107;
@@ -7898,7 +8127,7 @@ findNextActor: () => {
 				
 				// 2. 装備ドロップ判定 (独立)
 				// 雑魚枠で出た物語ボスは、外見と仲間化IDだけを保持し報酬上は通常敵として扱う。
-				const isBoss = e.memoryRealm ? !!e.isBoss : !!(base.isBoss || e.isBoss);
+				const isBoss = e.isStoryBossEcho ? false : (e.memoryRealm ? !!e.isBoss : !!(base.isBoss || e.isBoss));
 				const equipChance = isBoss ? 100 : 8;
 				if (Math.random() * 100 < equipChance) {
 					let eq;
@@ -7955,9 +8184,16 @@ findNextActor: () => {
 			});
 		}
 
+        // ランダム深淵101階以降の通常ボスは、勝利結果確定時に10%で災厄の楔を追加する。
+        // 専用ボス・裂け目・冒険者イベント等は対象外とし、結果ジャーナルへ抽選結果を残す。
+        const endlessBossWedgeOutcome = isTrainingBattle
+            ? null
+            : Battle.applyEndlessBossWedgeDrop(drops);
+        if (endlessBossWedgeOutcome?.granted) hasRareDrop = true;
+
 		// 敵ごとに0.5%で、その個体が所持するID100以上のスキル書を抽選する。
 		rewardResultEnemies.forEach(enemy => {
-		    if (Battle.tryCreateSkillBookDrop(enemy, drops)) hasRareDrop = true;
+		    if (Battle.tryCreateSkillBookDrop(enemy, drops, rareDropMultiplier)) hasRareDrop = true;
 		});
 
         const elementalTrialMessages = isTrainingBattle ? [] : Battle.completeAbyssElementalTrial(drops);
@@ -8075,7 +8311,7 @@ findNextActor: () => {
 
 		// --- [4] 世界状態・フラグの先行確定 ---
 		// 演出中のリロード対策として、ボスマスを階段にする等の処理をログ表示前に完結させます
-		if (!isTrainingBattle && ((isBossBattle && !isEstark) || fixedHunter)) {
+		if (!isTrainingBattle && !App.data?.battle?.randomAdventurerDuel && ((isBossBattle && !isEstark) || fixedHunter)) {
 			if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
 				Dungeon.onBossDefeated(); // ここで mapChanges 等が更新される
 			}
@@ -8138,6 +8374,14 @@ findNextActor: () => {
             specialBossOutcome: specialBossOutcome ? { ...specialBossOutcome, recruitResult: undefined } : null,
             elementalSpiritTrialOutcome: App.data.battle.elementalSpiritTrialOutcome
                 ? { ...App.data.battle.elementalSpiritTrialOutcome }
+                : null,
+            randomHunterOutcome,
+            endlessBossWedgeOutcome,
+            abyssRiftOutcome: App.data?.dungeon?.pendingRiftReward?.rewardId === App.data?.battle?.riftRewardId
+                ? { rewardId:App.data.battle.riftRewardId, itemName:App.data.dungeon.pendingRiftReward.itemName }
+                : null,
+            angelTrialOutcome: App.data?.battle?.angelTrialOutcome
+                ? JSON.parse(JSON.stringify(App.data.battle.angelTrialOutcome))
                 : null,
             summary: {
                 gold: totalGold,

@@ -998,7 +998,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v38.20260803-runtime',
+    fullDataCacheName: 'prisma-abyss-v39.20260804-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -2743,6 +2743,63 @@ const App = {
                 count++;
             }
             return { changed: count > 0, count };
+        }
+    ),
+
+    // 属性結晶片を耐性の正本へ変更するため、旧加護フラグだけを持つセーブへ
+    // 対応する結晶片を一度だけ補填する。以後に加入する仲間も所持判定から恩恵を受ける。
+    migrateSpiritFragmentResistanceSourceV1: (data = App.data) => App.runOneTimeCompatibilityMigration(
+        data,
+        '20260804_spiritFragmentResistanceSourceV1',
+        () => {
+            if (!data.progress || typeof data.progress !== 'object') return { changed:false, count:0 };
+            if (!data.items || typeof data.items !== 'object' || Array.isArray(data.items)) data.items = {};
+            const blessings = data.progress.abyssSpiritBlessings || {};
+            const itemMap = globalThis.ABYSS_REGION_CONTENT?.spiritItemByElement || {};
+            let count = 0;
+            Object.entries(itemMap).forEach(([element, itemId]) => {
+                if (blessings[element] !== true) return;
+                const current = Math.max(0, Math.floor(Number(data.items[itemId] ?? data.items[String(itemId)] ?? 0) || 0));
+                if (current > 0) return;
+                data.items[itemId] = 1;
+                count++;
+            });
+            return { changed:count > 0, count };
+        }
+    ),
+
+    // ギルガメッシュ報酬の旧【EX】装備は基礎7能力だけを一度55%へ補正する。
+    // オプション・固定特性・UID・ロック状態は一切変更しない。
+    migrateSpecialBossEquipmentBalanceV1: (data = App.data) => App.runOneTimeCompatibilityMigration(
+        data,
+        '20260804_specialBossEquipmentBalanceV1',
+        () => {
+            const phaseMaster = globalThis.ABYSS_REGION_CONTENT?.randomDungeonPhase2IMaster?.specialBossEquipment || {};
+            const scale = Math.max(0.01, Number(phaseMaster.baseStatScale || 0.55));
+            const keys = ['hp','mp','atk','def','spd','mag','mdef'];
+            const seenObjects = new WeakSet();
+            let count = 0;
+            const adjust = equipment => {
+                if (!equipment || typeof equipment !== 'object' || seenObjects.has(equipment)) return;
+                seenObjects.add(equipment);
+                if (!String(equipment.name || '').startsWith('【EX】')) return;
+                if (Number(equipment.specialBossEquipmentBalanceVersion || 0) >= 2) return;
+                if (!equipment.data || typeof equipment.data !== 'object') return;
+                keys.forEach(key => {
+                    if (!Number.isFinite(Number(equipment.data[key]))) return;
+                    equipment.data[key] = Math.max(key === 'mp' ? 0 : 1, Math.floor(Number(equipment.data[key]) * scale));
+                });
+                equipment.specialBossEquipmentBalanceVersion = 2;
+                equipment.specialBossEquipmentBaseStatScale = scale;
+                equipment.specialBossMonsterId = Number(equipment.specialBossMonsterId || 902000);
+                count++;
+            };
+            (Array.isArray(data.inventory) ? data.inventory : []).forEach(adjust);
+            (Array.isArray(data.characters) ? data.characters : []).forEach(character => {
+                if (!character?.equips || typeof character.equips !== 'object') return;
+                Object.values(character.equips).forEach(adjust);
+            });
+            return { changed:count > 0, count };
         }
     ),
 
@@ -5384,6 +5441,14 @@ load: () => {
         return definition.introEventId;
     },
 
+    getOwnedAbyssSpiritElements: (data = App.data) => {
+        const itemMap = globalThis.ABYSS_REGION_CONTENT?.spiritItemByElement || {};
+        const items = data?.items || {};
+        return Object.entries(itemMap)
+            .filter(([, itemId]) => Math.max(0, Number(items[itemId] ?? items[String(itemId)] ?? 0) || 0) > 0)
+            .map(([element]) => element);
+    },
+
     getEnvironmentalElementModifiers: (char) => {
         const master = globalThis.ABYSS_REGION_MASTER;
         const result = {};
@@ -5411,12 +5476,15 @@ load: () => {
         const spiritElement = battleActive ? App.data?.battle?.abyssSpiritElement : null;
         if (spiritElement) result[spiritElement] = (result[spiritElement] || 0) - 50;
 
-        const blessings = App.ensureAbyssRegionProgress().abyssSpiritBlessings;
-        Object.keys(blessings).filter(element => blessings[element]).forEach(element => {
-            result[element] = (result[element] || 0) + 20;
+        // 加護は加入済みキャラクターへ個別保存せず、結晶片の所持を正本として
+        // 現在・将来の全仲間へ同じ耐性を動的に適用する。
+        const ownedSpiritElements = App.getOwnedAbyssSpiritElements();
+        const fragmentResistance = Math.max(0, Number(globalThis.ABYSS_REGION_CONTENT?.randomDungeonPhase2IMaster?.spiritFragmentResistance || 20));
+        ownedSpiritElements.forEach(element => {
+            result[element] = (result[element] || 0) + fragmentResistance;
         });
         if (battleActive && App.data?.battle?.abyssSpiritFinalBlessing) {
-            Object.keys(blessings).filter(element => blessings[element]).forEach(element => {
+            ownedSpiritElements.forEach(element => {
                 result[element] = (result[element] || 0) + 30;
             });
         }
@@ -7082,6 +7150,8 @@ load: () => {
         App.migrateReincarnationGrowthFormulaV1(data);
         App.migrateGilgameshAllyDominanceV2(data);
         App.migrateLunaZenonBossVisualCleanupV1(data);
+        App.migrateSpiritFragmentResistanceSourceV1(data);
+        App.migrateSpecialBossEquipmentBalanceV1(data);
         App.purgeRemovedLegacyAbyssBossReferences(data);
         App.reconcileCarmenaGateProgress(data);
 
@@ -7481,9 +7551,11 @@ load: () => {
 		if (App.encounterTransitioning) return true;
 		if (App.data.battle && App.data.battle.active) return true;
 
-		const encounterRate = rate !== null
+		const baseEncounterRate = rate !== null
 			? rate
 			: ((App.data.walkCount || 0) > 15 ? 0.06 : 0.03);
+        const encounterRateMultiplier = Math.max(0, Number(Field.currentMapData?.randomEncounterRateMultiplier || 1));
+        const encounterRate = Math.max(0, Math.min(1, baseEncounterRate * encounterRateMultiplier));
 
 		if (Math.random() >= encounterRate) {
 			return false;
@@ -7534,6 +7606,11 @@ load: () => {
             guildQuestChallengeId: mapEncounter?.guildQuestId || null,
             guildChallengeEnemyBoost: mapEncounter?.enemyBoost ? JSON.parse(JSON.stringify(mapEncounter.enemyBoost)) : null,
             guildChallengeAllyAilments: Array.isArray(mapEncounter?.allyAilments) ? [...mapEncounter.allyAilments] : [],
+            randomDungeonModifier: mapEncounter?.randomDungeonModifier ? JSON.parse(JSON.stringify(mapEncounter.randomDungeonModifier)) : null,
+            rareEncounterRateMultiplier: Math.max(0, Number(mapEncounter?.rareEncounterRateMultiplier || 1)),
+            rareDropMultiplier: Math.max(0, Number(mapEncounter?.rareDropMultiplier || 1)),
+            equipPlus3BonusPct: Math.max(0, Number(mapEncounter?.equipPlus3BonusPct || 0)),
+            storyBossEchoFloor: mapEncounter?.randomDungeonModifier?.id === 'storyBossEcho',
 			isAmbushed: flags.isAmbushed,
 			isPreemptive: flags.isPreemptive
 		};
@@ -7620,6 +7697,12 @@ load: () => {
                     if (!resumed && App.data?.dungeon?.pendingRiftReward?.active &&
                         typeof Dungeon !== 'undefined' && typeof Dungeon.resumePendingRiftReward === 'function') {
                         resumed = Dungeon.resumePendingRiftReward();
+                    }
+
+                    // 特殊階層の説明はフロア生成後に一度だけ表示する。戦闘結果・報酬会話を優先する。
+                    if (!resumed && App.data?.dungeon?.pendingFloorModifierAnnouncement?.active &&
+                        typeof Dungeon !== 'undefined' && typeof Dungeon.resumePendingFloorModifierAnnouncement === 'function') {
+                        resumed = Dungeon.resumePendingFloorModifierAnnouncement();
                     }
 
                     // リザルト表示中断で保留されたモンスター仲間のスキル成長確認。
@@ -9116,6 +9199,7 @@ const Field = {
         drawDungeonObject(App.data?.dungeon?.adventurer, '#5bd6ff');
         drawDungeonObject(App.data?.dungeon?.trialAngel, '#fff3a6');
         drawDungeonObject(App.data?.dungeon?.keyGuardian, '#ffd78a');
+        (App.data?.dungeon?.randomHunters || []).forEach(hunter => drawDungeonObject(hunter, '#ff5b5b'));
 
         ctx.strokeStyle = 'rgba(255,255,255,0.72)';
         ctx.lineWidth = 1;
@@ -10792,6 +10876,13 @@ const Field = {
             Field.refreshCurrentAction({ silent: false });
 
             if (Field.currentMapData.isDungeon) Dungeon.handleMove(nx, ny);
+            if (Field.currentMapData.isDungeon && !Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.stepRandomHunters === 'function') {
+                const caught = Dungeon.stepRandomHunters();
+                if (caught) {
+                    Field.render();
+                    return;
+                }
+            }
             App.save(); Field.render();
             if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
 			
@@ -11378,6 +11469,12 @@ const Field = {
         drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_000105.png', '#5bd6ff');
         drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_000103.png', '#ffd78a');
         drawOverlayImage(App.data?.dungeon?.trialAngel, 'assets/map/overlays/overlay_dungeon_trial_angel.png', '#fff3a6');
+        (App.data?.dungeon?.randomHunters || []).forEach(hunter => {
+            if (!hunter?.active) return;
+            const graphicKey = typeof Dungeon.getAdventurerGraphicKey === 'function' ? Dungeon.getAdventurerGraphicKey(hunter) : null;
+            const src = graphicKey ? window.GRAPHICS?.data?.[graphicKey] : null;
+            drawOverlayImage(hunter, src || 'assets/monsters/monster_000105.png', '#ff5b5b');
+        });
         drawAbyssBossSprite();
         // 通常MAPボスと同じく主人公より前の専用DOMレイヤーを使わず、
         // MAPオブジェクト描画の段階で戦後会話中のボスを保持する。
@@ -11566,6 +11663,7 @@ const Field = {
         drawMiniObject(App.data?.dungeon?.adventurer, '#5bd6ff');
         drawMiniObject(App.data?.dungeon?.trialAngel, '#fff3a6');
         drawMiniObject(App.data?.dungeon?.keyGuardian, '#ffd78a');
+        (App.data?.dungeon?.randomHunters || []).forEach(hunter => drawMiniObject(hunter, '#ff5b5b'));
 
         drawHeldKeyHud();
 

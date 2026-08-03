@@ -140,6 +140,79 @@
         光: Object.freeze({ key:'light', bossId:502005, rewardItemId:701005 }),
         闇: Object.freeze({ key:'dark', bossId:502006, rewardItemId:701006 })
     });
+    // ランダム深淵 Phase2I の正式バランスマスター。生成・戦闘・報酬の各処理は
+    // このレコードを参照し、画面ごとの確率・倍率の重複定義を避ける。
+    const RANDOM_DUNGEON_PHASE2I_MASTER = Object.freeze({
+        spiritFragmentResistance: 20,
+        angelTrial: Object.freeze({
+            enemyCount: 3,
+            targetFloorOffset: 15,
+            statMultiplier: 1.35,
+            rewardCount: 3
+        }),
+        abyssRift: Object.freeze({
+            enemyCount: 3,
+            targetFloorOffset: 10,
+            statMultiplier: 1.25,
+            rewardPlus: 3
+        }),
+        adventurer: Object.freeze({
+            outcomes: Object.freeze([
+                Object.freeze({ id:'equipment', rate:0.30 }),
+                Object.freeze({ id:'duel', rate:0.30 }),
+                Object.freeze({ id:'shop', rate:0.20 }),
+                Object.freeze({ id:'hunters', rate:0.10 }),
+                Object.freeze({ id:'rareAmbush', rate:0.10 })
+            ]),
+            equipmentFloorOffset: 5,
+            equipmentPlus: 3,
+            duelBossId: 302001,
+            duelFloorOffset: 10,
+            shopItemCount: 5,
+            shopPriceMultiplierMin: 0.50,
+            shopPriceMultiplierMax: 3.00,
+            shopTraitBookChance: 0.05,
+            hunterCount: 5,
+            hunterSpeed: 1.5,
+            hunterFloorOffset: 20,
+            hunterEnemyCount: 3,
+            rareEnemyCount: 5,
+            rareFloorOffset: 0
+        }),
+        reusedMap: Object.freeze({
+            rate: 0.10,
+            sources: Object.freeze([
+                Object.freeze({ areaKey:'START_CAVE', floor:1, themeId:'start-cave' }),
+                Object.freeze({ areaKey:'FOREST_WIND_HOLE', floor:1, themeId:'wind-hole' }),
+                Object.freeze({ areaKey:'IGNIS_VOLCANO', floor:1, themeId:'ignis-volcano' }),
+                Object.freeze({ areaKey:'FORBIDDEN_FOREST', floor:1, themeId:'forbidden-forest' }),
+                Object.freeze({ areaKey:'CRENA_LIMESTONE_CAVE', floor:1, themeId:'crena-cave' }),
+                Object.freeze({ areaKey:'SEABED_TEMPLE', floor:1, themeId:'seabed-temple' }),
+                Object.freeze({ areaKey:'THUNDER_FORT', floor:1, themeId:'thunder-fort' }),
+                Object.freeze({ areaKey:'BIG_TOWER', floor:1, themeId:'big-tower' }),
+                Object.freeze({ areaKey:'LIGHT_PALACE', floor:1, themeId:'light-palace' }),
+                Object.freeze({ areaKey:'DARK_CASTLE', floor:1, themeId:'dark-castle' })
+            ])
+        }),
+        floorModifiers: Object.freeze([
+            Object.freeze({ id:'dangerTreasure', rate:0.05, enemyStatMultiplier:1.35, rareDropMultiplier:2.0, plus3BonusPct:20,
+                title:'強敵の財宝階', message:'この階は魔物が強い代わりに、+3装備と希少品を得やすい。' }),
+            Object.freeze({ id:'rareSurge', rate:0.04, rareEncounterMultiplier:2.0,
+                title:'希少種の気配', message:'この階ではレアモンスターの出現率が2倍になっている。' }),
+            Object.freeze({ id:'storyBossEcho', rate:0.03, encounterRateMultiplier:0.45, normalStatMultiplier:1.15, hpNormalMultiplier:2.0,
+                title:'物語の残響', message:'敵の気配は少ない。しかし、強化された物語のボスだけが徘徊している。' })
+        ]),
+        storyBossEchoIds: Object.freeze([301010,301020,301030,301040,301050,301061,301070,301080,301081,301082,303201,303202,303203,303204,303205,303206,303207,303208]),
+        endlessBossWedge: Object.freeze({ itemId:98, rate:0.10, minimumDisplayFloor:101 }),
+        specialBossEquipment: Object.freeze({
+            baseStatScale: 0.55,
+            rewardFloorBase: 250,
+            rewardFloorPerDefeat: 5,
+            rewardFloorCap: 400,
+            migrationId: '20260804_specialBossEquipmentBalanceV1'
+        })
+    });
+
     const OCTAPRISM_SUPPORT_MASTER = Object.freeze({
         itemId: 701008,
         azelgaragMonsterIds: Object.freeze([302100, 302101]),
@@ -174,6 +247,7 @@
         storyBossTrainingDifficulties: STORY_BOSS_TRAINING_DIFFICULTIES,
         spiritTrialElements: SPIRIT_TRIAL_ELEMENTS,
         spiritTrials: SPIRIT_TRIALS,
-        octaprismSupportMaster: OCTAPRISM_SUPPORT_MASTER
+        octaprismSupportMaster: OCTAPRISM_SUPPORT_MASTER,
+        randomDungeonPhase2IMaster: RANDOM_DUNGEON_PHASE2I_MASTER
     });
 })();
