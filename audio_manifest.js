@@ -42,7 +42,7 @@
         facility_blacksmith: bgm('assets/audio/bgm/bgm_facility_blacksmith.ogg', '鍛冶屋', 'facility'),
         facility_alchemy: bgm('assets/audio/bgm/bgm_facility_alchemy.ogg', '錬金所', 'facility'),
         facility_casino: bgm('assets/audio/bgm/bgm_facility_casino.ogg', 'カジノ', 'facility'),
-        facility_medal: bgm('assets/audio/bgm/bgm_facility_medal.ogg', 'メダル交換所', 'facility'),
+        facility_medal: bgm('assets/audio/bgm/bgm_facility_medal.ogg', 'ふるびたコイン交換所', 'facility'),
 
         battle_normal: bgm('assets/audio/bgm/bgm_battle_normal.ogg', '通常戦闘', 'battle'),
         battle_midboss: bgm('assets/audio/bgm/bgm_battle_midboss.ogg', '中ボス戦闘', 'battle'),

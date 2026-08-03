@@ -148,14 +148,19 @@ App.calcStats = originalCalcStats;
 PassiveSkill.applyLevelUpTraits = originalApplyLevelUpTraits;
 context.Math.random = originalRandom;
 
-// Permanent growth traits must ignore equipment traits.
+// Fixed equipment growth traits are valid, while growth traits are excluded from random equipment rolls.
 const lateBloomerId = Number(PassiveSkill.LATE_BLOOMER_TRAIT_ID || 58);
-const ownOnly = {
+const growthTraitCharacter = {
   traits: [{ id: lateBloomerId, level: 1 }],
-  equips: { '武器': { traits: [{ id: lateBloomerId, level: 9 }] } },
+  equips: { '武器': { traits: [{ id: lateBloomerId, level: 2 }] } },
   disabledTraits: []
 };
-assert.strictEqual(PassiveSkill.getOwnSumValue(ownOnly, 'stat_bonus_mult'), Number(PassiveSkill.MASTER[lateBloomerId].params.stat_bonus_mult), 'Equipment traits must not affect permanent growth.');
+assert.strictEqual(
+  PassiveSkill.getSumValue(growthTraitCharacter, 'stat_bonus_mult'),
+  Number(PassiveSkill.MASTER[lateBloomerId].params.stat_bonus_mult) * 3,
+  'Fixed equipment traits must affect permanent growth.'
+);
+assert(!PassiveSkill.getEquipmentTraitCandidateIds({ type:'防具', baseName:'鎧' }).includes(lateBloomerId));
 
 // Trait books add a seventh slot but never an eighth.
 const bookTraitId = PassiveSkill.TRAIT_BOOK_TRAIT_IDS.find(id => id > 6 && PassiveSkill.MASTER[id]);
@@ -252,13 +257,15 @@ assert(itemsMenuSource.includes("Field.refreshCurrentAction({ silent:true })"), 
 const mainSource = read('main.js');
 assert.strictEqual((mainSource.match(/charData\.mdef\s*=\s*\(charData\.mdef\s*\|\|\s*0\)\s*\+\s*incMdef/g) || []).length, 1, 'MDEF must be applied exactly once per level-up.');
 assert(mainSource.includes("sceneId === 'monster-nursery'"), 'Monster nursery scene initialization is missing.');
-assert(mainSource.includes("fullDataCacheName: 'prisma-abyss-v28.20260803-runtime'"), 'Runtime cache version must match the service worker.');
+const swSource = read('sw.js');
+const runtimeCacheName = swSource.match(/const\s+RUNTIME_CACHE_NAME\s*=\s*["']([^"']+)["']/)?.[1];
+const mainRuntimeCacheName = mainSource.match(/fullDataCacheName:\s*["']([^"']+)["']/)?.[1];
+assert(runtimeCacheName && mainRuntimeCacheName === runtimeCacheName, 'Runtime cache version must match the service worker.');
 const mapSource = read('map.js');
 assert(/"x": 15,\s*"y": 25,\s*"type": "monsterNursery"/.test(mapSource), 'Legacion nursery map action is missing.');
 const indexSource = read('index.html');
 assert(indexSource.includes('id="monster-nursery-scene"') && indexSource.includes('<script src="monster_nursery.js"></script>'), 'Nursery scene or script is missing from index.html.');
-const swSource = read('sw.js');
-assert(swSource.includes('"monster_nursery.js"') && swSource.includes('prisma-abyss-v28.20260803-runtime'), 'Nursery cache registration is incomplete.');
+assert(swSource.includes('"monster_nursery.js"') && runtimeCacheName, 'Nursery cache registration is incomplete.');
 assert(storyLogicSource.includes('resolvePostBattleBossSpriteConfig(event).enabled'), 'Disabled Luna visual must be rejected before capture.');
 
 console.log('PHASE1_TESTS_OK');

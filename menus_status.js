@@ -144,7 +144,7 @@ const MenuStatus = {
                 </div>
                 ${row('累計獲得Gold', `${(stats.totalGoldEarned || 0).toLocaleString()} gold`)}
                 ${row('累計獲得GEM',  `${(stats.totalGemsEarned || 0).toLocaleString()} GEM`)}
-                ${row('累計獲得メダル', `${(stats.totalMedals || 0).toLocaleString()} 枚`)}
+                ${row('累計獲得コイン', `${(stats.totalMedals || 0).toLocaleString()} 枚`)}
             </div>
 
             <div style="background:rgba(255,255,255,0.05); border:1px solid #6b78aa; border-radius:8px; padding:12px; margin-bottom:15px;">

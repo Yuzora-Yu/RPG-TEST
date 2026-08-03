@@ -66,7 +66,7 @@ const StoryManager = {
         const killCounts = data?.book?.killCounts || {};
         const calamityKills = Number(killCounts[902000] || 0) + Number(killCounts[2000] || 0);
         if (calamityKills <= 0) {
-            return "メダルを集めて災厄に挑もう";
+            return "ふるびたコインを集めて災厄に挑もう";
         }
 
         return "ダンジョンで最強装備をそろえよう";

@@ -1796,7 +1796,7 @@ const EQUIP_MASTER = [
         "eid": 161,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルの剣",
+        "name": "ロンリーメタルの剣",
         "type": "武器",
         "baseName": "剣",
         "data": {
@@ -1811,7 +1811,7 @@ const EQUIP_MASTER = [
         "eid": 162,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルのオノ",
+        "name": "ロンリーメタルのオノ",
         "type": "武器",
         "baseName": "斧",
         "data": {
@@ -1827,7 +1827,7 @@ const EQUIP_MASTER = [
         "eid": 163,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルの短剣",
+        "name": "ロンリーメタルの短剣",
         "type": "武器",
         "baseName": "短剣",
         "data": {
@@ -1843,7 +1843,7 @@ const EQUIP_MASTER = [
         "eid": 164,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルの杖",
+        "name": "ロンリーメタルの杖",
         "type": "武器",
         "baseName": "杖",
         "data": {
@@ -1857,7 +1857,7 @@ const EQUIP_MASTER = [
         "eid": 165,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルのやり",
+        "name": "ロンリーメタルのやり",
         "type": "武器",
         "baseName": "槍",
         "data": {
@@ -1872,7 +1872,7 @@ const EQUIP_MASTER = [
         "eid": 166,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルの弓",
+        "name": "ロンリーメタルの弓",
         "type": "武器",
         "baseName": "弓",
         "data": {
@@ -1887,7 +1887,7 @@ const EQUIP_MASTER = [
         "eid": 167,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルの盾",
+        "name": "ロンリーメタルの盾",
         "type": "盾",
         "baseName": "盾",
         "data": {
@@ -1907,7 +1907,7 @@ const EQUIP_MASTER = [
         "eid": 168,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルの腕輪",
+        "name": "ロンリーメタルの腕輪",
         "type": "盾",
         "baseName": "腕輪",
         "data": {
@@ -1928,7 +1928,7 @@ const EQUIP_MASTER = [
         "eid": 169,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルヘルム",
+        "name": "ロンリーメタルヘルム",
         "type": "頭",
         "baseName": "兜",
         "data": {
@@ -1945,7 +1945,7 @@ const EQUIP_MASTER = [
         "eid": 170,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルの帽子",
+        "name": "ロンリーメタルの帽子",
         "type": "頭",
         "baseName": "帽子",
         "data": {
@@ -1961,7 +1961,7 @@ const EQUIP_MASTER = [
         "eid": 171,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルの鎧",
+        "name": "ロンリーメタルの鎧",
         "type": "体",
         "baseName": "鎧",
         "data": {
@@ -1976,7 +1976,7 @@ const EQUIP_MASTER = [
         "eid": 172,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルのローブ",
+        "name": "ロンリーメタルのローブ",
         "type": "体",
         "baseName": "ローブ",
         "data": {
@@ -1991,7 +1991,7 @@ const EQUIP_MASTER = [
         "eid": 173,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルのブーツ",
+        "name": "ロンリーメタルのブーツ",
         "type": "足",
         "baseName": "ブーツ",
         "data": {
@@ -2010,7 +2010,7 @@ const EQUIP_MASTER = [
         "eid": 174,
         "noRandom": false,
         "rank": 80,
-        "name": "はぐれメタルのくつ",
+        "name": "ロンリーメタルのくつ",
         "type": "足",
         "baseName": "くつ",
         "data": {
@@ -3510,7 +3510,7 @@ const EQUIP_MASTER = [
         "eid": 301,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングの剣",
+        "name": "メタルロードの剣",
         "type": "武器",
         "baseName": "剣",
         "data": {
@@ -3525,7 +3525,7 @@ const EQUIP_MASTER = [
         "eid": 302,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングの大斧",
+        "name": "メタルロードの大斧",
         "type": "武器",
         "baseName": "斧",
         "data": {
@@ -3546,7 +3546,7 @@ const EQUIP_MASTER = [
         "eid": 303,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングダガー",
+        "name": "メタルロードダガー",
         "type": "武器",
         "baseName": "短剣",
         "data": {
@@ -3563,7 +3563,7 @@ const EQUIP_MASTER = [
         "eid": 304,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングの杖",
+        "name": "メタルロードの杖",
         "type": "武器",
         "baseName": "杖",
         "data": {
@@ -3577,7 +3577,7 @@ const EQUIP_MASTER = [
         "eid": 305,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングの槍",
+        "name": "メタルロードの槍",
         "type": "武器",
         "baseName": "槍",
         "data": {
@@ -3591,7 +3591,7 @@ const EQUIP_MASTER = [
         "eid": 306,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングの弓",
+        "name": "メタルロードの弓",
         "type": "武器",
         "baseName": "弓",
         "data": {
@@ -3611,7 +3611,7 @@ const EQUIP_MASTER = [
         "eid": 307,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングの盾",
+        "name": "メタルロードの盾",
         "type": "盾",
         "baseName": "盾",
         "data": {
@@ -3637,7 +3637,7 @@ const EQUIP_MASTER = [
         "eid": 308,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングの紋章",
+        "name": "メタルロードの紋章",
         "type": "盾",
         "baseName": "腕輪",
         "data": {
@@ -3659,7 +3659,7 @@ const EQUIP_MASTER = [
         "eid": 309,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングヘルム",
+        "name": "メタルロードヘルム",
         "type": "頭",
         "baseName": "兜",
         "data": {
@@ -3686,7 +3686,7 @@ const EQUIP_MASTER = [
         "eid": 310,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングの大冠",
+        "name": "メタルロードの大冠",
         "type": "頭",
         "baseName": "帽子",
         "data": {
@@ -3708,7 +3708,7 @@ const EQUIP_MASTER = [
         "eid": 311,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングの鎧",
+        "name": "メタルロードの鎧",
         "type": "体",
         "baseName": "鎧",
         "data": {
@@ -3734,7 +3734,7 @@ const EQUIP_MASTER = [
         "eid": 312,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングローブ",
+        "name": "メタルロードローブ",
         "type": "体",
         "baseName": "ローブ",
         "data": {
@@ -3759,7 +3759,7 @@ const EQUIP_MASTER = [
         "eid": 313,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングブーツ",
+        "name": "メタルロードブーツ",
         "type": "足",
         "baseName": "ブーツ",
         "data": {
@@ -3779,7 +3779,7 @@ const EQUIP_MASTER = [
         "eid": 314,
         "noRandom": false,
         "rank": 150,
-        "name": "メタルキングのくつ",
+        "name": "メタルロードのくつ",
         "type": "足",
         "baseName": "くつ",
         "data": {
@@ -5180,7 +5180,95 @@ const EQUIP_MASTER = [
                 "level": 10
             }
         ]
+    },
+    {
+        "eid": 901,
+        "noRandom": true,
+        "specialEquip": true,
+        "rank": 70,
+        "name": "メタルロードの鎧・レプリカ",
+        "type": "体",
+        "baseName": "鎧",
+        "data": {
+            "def": 20,
+            "mdef": 14,
+            "finRed": 3
+        },
+        "possibleOpts": [],
+        "traits": []
+    },
+    {
+        "eid": 902,
+        "noRandom": true,
+        "specialEquip": true,
+        "rank": 70,
+        "name": "メタルロードの盾・レプリカ",
+        "type": "盾",
+        "baseName": "盾",
+        "data": {
+            "def": 24,
+            "mdef": 19,
+            "elmRes": {
+                "火": 5,
+                "水": 5,
+                "風": 5,
+                "雷": 5
+            }
+        },
+        "possibleOpts": [],
+        "traits": []
+    },
+    {
+        "eid": 903,
+        "noRandom": true,
+        "specialEquip": true,
+        "rank": 70,
+        "name": "メタルロードの兜・レプリカ",
+        "type": "頭",
+        "baseName": "兜",
+        "data": {
+            "def": 17,
+            "mdef": 12,
+            "hp": 34,
+            "mp": 36
+        },
+        "possibleOpts": [],
+        "traits": []
+    },
+    {
+        "eid": 904,
+        "noRandom": true,
+        "specialEquip": true,
+        "rank": 70,
+        "name": "メタルロードの剣・レプリカ",
+        "type": "武器",
+        "baseName": "剣",
+        "data": {
+            "atk": 27,
+            "spd": 5
+        },
+        "possibleOpts": [],
+        "traits": []
+    },
+    {
+        "eid": 905,
+        "noRandom": true,
+        "specialEquip": true,
+        "rank": 70,
+        "name": "メタルロードのブーツ・レプリカ",
+        "type": "足",
+        "baseName": "ブーツ",
+        "data": {
+            "def": 15,
+            "spd": 15,
+            "elmRes": {
+                "混沌": 5
+            }
+        },
+        "possibleOpts": [],
+        "traits": []
     }
+
 ];
 
 window.EQUIP_MASTER = EQUIP_MASTER;

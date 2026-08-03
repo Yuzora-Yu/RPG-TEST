@@ -114,15 +114,15 @@ const ACHIEVEMENTS_DATA = [
     { id: 1003, type: "CHEST", goal: 50, category: "探索", title: "宝箱ハンター", desc: "宝箱を50個開ける", rewards: [{ type: 'GEM', val: 500 }] },
     { id: 1004, type: "CHEST", goal: 200, category: "探索", title: "開封の達人", desc: "宝箱を200個開ける", rewards: [{ type: 'ITEM', id: 106, val: 5 }] },
 
-    { id: 1101, type: "MEDAL", goal: 10, category: "収集", title: "収集癖", desc: "ちいさなメダルを累計10枚集める", rewards: [
+    { id: 1101, type: "MEDAL", goal: 10, category: "収集", title: "収集癖", desc: "ふるびたコインを累計10枚集める", rewards: [
         { type: 'GEM', val: 500 },
         { type: 'ITEM', id: 5, val: 5 }
     ] },
-    { id: 1102, type: "MEDAL", goal: 50, category: "収集", title: "蒐集家", desc: "ちいさなメダルを累計50枚集める", rewards: [
+    { id: 1102, type: "MEDAL", goal: 50, category: "収集", title: "蒐集家", desc: "ふるびたコインを累計50枚集める", rewards: [
         { type: 'GEM', val: 500 },
         { type: 'ITEM', id: 14, val: 5 }
     ] },
-    { id: 1103, type: "MEDAL", goal: 100, category: "収集", title: "伝説の蒐集家", desc: "ちいさなメダルを累計100枚集める", rewards: [
+    { id: 1103, type: "MEDAL", goal: 100, category: "収集", title: "伝説の蒐集家", desc: "ふるびたコインを累計100枚集める", rewards: [
         { type: 'GEM', val: 1000 },
         { type: 'ITEM', id: 100, val: 5 }
     ] },

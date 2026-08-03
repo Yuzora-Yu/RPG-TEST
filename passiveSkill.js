@@ -296,6 +296,38 @@ PassiveSkill.applyLevelUpTraits = function(char) {
 /**
  * 指定されたカテゴリからランダムに特性IDを返す
  */
+PassiveSkill.EQUIPMENT_RANDOM_FORBIDDEN_TRAIT_IDS = Object.freeze([58, 59, 60]);
+
+// 武器のランダム特性は、全武器共通枠と武器種別枠だけから抽選する。
+// ID11は現行マスター名が「呪文」だが、武器方針上の「魔術」枠として扱う。
+PassiveSkill.WEAPON_RANDOM_TRAIT_POOLS = Object.freeze({
+    common: Object.freeze([19, 22, 46, 47, 33, 34, 35, 36, 23, 24, 25, 26, 27, 28, 29]),
+    '剣': Object.freeze([1, 10, 12, 49, 8]),
+    '槍': Object.freeze([2, 10, 12, 48, 9]),
+    '斧': Object.freeze([3, 10, 12, 49, 9]),
+    '短剣': Object.freeze([4, 10, 11, 12, 48, 49, 61, 8]),
+    '弓': Object.freeze([5, 6, 10, 11, 12, 9]),
+    '杖': Object.freeze([7, 11, 12, 50])
+});
+
+PassiveSkill.getEquipmentTraitCandidateIds = function(equipment = null) {
+    const forbidden = new Set(PassiveSkill.EQUIPMENT_RANDOM_FORBIDDEN_TRAIT_IDS.map(Number));
+    const baseName = String(equipment?.baseName || '');
+    const isWeapon = String(equipment?.type || '') === '武器' || Object.prototype.hasOwnProperty.call(PassiveSkill.WEAPON_RANDOM_TRAIT_POOLS, baseName);
+
+    let ids;
+    if (isWeapon && PassiveSkill.WEAPON_RANDOM_TRAIT_POOLS[baseName]) {
+        ids = [
+            ...PassiveSkill.WEAPON_RANDOM_TRAIT_POOLS.common,
+            ...PassiveSkill.WEAPON_RANDOM_TRAIT_POOLS[baseName]
+        ];
+    } else {
+        ids = Object.keys(PassiveSkill.MASTER).map(Number);
+    }
+
+    return [...new Set(ids.map(Number))].filter(id => PassiveSkill.MASTER[id] && !forbidden.has(id));
+};
+
 PassiveSkill.getRandomTraitId = function(category = null) {
     let ids = Object.keys(PassiveSkill.MASTER).map(Number);
     if (category) {
@@ -347,25 +379,31 @@ PassiveSkill.checkTraitGrowth = function(char) {
  *  - lvMin/lvMax: レベルレンジ（例: 1〜3）
  */
 PassiveSkill.generateEquipmentTraits = function(opt = null) {
-  const traits = [];
+    const traits = [];
+    const equipment = opt?.equipment || null;
+    const countMin = Math.max(0, Math.floor(Number(opt?.countMin ?? 0)));
+    const countMax = Math.max(countMin, Math.floor(Number(opt?.countMax ?? 2)));
+    const lvMin = Math.max(1, Math.floor(Number(opt?.lvMin ?? 1)));
+    const lvMax = Math.max(lvMin, Math.floor(Number(opt?.lvMax ?? 3)));
 
-  // 後方互換：引数なしなら従来通り
-  const countMin = opt?.countMin ?? 0;
-  const countMax = opt?.countMax ?? 2;
-  const lvMin    = opt?.lvMin    ?? 1;
-  const lvMax    = opt?.lvMax    ?? 3;
+    const excludedIds = new Set([
+        ...(Array.isArray(opt?.excludeIds) ? opt.excludeIds : []),
+        ...(Array.isArray(equipment?.traits) ? equipment.traits.map(trait => trait?.id) : [])
+    ].map(Number));
+    const candidates = PassiveSkill.getEquipmentTraitCandidateIds(equipment)
+        .filter(id => !excludedIds.has(Number(id)));
+    const count = Math.min(
+        candidates.length,
+        Math.floor(Math.random() * (countMax - countMin + 1)) + countMin
+    );
 
-  const count = Math.floor(Math.random() * (countMax - countMin + 1)) + countMin;
-
-  for (let i = 0; i < count; i++) {
-    const id = PassiveSkill.getRandomTraitId();
-    const lv = Math.floor(Math.random() * (lvMax - lvMin + 1)) + lvMin;
-
-    if (!traits.find(t => t.id === id)) {
-      traits.push({ id: id, level: lv });
+    for (let i = 0; i < count; i++) {
+        const index = Math.floor(Math.random() * candidates.length);
+        const [id] = candidates.splice(index, 1);
+        const level = Math.floor(Math.random() * (lvMax - lvMin + 1)) + lvMin;
+        traits.push({ id:Number(id), level });
     }
-  }
-  return traits;
+    return traits;
 };
 
 /**

@@ -997,7 +997,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v28.20260803-runtime',
+    fullDataCacheName: 'prisma-abyss-v29.20260803-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -5398,18 +5398,13 @@ load: () => {
         let magBonus = 0;  // 魔力用 (魔の極み)
         let mdefBonus = 0; // 魔法防御用 (魔の極み)
 
-        if (typeof PassiveSkill !== 'undefined') {
-            const getGrowthValue = typeof PassiveSkill.getOwnSumValue === 'function'
-                ? PassiveSkill.getOwnSumValue
-                : PassiveSkill.getSumValue;
-            if (typeof getGrowthValue === 'function') {
-                // 永続成長は本人が習得した特性だけを参照し、装備特性は含めない。
-                statBonus = getGrowthValue(charData, 'stat_bonus_mult');
-                atkBonus = getGrowthValue(charData, 'atk_growth_bonus') / 100;
-                defBonus = getGrowthValue(charData, 'def_growth_bonus') / 100;
-                magBonus = getGrowthValue(charData, 'mag_growth_bonus') / 100;
-                mdefBonus = getGrowthValue(charData, 'mdef_growth_bonus') / 100;
-            }
+        if (typeof PassiveSkill !== 'undefined' && typeof PassiveSkill.getSumValue === 'function') {
+            // 固定付与を含む装備特性も成長へ反映する。成長系3特性はランダム装備特性の抽選対象外。
+            statBonus = PassiveSkill.getSumValue(charData, 'stat_bonus_mult');
+            atkBonus = PassiveSkill.getSumValue(charData, 'atk_growth_bonus') / 100;
+            defBonus = PassiveSkill.getSumValue(charData, 'def_growth_bonus') / 100;
+            magBonus = PassiveSkill.getSumValue(charData, 'mag_growth_bonus') / 100;
+            mdefBonus = PassiveSkill.getSumValue(charData, 'mdef_growth_bonus') / 100;
         }
 
         // 大器晩成は「全能力の最終成長量+10%/Lv」として乗算し、HP/MPだけ効果が半減する旧挙動を解消。
@@ -5655,7 +5650,7 @@ load: () => {
 
 			// ★真・装備：特性を 1〜3個、Lv1〜5 で付与（固定traitsは維持してマージ）
 			if (typeof PassiveSkill !== 'undefined' && PassiveSkill.generateEquipmentTraits) {
-				const randTraits = PassiveSkill.generateEquipmentTraits({ countMin: 1, countMax: 3, lvMin: 1, lvMax: 5 });
+				const randTraits = PassiveSkill.generateEquipmentTraits({ equipment:eq, countMin:1, countMax:3, lvMin:1, lvMax:5 });
 				eq.traits = [...(eq.traits || []), ...(randTraits || [])];
 			}
 		}
@@ -5705,7 +5700,7 @@ load: () => {
 		// 7. 特性およびシナジーの判定
 		if (plus >= 3) {
 		  if (typeof PassiveSkill !== 'undefined' && PassiveSkill.generateEquipmentTraits) {
-			const randTraits = PassiveSkill.generateEquipmentTraits();
+			const randTraits = PassiveSkill.generateEquipmentTraits({ equipment:eq });
 			// 固定 + ランダムを結合（同IDが被ったら加算するか、どちらか優先するかは好み）
 			eq.traits = [...(eq.traits || []), ...(randTraits || [])];
 		  }
@@ -5817,7 +5812,7 @@ load: () => {
 		} else if (plus >= 3) {
 			// 指定がなくプラス3以上の場合は従来通りランダム付与
 			if (typeof PassiveSkill !== 'undefined' && PassiveSkill.generateEquipmentTraits) {
-				const randTraits = PassiveSkill.generateEquipmentTraits();
+				const randTraits = PassiveSkill.generateEquipmentTraits({ equipment:eq });
 				eq.traits = [...(eq.traits || []), ...(randTraits || [])];
 			}
 		}
@@ -6062,10 +6057,9 @@ load: () => {
 		 * 特性補正：「58 大器晩成」の反映
 		 * ===================================================== */
 		// 特性による必要経験値の増加率を取得（スキルLv * 5%）
-		if (typeof PassiveSkill !== 'undefined' && (PassiveSkill.getOwnSumValue || PassiveSkill.getSumValue)) {
-			// 必要経験値補正も本人が習得した大器晩成だけを参照する。
-			const expValueGetter = PassiveSkill.getOwnSumValue || PassiveSkill.getSumValue;
-			const expAddPct = expValueGetter(charData, 'exp_need_mult');
+		if (typeof PassiveSkill !== 'undefined' && typeof PassiveSkill.getSumValue === 'function') {
+			// 固定付与を含む装備の大器晩成も必要経験値へ反映する。
+			const expAddPct = PassiveSkill.getSumValue(charData, 'exp_need_mult');
 			if (expAddPct > 0) {
 				// 例: スキルLv1(5%)なら、必要経験値を1.05倍にする
 				needExp = needExp * (1 + expAddPct / 100); 
@@ -9546,6 +9540,11 @@ const Field = {
             return;
         }
 
+        if (action.type === 'casino') {
+            App.changeScene('casino');
+            return;
+        }
+
         if (action.type === 'alchemy' && typeof Alchemy !== 'undefined' && typeof Alchemy.openFromField === 'function') {
             Alchemy.openFromField(action);
             return;
@@ -9705,7 +9704,7 @@ const Field = {
                     App.setAction('カジノに入る', () => App.changeScene('casino'));
                 } else if (tile === 'E') {
                     logIfNeeded('交換所のようだ。');
-                    App.setAction('メダル交換', () => App.changeScene('medal'));
+                    App.setAction('ふるびたコイン交換', () => App.changeScene('medal'));
                 }
             } else if (Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
                 const fixedMapAction = (typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction)
@@ -9826,7 +9825,7 @@ const Field = {
                 logIfNeeded('小さな休憩所がある。');
                 App.setAction('休む', () => App.changeScene('inn'));
         } else if (tile === 'E') {
-            App.setAction('メダル交換', () => App.changeScene('medal'));
+            App.setAction('ふるびたコイン交換', () => App.changeScene('medal'));
         } else if (tile === 'K') {
             App.setAction('カジノに入る', () => App.changeScene('casino'));
         } else if (tile === 'D') {

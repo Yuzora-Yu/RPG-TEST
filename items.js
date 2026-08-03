@@ -164,17 +164,17 @@ window.ITEMS_DATA = [
         "name": "災厄の楔",
         "type": "貴重品",
         "val": 0,
-        "desc": "メダル交換所で災厄の王と戦えるようになる呪物",
+        "desc": "ふるびたコイン交換所で入手できる、災厄の王へ至る呪物",
         "target": "なし",
         "price": 0
     },
     {
         "id": 99,
         "rank": 99,
-        "name": "ちいさなメダル",
+        "name": "ふるびたコイン",
         "type": "貴重品",
         "val": 0,
-        "desc": "世界各地に散らばるなぞのメダル",
+        "desc": "世界各地に残された、古びた不思議なコイン",
         "target": "なし",
         "price": 0
     },
@@ -3729,7 +3729,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 56000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「はやぶさ斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3746,7 +3746,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 56000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ウイングアッパー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3763,7 +3763,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 56000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「火炎斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3780,7 +3780,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 56000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「氷結斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3797,7 +3797,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 56000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「雷鳴突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3814,7 +3814,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 72000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「兜割り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3831,7 +3831,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 64000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ミラクルソード」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3848,7 +3848,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 64000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ブラッドソード」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3865,7 +3865,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 72000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ヴァイパーファング」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3882,7 +3882,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 96000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「せいけん突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3899,7 +3899,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 96000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「魔人斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3916,7 +3916,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「渾身斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3933,7 +3933,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 136000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「暗黒剣」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3950,7 +3950,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 160000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「フォースブレイク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3967,7 +3967,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 72000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「マジックアロー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -3984,7 +3984,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 72000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「やいばくだき」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4001,7 +4001,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 160000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「サンダーボルト」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4035,7 +4035,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 104000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「さみだれ斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4052,7 +4052,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 104000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「さみだれ突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4069,7 +4069,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「氷結乱撃」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4086,7 +4086,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 152000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ばくれつけん」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4103,7 +4103,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 176000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「さみだれ剣」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4120,7 +4120,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 184000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「キラージャグリング」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4137,7 +4137,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 200000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギガスラッシュ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4154,7 +4154,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 200000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「しんくうは」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4171,7 +4171,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 160000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「狼牙突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4188,7 +4188,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 184000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「オノむそう」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4205,7 +4205,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 216000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「デュアルカッター」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4222,7 +4222,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 160000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「タイガークロー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4239,7 +4239,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 216000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「超はやぶさ斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4307,7 +4307,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 160000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「蒼天魔斬」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4324,7 +4324,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 200000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「黒の斬撃」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4341,7 +4341,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 200000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギガスロー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4358,7 +4358,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 200000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「絶対零刀」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4375,7 +4375,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 320000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「紫電一閃」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4409,7 +4409,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 296000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「超さみだれ突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4426,7 +4426,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 312000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「鉄甲斬」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4443,7 +4443,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 312000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「真やいばくだき」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4460,7 +4460,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 336000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「天魔旋風脚」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4477,7 +4477,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 320000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「シャイニングボウ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4562,7 +4562,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 200000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「大魔人斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4630,7 +4630,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 400000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギガブレイク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4647,7 +4647,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 344000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ゴッドハンド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4885,7 +4885,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 72000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ヒャド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4919,7 +4919,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 72000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ドルマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4936,7 +4936,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 80000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギラ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4953,7 +4953,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 96000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「イオ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4970,7 +4970,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 144000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ライデイン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -4987,7 +4987,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 144000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「メラミ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5004,7 +5004,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 144000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ドルクマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5021,7 +5021,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 160000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベギラマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5038,7 +5038,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 160000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ヒャダルコ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5055,7 +5055,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 144000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「バギマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5072,7 +5072,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 184000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「イオラ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5089,7 +5089,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 264000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「メラゾーマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5106,7 +5106,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 264000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ドルモーア」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5123,7 +5123,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 312000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「バギクロス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5140,7 +5140,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 344000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベギラゴン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5157,7 +5157,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 344000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「マヒャド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5174,7 +5174,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 376000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「イオナズン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5276,7 +5276,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 376000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「メラガイアー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5293,7 +5293,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 376000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ドルマドン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5361,7 +5361,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 376000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「凍てつく氷錐」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5548,7 +5548,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 440000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ルーンショット」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5718,7 +5718,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 136000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「こごえる吹雪」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5735,7 +5735,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 136000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「はげしい炎」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5752,7 +5752,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 168000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「暗黒のきり」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5769,7 +5769,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 168000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「いなずま」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5786,7 +5786,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 280000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「かがやく息」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5803,7 +5803,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 280000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「しゃくねつ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -5990,7 +5990,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 80000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベホイミ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6007,7 +6007,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 128000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「めいそう」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6041,7 +6041,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 176000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「エリアヒール」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6058,7 +6058,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 160000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「キアリク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6075,7 +6075,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 104000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「不撓不屈」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6092,7 +6092,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ザオラル」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6109,7 +6109,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 320000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ひかりのはどう」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6126,7 +6126,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 248000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「いやしのあめ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6143,7 +6143,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 160000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「まりょくのかぜ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6160,7 +6160,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ファストエイド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6177,7 +6177,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 200000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベホイム」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6194,7 +6194,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 320000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベホマラー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6211,7 +6211,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 200000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ザオリク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6262,7 +6262,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 360000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベホマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6313,7 +6313,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 80000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「バイキルト」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6330,7 +6330,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 96000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「スクルト」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6347,7 +6347,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 96000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ピオリム」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6364,7 +6364,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「マジックバリア」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6381,7 +6381,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「弓聖の守り星」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6398,7 +6398,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「キラキラポーン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6415,7 +6415,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 200000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「魔力覚醒」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6432,7 +6432,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 200000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「臥薪嘗胆」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6500,7 +6500,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 80000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ルカニ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6517,7 +6517,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 96000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ボミオス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6534,7 +6534,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ルカナン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6551,7 +6551,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 80000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ヘナトス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6585,7 +6585,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 64000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「どくのいき」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6602,7 +6602,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 72000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「おたけび」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6619,7 +6619,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「もうどくのいき」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6636,7 +6636,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「マホトーン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6653,7 +6653,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 120000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「スキルブレイク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6670,7 +6670,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 160000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「いてつくはどう」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
@@ -6772,7 +6772,7 @@ window.ITEMS_DATA.push(
     "fieldUsable": true,
     "shopAvailable": false,
     "abyssDrop": false,
-    "price": 0,
+    "price": 312000,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「はげしいおたけび」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"

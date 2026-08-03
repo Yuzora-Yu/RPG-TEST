@@ -130,6 +130,15 @@ Before finalizing any scenario draft or implementation, check:
 
 If a change touches legacy implemented dialogue, it needs a review queue entry unless the user explicitly instructs direct replacement.
 
+
+## In-game news update policy
+
+- Every delivered player-facing feature, balance change, content addition, or bug fix must be reflected in `news.js`.
+- Use exactly one `NEWS_DATA` record per calendar date. When more work is completed on the same date, update that existing record instead of adding another record.
+- Keep the body extremely concise and follow the existing Japanese bullet style. Do not expose internal function names, implementation details, test names, or developer-only notes.
+- Update news as part of the implementation itself, not as an optional final cleanup step.
+- Run `node tools/validation/validate-news-data.js` before delivery.
+
 ## Current product directives
 
 - On first launch, ask whether to download the full image cache now. If the player selects Yes, show progress and wait for the complete download before starting. If the player selects No, start immediately and still cache the complete image set in the background. No means “do not wait before play,” not “disable full caching.” Do not use lazy/on-demand image fetching as the core policy. Keep every map, monster, boss, battle background, battle effect, and newly added visual registered in the centralized `assets.js` full-cache list. Optimize map rendering without reducing cache coverage. Do not repeat this prompt after the post-`PROLOGUE3` opening.

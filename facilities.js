@@ -232,18 +232,18 @@ const Facilities = {
         });
     },
 
-    // --- 2. メダル交換所 ---
+    // --- 2. ふるびたコイン交換所 ---
     initMedal: () => {
         const exitFn = "App.changeScene('field')";
         // コマンドボタンの構成
         const cmds = `
-            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; grid-column: span 2;" onclick="Facilities.openMedalMenu()">メダルを交換する</button>
+            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; grid-column: span 2;" onclick="Facilities.openMedalMenu()">ふるびたコインを交換する</button>
         `;
-        Facilities.setupBaseLayout('medal-scene', 'メダル交換所', 'facility_bg_medal', cmds, exitFn);
+        Facilities.setupBaseLayout('medal-scene', 'ふるびたコイン交換所', 'facility_bg_medal', cmds, exitFn);
         const medals = App.data.items[99] || 0;
         document.getElementById('medal-scene-msg-content').innerHTML = `
-            「よくぞ参った。メダルを褒美と交換しよう」<br><br>
-            <span style="color:#ffd700; font-weight:bold;">所持メダル: ${medals} 枚</span>
+            「よくぞ参った。ふるびたコインを褒美と交換しよう」<br><br>
+            <span style="color:#ffd700; font-weight:bold;">所持コイン: ${medals} 枚</span>
         `;
     },
 
@@ -253,7 +253,10 @@ const Facilities = {
         DB.MEDAL_REWARDS.forEach(r => {
             const owned = !!(r.unique && r.type === 'item' && App.data.items && App.data.items[r.id] > 0);
             const can = current >= r.medals && !owned;
-            let detail = (r.type === 'item') ? (DB.ITEMS.find(it => it.id === r.id)?.desc || "不思議な道具") : `Rank.${r.base.rank} 指定部位の＋３確定装備`;
+            const equipMaster = r.type === 'equip' ? window.EQUIP_MASTER.find(eq => Number(eq.eid) === Number(r.equipId)) : null;
+            let detail = (r.type === 'item')
+                ? (DB.ITEMS.find(it => it.id === r.id)?.desc || "不思議な道具")
+                : (equipMaster ? `Rank.${equipMaster.rank} ${equipMaster.baseName || equipMaster.type}の特殊装備` : '特殊装備');
             html += `<div style="border: 1px solid #444; margin-bottom: 8px; padding: 10px; opacity:${can?1:0.5}; background:rgba(255,255,255,0.05);">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
                     <div style="font-weight:bold; font-size:14px; color:#fff;">${r.name}</div>
@@ -262,82 +265,39 @@ const Facilities = {
                 <div style="font-size:10px; color:#aaa; line-height:1.4;">${detail}</div>
             </div>`;
         });
-        Facilities.showModal('medal-scene', "メダル景品リスト", html);
+        Facilities.showModal('medal-scene', "ふるびたコイン景品リスト", html);
     },
 
-// --- メダル交換の実行処理 (特殊装備・レプリカ対応版) ---
+// --- ふるびたコイン交換の実行処理（特殊装備・レプリカ対応） ---
     execMedal: (r) => {
         if (r.unique && r.type === 'item' && App.data.items && App.data.items[r.id] > 0) {
             Menu.msg("すでに持っています。");
             return;
         }
         if ((App.data.items[99] || 0) < r.medals) {
-            Menu.msg("メダルが足りません。");
+            Menu.msg("ふるびたコインが足りません。");
             return;
         }
-        // メダルを消費
+        // ふるびたコインを消費
         App.data.items[99] -= r.medals;
         
         if(r.type === 'item') { 
             // アイテムの場合
             App.data.items[r.id] = (App.data.items[r.id] || 0) + r.count; 
         }
-        else { 
-            // 装備の場合 (マスタにない特殊装備・レプリカに対応)
-            // 1. 部位マスタ(EQUIP_MASTER)から、この部位(武器/盾等)に適したテンプレートを1つ探す
-            //    これにより「剣」や「鎧」としての抽選ルール(possibleOpts)を取得できる
-            const template = window.EQUIP_MASTER.find(e => e.type === r.base.type) || window.EQUIP_MASTER[0];
-
-            // 2. 景品設定(r.base)の数値をベースに、装備オブジェクトを構築
-            const eq = { 
-                id: Date.now() + Math.random().toString(36).substring(2), 
-                rank: r.base.rank, 
-                name: r.base.name + "+3", // 景品は常に+3
-                type: r.base.type,
-                baseName: template.baseName, // テンプレートから引き継ぎ（UI表示用）
-                val: r.base.val * 2.5, 
-                data: JSON.parse(JSON.stringify(r.base.data)), // 景品リスト(Replica等)の固有ステータス
-                opts: [], 
-                plus: 3,
-                possibleOpts: template.possibleOpts // 部位に合ったオプション候補をセット
-            };
-            
-            // 3. 3つのオプションを抽選（厳選の楽しさを残すためランクに応じたレアリティで）
-            for(let i=0; i<3; i++) {
-                // 部位ごとのルールでフィルタリング
-                let optCandidates = DB.OPT_RULES;
-                if (eq.possibleOpts && eq.possibleOpts.length > 0) {
-                    optCandidates = DB.OPT_RULES.filter(rule => eq.possibleOpts.includes(rule.key));
-                }
-                const rule = optCandidates.length > 0 ? optCandidates[Math.floor(Math.random() * optCandidates.length)] : DB.OPT_RULES[0];
-                
-                // レアリティ抽選 (景品なのでNは出にくく調整: +0.15)
-                let rarity = 'N';
-                const rarRnd = Math.random() + 0.15; 
-                if(rarRnd > 0.98 && rule.allowed.includes('EX')) rarity='EX';
-                else if(rarRnd > 0.90 && rule.allowed.includes('UR')) rarity='UR';
-                else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) rarity='SSR';
-                else if(rarRnd > 0.55 && rule.allowed.includes('SR')) rarity='SR';
-                else if(rarRnd > 0.30 && rule.allowed.includes('R')) rarity='R';
-                else rarity = rule.allowed[0];
-
-                const min = rule.min[rarity]||1, max = rule.max[rarity]||10;
-                eq.opts.push({
-                    key:rule.key, elm:rule.elm, label:rule.name, 
-                    val:Math.floor(Math.random()*(max-min+1))+min, unit:rule.unit, rarity:rarity
-                });
+        else {
+            // 特殊装備は equips.js の正式レコードから生成する。
+            const eq = (typeof App.createEquipById === 'function')
+                ? App.createEquipById(Number(r.equipId), Number(r.plus || 0), r.fixedOpts || null, r.fixedTraits || null)
+                : null;
+            if (!eq) {
+                App.data.items[99] += r.medals;
+                Menu.msg("景品装備のデータを読み込めませんでした。");
+                return;
             }
-
-            // 4. シナジー判定 (main.jsの機能を利用)
-            if (typeof App.checkSynergy === 'function') {
-                const syn = App.checkSynergy(eq);
-                if(syn) {
-                    eq.isSynergy = true;
-                    eq.effect = syn.effect;
-                }
-            }
-            
-            App.data.inventory.push(eq); 
+            eq.source = 'coinExchange';
+            if (!Array.isArray(App.data.inventory)) App.data.inventory = [];
+            App.data.inventory.push(eq);
         }
         
         App.save(); 
@@ -1533,7 +1493,7 @@ const Facilities = {
         }
 
         if (plus >= 3 && typeof PassiveSkill !== 'undefined' && PassiveSkill.generateEquipmentTraits) {
-            const randTraits = PassiveSkill.generateEquipmentTraits();
+            const randTraits = PassiveSkill.generateEquipmentTraits({ equipment:eq });
             eq.traits = [...(eq.traits || []), ...(randTraits || [])];
         }
 
