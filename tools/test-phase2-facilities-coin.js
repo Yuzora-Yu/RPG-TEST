@@ -46,7 +46,13 @@ for (const action of [casino, skillShop]) {
     assert(legacion.mapActions.filter(other => other.x === action.x && other.y === action.y).length === 1,
         `${action.type} の座標が別アクションと競合しています。`);
 }
-assert(Array.isArray(skillShop.itemIds) && skillShop.itemIds.length >= 80, '技法書店の品揃えが十分に拡張されていません。');
+const expectedPostgameSkillBookIds = [
+    600300, 600301, 600302, 600303, 600401,
+    600407, 600414, 600501, 600503, 600602
+];
+assert(Array.isArray(skillShop.itemIds) && skillShop.itemIds.length === 10, '技法書店の品揃えが10種ではありません。');
+assert(JSON.stringify(skillShop.itemIds) === JSON.stringify(expectedPostgameSkillBookIds),
+    '技法書店が蘇生・ブレス・中級支援中心の指定品揃えではありません。');
 assert(new Set(skillShop.itemIds).size === skillShop.itemIds.length, '技法書店のitemIdsに重複があります。');
 
 const itemById = new Map(items.map(item => [Number(item.id), item]));
@@ -65,8 +71,19 @@ assert(!skillShop.itemIds.some(id => forbiddenShopIds.has(Number(id))), '終盤�
 
 const mainSource = read('main.js');
 assert(/action\.type === ['"]casino['"]/.test(mainSource), 'フィールドからカジノへ入る正式なアクション導線がありません。');
+assert(mainSource.includes('totalCoinsSpent: 0'), '累計消費枚数の初期値がありません。');
+assert(mainSource.includes('ensureCoinSpendingRewardProgress'), '累計報酬のセーブ補完処理がありません。');
+assert(mainSource.includes('estimatedLegacySpent'), '旧セーブの過去消費枚数を復元する処理がありません。');
 
 const rewards = db.MEDAL_REWARDS;
+const spendingRewards = db.COIN_SPENDING_REWARDS;
+assert(Array.isArray(spendingRewards), '累計消費報酬マスターを読み込めません。');
+assert(JSON.stringify(spendingRewards.map(entry => Number(entry.coins))) === JSON.stringify([10, 30, 50, 100, 150, 200, 300, 500]),
+    '累計消費報酬の達成枚数が指定値と一致しません。');
+assert(spendingRewards.every(entry => Array.isArray(entry.rewards) && entry.rewards.length > 0),
+    '累計消費報酬に報酬内容がない項目があります。');
+assert(spendingRewards.flatMap(entry => entry.rewards).every(reward => reward.type !== 'ITEM' || itemById.has(Number(reward.id))),
+    '累計消費報酬に存在しないアイテムIDがあります。');
 assert(!rewards.some(reward => Number(reward.id) === 108), '魔法の小舟が交換景品に残っています。');
 assert(rewards.find(reward => Number(reward.id) === 98)?.medals === 50, '災厄の楔が50枚ではありません。');
 
@@ -101,4 +118,51 @@ for (const oldName of ['ちいさなメダル', 'はぐれメタル', 'メタル
     assert(!runtimeText.includes(oldName), `旧名称「${oldName}」がランタイム表示データに残っています。`);
 }
 
-console.log(`Phase2施設・ふるびたコイン検証: OK（技法書 ${skillShop.itemIds.length}種 / 景品 ${rewards.length}種）`);
+const facilityContext = vm.createContext({
+    window: { EQUIP_MASTER: equips },
+    console,
+    Date,
+    Math,
+    setTimeout,
+    clearTimeout,
+    DB: db,
+    App: {
+        data: {
+            items: { 99: 100 },
+            inventory: [],
+            stats: { totalCoinsSpent: 0 },
+            progress: { coinSpendingRewards: { claimedMilestones: [] } },
+            gold: 0,
+            gems: 0
+        },
+        saveCount: 0,
+        save() { this.saveCount += 1; return true; },
+        ensureLifetimeStats() { return this.data.stats; },
+        incrementLifetimeStat(key, amount) {
+            this.data.stats[key] = Number(this.data.stats[key] || 0) + Number(amount || 0);
+            return this.data.stats[key];
+        },
+        ensureCoinSpendingRewardProgress() { return this.data.progress.coinSpendingRewards; },
+        createEquipById() { return null; }
+    },
+    Menu: { messages: [], msg(text) { this.messages.push(text); } },
+    document: {}
+});
+load('facilities.js', facilityContext);
+const Facilities = vm.runInContext('Facilities', facilityContext);
+Facilities.closeModal = () => {};
+Facilities.openCoinSpendingRewards = () => {};
+Facilities.initMedal = () => {};
+Facilities.execMedal({ medals: 3, name: '業火の壺 x1', type: 'item', id: 1001, count: 1 });
+assert(facilityContext.App.data.items[99] === 97, '交換時にコインが正しく消費されません。');
+assert(facilityContext.App.data.stats.totalCoinsSpent === 3, '交換成功時に累計消費枚数が加算されません。');
+assert(facilityContext.App.data.items[1001] === 1, '交換景品が付与されません。');
+
+facilityContext.App.data.stats.totalCoinsSpent = 10;
+Facilities.claimCoinSpendingReward(10);
+assert(facilityContext.App.data.progress.coinSpendingRewards.claimedMilestones.includes(10), '達成済み累計報酬が受取済みになりません。');
+assert(facilityContext.App.data.items[2] === 5, '10枚累計報酬が付与されません。');
+Facilities.claimCoinSpendingReward(10);
+assert(facilityContext.App.data.items[2] === 5, '累計報酬を二重受領できてしまいます。');
+
+console.log(`Phase2施設・ふるびたコイン検証: OK（技法書 ${skillShop.itemIds.length}種 / 景品 ${rewards.length}種 / 累計報酬 ${spendingRewards.length}段階）`);

@@ -238,12 +238,15 @@ const Facilities = {
         // コマンドボタンの構成
         const cmds = `
             <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; grid-column: span 2;" onclick="Facilities.openMedalMenu()">ふるびたコインを交換する</button>
+            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; grid-column: span 2;" onclick="Facilities.openCoinSpendingRewards()">累計報酬</button>
         `;
         Facilities.setupBaseLayout('medal-scene', 'ふるびたコイン交換所', 'facility_bg_medal', cmds, exitFn);
         const medals = App.data.items[99] || 0;
+        const spent = Number(App.ensureLifetimeStats?.()?.totalCoinsSpent || App.data.stats?.totalCoinsSpent || 0);
         document.getElementById('medal-scene-msg-content').innerHTML = `
             「よくぞ参った。ふるびたコインを褒美と交換しよう」<br><br>
-            <span style="color:#ffd700; font-weight:bold;">所持コイン: ${medals} 枚</span>
+            <span style="color:#ffd700; font-weight:bold;">所持コイン: ${medals} 枚</span><br>
+            <span style="color:#aaa; font-size:11px;">累計消費: ${spent.toLocaleString()} 枚</span>
         `;
     },
 
@@ -266,6 +269,116 @@ const Facilities = {
             </div>`;
         });
         Facilities.showModal('medal-scene', "ふるびたコイン景品リスト", html);
+    },
+
+    getCoinSpendingRewardText: (rewards = []) => {
+        if (typeof AchievementManager !== 'undefined' && typeof AchievementManager.getRewardText === 'function') {
+            return AchievementManager.getRewardText(rewards);
+        }
+        return (Array.isArray(rewards) ? rewards : []).map(reward => {
+            if (reward.type === 'GEM') return `${Number(reward.val) || 0} GEM`;
+            if (reward.type === 'GOLD') return `${Number(reward.val) || 0} GOLD`;
+            if (reward.type === 'ITEM') {
+                const item = DB.ITEMS.find(entry => Number(entry.id) === Number(reward.id));
+                return `${item?.name || `アイテムID:${reward.id}`} x${Number(reward.val) || 1}`;
+            }
+            if (reward.type === 'EQUIP') {
+                const equip = window.EQUIP_MASTER?.find(entry => Number(entry.eid) === Number(reward.eid));
+                return `${equip?.name || `装備ID:${reward.eid}`}${reward.plus ? `+${reward.plus}` : ''}`;
+            }
+            return String(reward.type || '報酬');
+        }).join('、');
+    },
+
+    grantCoinSpendingRewards: (rewards = []) => {
+        if (typeof AchievementManager !== 'undefined' && typeof AchievementManager.processRewards === 'function') {
+            return AchievementManager.processRewards(rewards);
+        }
+        if (!App.data.items || typeof App.data.items !== 'object') App.data.items = {};
+        if (!Array.isArray(App.data.inventory)) App.data.inventory = [];
+        const granted = [];
+        (Array.isArray(rewards) ? rewards : []).forEach(reward => {
+            const value = Math.max(1, Math.floor(Number(reward.val) || 1));
+            if (reward.type === 'ITEM') {
+                App.data.items[reward.id] = Number(App.data.items[reward.id] || 0) + value;
+                granted.push(Facilities.getCoinSpendingRewardText([reward]));
+            } else if (reward.type === 'GEM') {
+                App.data.gems = Number(App.data.gems || 0) + Math.max(0, Number(reward.val) || 0);
+                granted.push(Facilities.getCoinSpendingRewardText([reward]));
+            } else if (reward.type === 'GOLD') {
+                App.data.gold = Number(App.data.gold || 0) + Math.max(0, Number(reward.val) || 0);
+                granted.push(Facilities.getCoinSpendingRewardText([reward]));
+            } else if (reward.type === 'EQUIP' && typeof App.createEquipById === 'function') {
+                const equip = App.createEquipById(reward.eid, reward.plus || 0, reward.opts || null, reward.traits || null);
+                if (equip) {
+                    App.data.inventory.push(equip);
+                    granted.push(equip.name);
+                }
+            }
+        });
+        return granted.join('、');
+    },
+
+    openCoinSpendingRewards: () => {
+        const state = typeof App.ensureCoinSpendingRewardProgress === 'function'
+            ? App.ensureCoinSpendingRewardProgress(App.data)
+            : (App.data.progress.coinSpendingRewards ||= { claimedMilestones: [] });
+        const claimed = new Set((state?.claimedMilestones || []).map(Number));
+        const spent = Math.max(0, Math.floor(Number(App.data.stats?.totalCoinsSpent) || 0));
+        const rewardMaster = Array.isArray(DB.COIN_SPENDING_REWARDS) ? DB.COIN_SPENDING_REWARDS : [];
+        const next = rewardMaster.find(entry => !claimed.has(Number(entry.coins)));
+        const nextText = next
+            ? (spent >= Number(next.coins) ? '受け取れる報酬があります' : `次の報酬まであと ${Math.max(0, Number(next.coins) - spent)} 枚`)
+            : 'すべての累計報酬を受取済みです';
+        let html = `
+            <div style="border:1px solid #666; background:rgba(0,0,0,0.72); padding:12px; margin-bottom:10px; text-align:center;">
+                <div style="font-size:11px; color:#aaa;">ふるびたコイン 累計消費枚数</div>
+                <div style="font-size:24px; color:#ffd700; font-weight:bold; margin-top:4px;">${spent.toLocaleString()} 枚</div>
+                <div style="font-size:10px; color:#8fd; margin-top:5px;">${nextText}</div>
+            </div>
+        `;
+        rewardMaster.forEach(entry => {
+            const milestone = Math.max(0, Math.floor(Number(entry.coins) || 0));
+            const isClaimed = claimed.has(milestone);
+            const achieved = spent >= milestone;
+            const canClaim = achieved && !isClaimed;
+            const rewardText = Facilities.getCoinSpendingRewardText(entry.rewards || []);
+            html += `
+                <div style="border:1px solid ${canClaim ? '#d6b22e' : '#444'}; background:rgba(255,255,255,0.05); padding:10px; margin-bottom:8px; opacity:${isClaimed ? 0.55 : 1};">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                        <div style="min-width:0;">
+                            <div style="font-size:14px; color:${achieved ? '#fff' : '#aaa'}; font-weight:bold;">累計 ${milestone.toLocaleString()} 枚</div>
+                            <div style="font-size:10px; color:#00cccc; margin-top:4px; line-height:1.4;">報酬: ${rewardText}</div>
+                        </div>
+                        <button class="btn" style="width:82px; flex-shrink:0; background:${canClaim ? '#8a1930' : '#333'};"
+                            onclick="Facilities.claimCoinSpendingReward(${milestone})" ${canClaim ? '' : 'disabled'}>
+                            ${isClaimed ? '受取済' : (achieved ? '受領' : '未達成')}
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        Facilities.showModal('medal-scene', 'ふるびたコイン累計報酬', html);
+    },
+
+    claimCoinSpendingReward: (milestone) => {
+        const rewardMaster = Array.isArray(DB.COIN_SPENDING_REWARDS) ? DB.COIN_SPENDING_REWARDS : [];
+        const entry = rewardMaster.find(reward => Number(reward.coins) === Number(milestone));
+        if (!entry) return Menu.msg('累計報酬データが見つかりません。');
+        const state = typeof App.ensureCoinSpendingRewardProgress === 'function'
+            ? App.ensureCoinSpendingRewardProgress(App.data)
+            : (App.data.progress.coinSpendingRewards ||= { claimedMilestones: [] });
+        const claimed = new Set((state?.claimedMilestones || []).map(Number));
+        const spent = Math.max(0, Math.floor(Number(App.data.stats?.totalCoinsSpent) || 0));
+        if (claimed.has(Number(entry.coins))) return Menu.msg('すでに受け取り済みです。');
+        if (spent < Number(entry.coins)) return Menu.msg('累計消費枚数が足りません。');
+
+        const rewardText = Facilities.grantCoinSpendingRewards(entry.rewards || []);
+        state.claimedMilestones = Array.from(new Set([...(state.claimedMilestones || []).map(Number), Number(entry.coins)])).sort((a, b) => a - b);
+        App.save();
+        Facilities.closeModal('medal-scene');
+        Facilities.openCoinSpendingRewards();
+        Menu.msg(`累計報酬を受け取りました！\n${rewardText}`);
     },
 
 // --- ふるびたコイン交換の実行処理（特殊装備・レプリカ対応） ---
@@ -299,7 +412,13 @@ const Facilities = {
             if (!Array.isArray(App.data.inventory)) App.data.inventory = [];
             App.data.inventory.push(eq);
         }
-        
+
+        if (typeof App.incrementLifetimeStat === 'function') {
+            App.incrementLifetimeStat('totalCoinsSpent', r.medals, { save: false });
+        } else {
+            if (!App.data.stats || typeof App.data.stats !== 'object') App.data.stats = {};
+            App.data.stats.totalCoinsSpent = Math.max(0, Number(App.data.stats.totalCoinsSpent || 0) + Number(r.medals || 0));
+        }
         App.save(); 
         Facilities.closeModal('medal-scene'); 
         Facilities.initMedal(); // 画面更新

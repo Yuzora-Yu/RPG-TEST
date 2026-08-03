@@ -722,7 +722,8 @@ const App = {
                 defeatedBosses: {},
                 visitedFixedMaps: {},
                 quests: {},
-                guild: { rank: 'G', exp: 0, points: 0, offers: [], questStates: {}, completionCounts: {}, refreshCount: 0 }
+                guild: { rank: 'G', exp: 0, points: 0, offers: [], questStates: {}, completionCounts: {}, refreshCount: 0 },
+                coinSpendingRewards: { claimedMilestones: [] }
             },
             inventory: [],
             items: { "1": 3 }, 
@@ -751,7 +752,7 @@ const App = {
             },
             stats: { 
                 wipeoutCount: 0,
-                totalSteps: 0, totalBattles: 0, totalChestsOpened: 0, totalMedals: 0,
+                totalSteps: 0, totalBattles: 0, totalChestsOpened: 0, totalMedals: 0, totalCoinsSpent: 0,
                 totalQuestCompletions: 0, totalGuildQuestCompletions: 0,
                 totalAlchemyCrafts: 0, totalAlchemyItemsCrafted: 0,
                 totalBlacksmithActions: 0, blacksmithSynthesisCount: 0,
@@ -997,7 +998,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v29.20260803-runtime',
+    fullDataCacheName: 'prisma-abyss-v31.20260803-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -6330,7 +6331,7 @@ load: () => {
     },
 
     getLifetimeStatDefaults: () => ({
-        totalSteps: 0, totalBattles: 0, totalChestsOpened: 0, totalMedals: 0,
+        totalSteps: 0, totalBattles: 0, totalChestsOpened: 0, totalMedals: 0, totalCoinsSpent: 0,
         totalQuestCompletions: 0, totalGuildQuestCompletions: 0,
         totalAlchemyCrafts: 0, totalAlchemyItemsCrafted: 0,
         totalBlacksmithActions: 0, blacksmithSynthesisCount: 0,
@@ -6354,6 +6355,31 @@ load: () => {
         stats[key] = Math.max(0, Number(stats[key] || 0) + Number(amount || 0));
         if (options.save !== false && typeof App.save === 'function') App.save();
         return stats[key];
+    },
+
+    ensureCoinSpendingRewardProgress: (data = App.data, options = {}) => {
+        if (!data || typeof data !== 'object') return null;
+        if (!data.progress || typeof data.progress !== 'object' || Array.isArray(data.progress)) data.progress = {};
+        if (!data.progress.flags || typeof data.progress.flags !== 'object' || Array.isArray(data.progress.flags)) data.progress.flags = {};
+        const current = data.progress.coinSpendingRewards;
+        if (!current || typeof current !== 'object' || Array.isArray(current)) {
+            data.progress.coinSpendingRewards = { claimedMilestones: [] };
+        }
+        const state = data.progress.coinSpendingRewards;
+        state.claimedMilestones = Array.from(new Set((Array.isArray(state.claimedMilestones) ? state.claimedMilestones : [])
+            .map(value => Math.max(0, Math.floor(Number(value) || 0)))
+            .filter(value => value > 0))).sort((a, b) => a - b);
+
+        const stats = App.ensureLifetimeStats(data);
+        if (options.migrateLegacy === true && !data.progress.flags.coinSpendingTrackingV1Initialized) {
+            // 旧セーブは取得累計と現在所持数の差を、復元可能な範囲の過去消費数として引き継ぐ。
+            const acquired = Math.max(0, Math.floor(Number(stats?.totalMedals) || 0));
+            const held = Math.max(0, Math.floor(Number(data.items?.[99]) || 0));
+            const estimatedLegacySpent = Math.max(0, acquired - held);
+            stats.totalCoinsSpent = Math.max(Number(stats.totalCoinsSpent) || 0, estimatedLegacySpent);
+            data.progress.flags.coinSpendingTrackingV1Initialized = true;
+        }
+        return state;
     },
 
     getAbyssLegacyProgressFloor: (data = App.data) => {
@@ -6559,6 +6585,7 @@ load: () => {
         if (typeof data.stats.totalBattles !== 'number') data.stats.totalBattles = 0;
         if (typeof data.stats.startTime !== 'number') data.stats.startTime = Date.now();
         App.ensureLifetimeStats(data);
+        App.ensureCoinSpendingRewardProgress(data, { migrateLegacy: true });
         data.stats.totalQuestCompletions = Math.max(Number(data.stats.totalQuestCompletions || 0), Object.values(data.progress?.quests || {}).filter(entry => entry?.state === 'completed').length);
         data.stats.totalGuildQuestCompletions = Math.max(Number(data.stats.totalGuildQuestCompletions || 0), App.getGuildQuestCompletionCount(data));
 
