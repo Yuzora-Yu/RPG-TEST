@@ -546,7 +546,7 @@
                 if (!normalMonsterIds.length) normalMonsterIds = Guild.selectChallengeMonsterIds(null, power, { count: 16 });
                 const rareMonsterIds = Guild.selectChallengeMonsterIds(theme, power, { rare: true, count: 5 });
                 const bossCandidates = Guild.selectChallengeMonsterIds(theme, power, { boss: true, count: rarity === 'EX' ? 8 : 6 });
-                const selectedBossId = Guild.pickRandom(bossCandidates) || 401100;
+                const selectedBossId = Guild.pickRandom(bossCandidates) || 401200;
                 // 依頼生成時に最下層ボス1体を固定し、ロードで別個体へ変わらないよう保存する。
                 const bossMonsterIds = [Number(selectedBossId)];
                 const gimmicks = Guild.pickChallengeGimmicks(rarity);

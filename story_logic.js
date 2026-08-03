@@ -1393,7 +1393,7 @@ const StoryManager = {
             this.persistEventCursor(active, path);
             let result = null;
 
-            if (action.type === 'IF_FLAG' || action.type === 'IF' || action.type === 'IF_ITEM' || action.type === 'CHOICE') {
+            if (action.type === 'IF_FLAG' || action.type === 'IF' || action.type === 'IF_ITEM' || action.type === 'IF_KILL_COUNTS' || action.type === 'CHOICE') {
                 let branchName = active.selectedBranches[pathKey];
                 if (!branchName) {
                     if (action.type === 'IF_FLAG' || action.type === 'IF') {
@@ -1405,6 +1405,14 @@ const StoryManager = {
                         const itemId = Number(action.id ?? action.itemId ?? action.value);
                         const requiredCount = Math.max(1, Math.floor(Number(action.count) || 1));
                         branchName = Number(App.data?.items?.[itemId] || 0) >= requiredCount
+                            ? 'then'
+                            : (Array.isArray(action.else) ? 'else' : 'otherwise');
+                    } else if (action.type === 'IF_KILL_COUNTS') {
+                        const ids = (Array.isArray(action.ids) ? action.ids : [action.id ?? action.value])
+                            .map(Number).filter(id => Number.isFinite(id) && id > 0);
+                        const minimum = Math.max(1, Math.floor(Number(action.minimum ?? action.count) || 1));
+                        const killCounts = App.data?.book?.killCounts || {};
+                        branchName = ids.length > 0 && ids.every(id => Number(killCounts[id] || killCounts[String(id)] || 0) >= minimum)
                             ? 'then'
                             : (Array.isArray(action.else) ? 'else' : 'otherwise');
                     } else {
@@ -2088,6 +2096,22 @@ const StoryManager = {
             const requiredCount = Math.max(1, Math.floor(Number(action.count) || 1));
             const ownedCount = Number(App.data?.items?.[itemId] || 0);
             const branch = ownedCount >= requiredCount ? action.then : (action.else || action.otherwise);
+            if (Array.isArray(branch)) {
+                for (const sub of branch) {
+                    const res = await this.processAction(sub, eventId);
+                    if (res === 'BREAK' || res === 'BREAK_TRANSFER') return res;
+                }
+            }
+        }
+
+        if (!context.managed && action.type === 'IF_KILL_COUNTS') {
+            const ids = (Array.isArray(action.ids) ? action.ids : [action.id ?? action.value])
+                .map(Number).filter(id => Number.isFinite(id) && id > 0);
+            const minimum = Math.max(1, Math.floor(Number(action.minimum ?? action.count) || 1));
+            const killCounts = App.data?.book?.killCounts || {};
+            const branch = ids.length > 0 && ids.every(id => Number(killCounts[id] || killCounts[String(id)] || 0) >= minimum)
+                ? action.then
+                : (action.else || action.otherwise);
             if (Array.isArray(branch)) {
                 for (const sub of branch) {
                     const res = await this.processAction(sub, eventId);

@@ -4951,161 +4951,6 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
-        "abyss_floor_010_leon_guardian": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_010_LEON_GUARDIAN" },
-                        { "type": "BOSS", "value": 401010, "winEventId": "abyss_floor_010_clear" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_010_clear": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_010_CLEAR" },
-                        { "type": "FLAG", "key": "abyssFloor010Cleared" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_020_glen_guardian": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_020_GLEN_GUARDIAN" },
-                        { "type": "BOSS", "value": 401020, "winEventId": "abyss_floor_020_clear" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_020_clear": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_020_CLEAR" },
-                        { "type": "FLAG", "key": "abyssFloor020Cleared" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_030_leonard_abyss": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_030_LEONARD" },
-                        { "type": "LB_ADD_PARTY", "charId": 101, "amount": 5, "source": "story" },
-                        { "type": "BOSS", "value": 401030, "winEventId": "abyss_floor_030_clear" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_030_clear": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_030_CLEAR" },
-                        { "type": "FLAG", "key": "abyssFloor030Cleared" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_040_elicia_abyss": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_040_ELICIA" },
-                        { "type": "LB_ADD_PARTY", "charId": 106, "amount": 5, "source": "story" },
-                        { "type": "BOSS", "value": 401040, "winEventId": "abyss_floor_040_clear" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_040_clear": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_040_CLEAR" },
-                        { "type": "FLAG", "key": "abyssFloor040Cleared" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_050_syris_abyss": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_050_SYRIS" },
-                        { "type": "LB_ADD_PARTY", "charId": 104, "amount": 5, "source": "story" },
-                        { "type": "BOSS", "value": 401050, "winEventId": "abyss_floor_050_clear" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_050_clear": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_050_CLEAR" },
-                        { "type": "FLAG", "key": "abyssFloor050Cleared" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_060_grad_abyss": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_060_GRAD" },
-                        { "type": "LB_ADD_PARTY", "charIds": [109, 110], "amount": 5, "source": "story" },
-                        { "type": "BOSS", "value": 401060, "winEventId": "abyss_floor_060_clear" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_060_clear": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_060_CLEAR" },
-                        { "type": "FLAG", "key": "abyssFloor060Cleared" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_070_veld_abyss": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_070_VELD" },
-                        { "type": "LB_ADD_PARTY", "charId": 204, "amount": 5, "source": "story" },
-                        { "type": "BOSS", "value": 401070, "winEventId": "abyss_floor_070_clear" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_070_clear": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_070_VELD_CLEAR" },
-                        { "type": "FLAG", "key": "abyssFloor070Cleared" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_080_lilith_true": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_080_LILITH" },
-                        { "type": "BOSS", "value": 401080, "winEventId": "abyss_floor_080_clear" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_080_clear": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_080_CLEAR" },
-                        { "type": "FLAG", "key": "abyssFloor080Cleared" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_090_jasper_true": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_090_JASPER" },
-                        { "type": "BOSS", "value": 401090, "winEventId": "abyss_floor_090_clear" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_090_clear": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_090_JASPER_CLEAR" },
-                        { "type": "FLAG", "key": "abyssFloor090Cleared" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_100_phase1": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_100_PHASE1" },
-                        { "type": "BOSS", "value": [401153, 401151, 401150, 401152], "winEventId": "abyss_floor_100_phase2" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_100_phase2": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_100_PHASE2" },
-                        { "type": "BOSS", "value": 401100, "winEventId": "abyss_floor_100_clear" }
-                ],
-                "winActions": []
-        },
-        "abyss_floor_100_clear": {
-                "actions": [
-                        { "type": "CONV", "value": "ABYSS_FLOOR_100_CLEAR" },
-                        { "type": "FLAG", "key": "abyssFloor100Cleared" },
-                        { "type": "STEP", "value": 10 },
-                        { "type": "SUB", "value": 1 },
-                        { "type": "LOG", "value": "深淵王を退けた。一度地上へ戻り、仲間たちと息を整えよう。" }
-                ],
-                "winActions": []
-        },
         "abyss_floor_100_epilogue": {
                 "actions": [
                         { "type": "CONV", "value": "ABYSS_FLOOR_100_EPILOGUE" },
@@ -5613,7 +5458,17 @@ const STORY_MANAGER_DATA = {
 
     Object.assign(data.events, {
         abyss_carmena_gate_battle: bossEvent('ABYSS_CARMENA_GATE',[302001,302000],'abyss_carmena_gate_clear'),
-        abyss_carmena_gate_clear: clearEvent('ABYSS_CARMENA_GATE_CLEAR',['abyssCarmenaGateCleared']),
+        abyss_carmena_gate_clear: {
+            actions:[{
+                type:'IF_KILL_COUNTS', ids:[302001,302000], minimum:1,
+                then:[
+                    {type:'CONV',value:'ABYSS_CARMENA_GATE_CLEAR'},
+                    {type:'FLAG',key:'abyssCarmenaGateCleared'}
+                ],
+                else:[{type:'LOG',value:'北門の二将の討伐記録を確認できなかった。門はまだ閉ざされている。'}]
+            }],
+            winActions:[]
+        },
         abyss_leonard_battle: bossEvent('ABYSS_LEONARD',302010,'abyss_leonard_clear',[{type:'LB_ADD_PARTY',charId:101,amount:5,source:'story'}]),
         abyss_leonard_clear: clearEvent('ABYSS_LEONARD_CLEAR',['abyssLeonardDefeated'],[{type:'IF_FLAG',key:'abyssFirstBarrierCleared',then:[{type:'CONV',value:'ABYSS_FIRST_BARRIER_CLEAR'}]}]),
         abyss_elicia_battle: bossEvent('ABYSS_ELICIA',302020,'abyss_elicia_clear',[{type:'LB_ADD_PARTY',charId:106,amount:5,source:'story'}]),

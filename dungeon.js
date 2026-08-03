@@ -903,7 +903,7 @@ const Dungeon = {
         return waitMs > 0 ? new Promise(resolve => setTimeout(resolve, waitMs)) : Promise.resolve();
     },
 
-    startChestTrapBattle: (monsterId, options = {}) => {
+    startChestTrapBattle: async (monsterId, options = {}) => {
         const numericId = Number(monsterId);
         const monster = window.MonsterData?.getMonsterById?.(numericId)
             || (Array.isArray(DB?.MONSTERS) ? DB.MONSTERS.find(entry => Number(entry.id) === numericId) : null);
@@ -921,6 +921,8 @@ const Dungeon = {
             || Number(monster.rank)
             || 1);
         App.log(`宝箱を開けた！<br><span style="color:#ff8a72;font-weight:bold;">${monster.name}</span> が襲いかかってきた！`);
+        // 開封ログは通常宝箱と同様に即時表示し、驚き演出の待機は表示後に置く。
+        await Dungeon.waitForChestTrapReveal(options.revealWaitMs ?? 650);
         App.data.battle = {
             active: false,
             isBossBattle: false,
@@ -2014,63 +2016,8 @@ const Dungeon = {
     },
 	
     // --- 移動・イベント処理 (全文) ---
-    getAbyssBossStoryDefinition: (floor = Dungeon.floor) => {
-        if (!Dungeon.isStoryAbyss()) return null;
-        const f = Number(floor || 0);
-        const table = {
-            10: {
-                eventId: 'abyss_floor_010_leon_guardian',
-                clearEventId: 'abyss_floor_010_clear',
-                clearFlag: 'abyssFloor010Cleared'
-            },
-            20: {
-                eventId: 'abyss_floor_020_glen_guardian',
-                clearEventId: 'abyss_floor_020_clear',
-                clearFlag: 'abyssFloor020Cleared'
-            },
-            30: {
-                eventId: 'abyss_floor_030_leonard_abyss',
-                clearEventId: 'abyss_floor_030_clear',
-                clearFlag: 'abyssFloor030Cleared'
-            },
-            40: {
-                eventId: 'abyss_floor_040_elicia_abyss',
-                clearEventId: 'abyss_floor_040_clear',
-                clearFlag: 'abyssFloor040Cleared'
-            },
-            50: {
-                eventId: 'abyss_floor_050_syris_abyss',
-                clearEventId: 'abyss_floor_050_clear',
-                clearFlag: 'abyssFloor050Cleared'
-            },
-            60: {
-                eventId: 'abyss_floor_060_grad_abyss',
-                clearEventId: 'abyss_floor_060_clear',
-                clearFlag: 'abyssFloor060Cleared'
-            },
-            70: {
-                eventId: 'abyss_floor_070_veld_abyss',
-                clearEventId: 'abyss_floor_070_clear',
-                clearFlag: 'abyssFloor070Cleared'
-            },
-            80: {
-                eventId: 'abyss_floor_080_lilith_true',
-                clearEventId: 'abyss_floor_080_clear',
-                clearFlag: 'abyssFloor080Cleared'
-            },
-            90: {
-                eventId: 'abyss_floor_090_jasper_true',
-                clearEventId: 'abyss_floor_090_clear',
-                clearFlag: 'abyssFloor090Cleared'
-            },
-            100: {
-                eventId: 'abyss_floor_100_phase1',
-                clearEventId: 'abyss_floor_100_clear',
-                clearFlag: 'abyssFloor100Cleared'
-            }
-        };
-        return table[f] || null;
-    },
+    // 旧1～100階の固定ボス列は廃止済み。物語進行は深淵世界の固定MAPを正本とする。
+    getAbyssBossStoryDefinition: () => null,
 
     isAbyssBossStoryDefeated: (floor = Dungeon.floor) => {
         const f = Number(floor || 0);
@@ -2116,22 +2063,7 @@ const Dungeon = {
         return definition.eventId;
     },
 
-    getAbyssStoryBossDisplayMonsterId: (floor = Dungeon.floor) => {
-        const f = Number(floor || 0);
-        const table = {
-            10: 401010,
-            20: 401020,
-            30: 401030,
-            40: 401040,
-            50: 401050,
-            60: 401060,
-            70: 401070,
-            80: 401080,
-            90: 401090,
-            100: 401100
-        };
-        return table[f] || null;
-    },
+    getAbyssStoryBossDisplayMonsterId: () => null,
 
     getAbyssBossRoomLayout: () => Dungeon.isMemoryRealm() ? ({
         id: 'memory-realm-final-v1',
@@ -2218,7 +2150,7 @@ const Dungeon = {
         }
         if (guildRun && displayFloor >= Math.max(1, Number(guildRun.floorCount || 1))) {
             const ids = (Array.isArray(guildRun.bossMonsterIds) ? guildRun.bossMonsterIds : []).map(Number).filter(id => Number.isFinite(id) && id > 0);
-            const monsterIds = ids.length ? ids : [401100];
+            const monsterIds = ids.length ? ids : [401200];
             return { active:true, floor:displayFloor, displayFloor, balanceFloor, mode:'guild', x:layout.boss.x, y:layout.boss.y, monsterIds, displayMonsterId:Dungeon.getAbyssBossDisplayMonsterId(monsterIds), source:'guild-quest', guildQuestId:guildRun.questId };
         }
         const monsterData = globalThis.MonsterData;
@@ -2504,8 +2436,7 @@ const Dungeon = {
                     if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
                     App.save();
                     Field.render();
-                    await Dungeon.waitForChestTrapReveal();
-                    Dungeon.startChestTrapBattle(chestDef.trapMonsterId, {
+                    await Dungeon.startChestTrapBattle(chestDef.trapMonsterId, {
                         floor: chestDef.trapFloor || mapDef?.encounterRank || mapDef?.rank,
                         fixedChestTrap: { progressKey, posKey }
                     });
@@ -2587,8 +2518,7 @@ const Dungeon = {
             Dungeon.saveMapData();
             App.save();
             if (mimic) {
-                await Dungeon.waitForChestTrapReveal();
-                if (Dungeon.startChestTrapBattle(mimic.id, { floor })) return;
+                if (await Dungeon.startChestTrapBattle(mimic.id, { floor })) return;
             }
         }
 

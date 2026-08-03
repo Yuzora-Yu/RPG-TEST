@@ -2523,7 +2523,7 @@ const Battle = {
                         .map(base => [Number(base.id), base])
                 ).values());
                 if (candidates.length === 0) {
-                    const fallback = Battle.getMonsterBaseById(401200) || Battle.getMonsterBaseById(401100);
+                    const fallback = Battle.getMonsterBaseById(401200);
                     if (fallback) candidates = [fallback];
                 }
                 const count = Math.min(deepBossCount, candidates.length);
@@ -2850,33 +2850,165 @@ const Battle = {
     },
 
 /**
-     * 深層モンスターの個別生成・スケーリング (命中・回避・会心抑制 & ランダム特性付与版)
+     * 深層ボス強化用の正式マスターを取得する。
+     * マスター未読込時は空配列・空オブジェクトで安全に処理する。
+     */
+    getDeepBossEnhancementMaster: () => {
+        const content = globalThis.ABYSS_REGION_CONTENT || {};
+        return {
+            skillFamilies: Array.isArray(content.deepBossSkillFamilies) ? content.deepBossSkillFamilies : [],
+            roleTraitPools: content.deepBossRoleTraitPools || {},
+            statusResistKeys: Array.isArray(content.deepBossStatusResistKeys) ? content.deepBossStatusResistKeys : []
+        };
+    },
+
+    getDeepBossEnhancementStage: (floor) => {
+        const numericFloor = Math.max(101, Math.floor(Number(floor) || 101));
+        return Math.max(1, Math.min(8, 1 + Math.floor((numericFloor - 101) / 50)));
+    },
+
+    getDeepBossSkillFamily: (skillId) => {
+        const numericId = Number(skillId);
+        return Battle.getDeepBossEnhancementMaster().skillFamilies.find(family =>
+            Array.isArray(family?.skillIds) && family.skillIds.some(id => Number(id) === numericId)
+        ) || null;
+    },
+
+    getDeepBossUpgradeSkillIds: (baseActs, floor) => {
+        const acts = Array.isArray(baseActs) ? baseActs : [];
+        const stage = Battle.getDeepBossEnhancementStage(floor);
+        const step = Math.min(4, 1 + Math.floor((stage - 1) / 2));
+        const candidates = [];
+        acts.forEach(act => {
+            const currentId = Number(act?.id);
+            if (!Number.isFinite(currentId) || currentId <= 0) return;
+            const family = Battle.getDeepBossSkillFamily(currentId);
+            if (!family) return;
+            const ids = family.skillIds.map(Number).filter(id => Number.isFinite(id) && id > 0);
+            const currentIndex = ids.indexOf(currentId);
+            if (currentIndex < 0 || currentIndex >= ids.length - 1) return;
+            const upgradeId = ids[Math.min(ids.length - 1, currentIndex + step)];
+            if (upgradeId === currentId || acts.some(existing => Number(existing?.id) === upgradeId)) return;
+            if (!DB?.SKILLS?.some(skill => Number(skill?.id) === upgradeId)) return;
+            if (!candidates.some(entry => entry.id === upgradeId)) {
+                candidates.push({ id:upgradeId, sourceAct:act, familyId:family.id });
+            }
+        });
+        const maxAdditions = Math.min(3, 1 + Math.floor((stage - 1) / 2));
+        const selected = [];
+        const pool = candidates.slice();
+        while (pool.length && selected.length < maxAdditions) {
+            const index = Math.floor(Math.random() * pool.length);
+            selected.push(pool.splice(index, 1)[0]);
+        }
+        return selected;
+    },
+
+    applyDeepBossSkillEnhancements: (monster, base, floor) => {
+        const originalActs = JSON.parse(JSON.stringify(base?.acts || [{ id:1, rate:100, condition:0 }]));
+        monster.acts = originalActs;
+        const stage = Battle.getDeepBossEnhancementStage(floor);
+        Battle.getDeepBossUpgradeSkillIds(originalActs, floor).forEach(entry => {
+            const sourceRate = Math.max(1, Number(entry.sourceAct?.rate || 10));
+            monster.acts.push({
+                id: entry.id,
+                rate: Math.max(8, Math.min(20, Math.floor(sourceRate * 0.65) + stage)),
+                condition: Number(entry.sourceAct?.condition || 0),
+                deepUpgradeOf: Number(entry.sourceAct?.id),
+                deepSkillFamily: entry.familyId
+            });
+        });
+        monster.deepOriginalActIds = originalActs.map(act => Number(act?.id)).filter(Number.isFinite);
+    },
+
+    getDeepBossRoleKeys: (base) => {
+        const stats = {
+            physical: Math.max(0, Number(base?.atk || 0)),
+            magic: Math.max(0, Number(base?.mag || 0)),
+            tank: (Math.max(0, Number(base?.def || 0)) + Math.max(0, Number(base?.mdef || base?.mag || 0))) / 2,
+            speed: Math.max(0, Number(base?.spd || 0))
+        };
+        const roleKeys = Object.entries(stats).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([key]) => key);
+        const skills = (Array.isArray(base?.acts) ? base.acts : [])
+            .map(act => DB?.SKILLS?.find(skill => Number(skill?.id) === Number(act?.id)))
+            .filter(Boolean);
+        if (skills.some(skill => skill.type === 'ブレス')) roleKeys.unshift('breath');
+        if (skills.some(skill => ['回復','蘇生','強化','弱体'].includes(skill.type))) roleKeys.push('support');
+        return [...new Set(roleKeys)].slice(0, 3);
+    },
+
+    applyDeepBossTraitEnhancements: (monster, base, floor) => {
+        const master = Battle.getDeepBossEnhancementMaster();
+        const stage = Battle.getDeepBossEnhancementStage(floor);
+        const levelBonus = Math.min(5, 1 + Math.floor((stage - 1) / 2));
+        monster.traits = JSON.parse(JSON.stringify(base?.traits || [])).map(trait => ({
+            ...trait,
+            id: Number(trait?.id),
+            level: Math.min(10, Math.max(1, Number(trait?.level || trait?.lv || 1) + levelBonus))
+        }));
+
+        const roleKeys = Battle.getDeepBossRoleKeys(base);
+        const existingIds = new Set(monster.traits.map(trait => Number(trait?.id)));
+        const candidateIds = [...new Set(roleKeys.flatMap(role =>
+            Array.isArray(master.roleTraitPools?.[role]) ? master.roleTraitPools[role] : []
+        ).map(Number).filter(id =>
+            Number.isInteger(id) && id > 0 && !existingIds.has(id) && !!PassiveSkill?.MASTER?.[id]
+        ))];
+        const additionCount = Math.min(3, 1 + Math.floor((stage - 1) / 2));
+        const addedTraitLevel = Math.min(10, 3 + stage);
+        for (let i = 0; i < additionCount && candidateIds.length; i++) {
+            const index = Math.floor(Math.random() * candidateIds.length);
+            const id = candidateIds.splice(index, 1)[0];
+            monster.traits.push({ id, level:addedTraitLevel, deepAdded:true });
+            existingIds.add(id);
+        }
+        monster.deepBossRoles = roleKeys;
+    },
+
+    applyDeepBossResistanceEnhancements: (monster, base, floor) => {
+        const master = Battle.getDeepBossEnhancementMaster();
+        const stage = Battle.getDeepBossEnhancementStage(floor);
+        const statusBonus = Math.min(50, 5 + (stage - 1) * 5);
+        const elementBonus = Math.min(40, 5 + (stage - 1) * 5);
+        const baseResists = JSON.parse(JSON.stringify(base?.resists || {}));
+        monster.resists = { ...baseResists };
+        master.statusResistKeys.forEach(key => {
+            const baseValue = Number(baseResists[key] ?? 0);
+            monster.resists[key] = Math.min(200, Math.max(-100, baseValue + statusBonus));
+        });
+
+        const baseElementResists = JSON.parse(JSON.stringify(base?.elmRes || {}));
+        monster.elmRes = {};
+        CONST.ELEMENTS.forEach(element => {
+            const baseValue = Number(baseElementResists[element] ?? 0);
+            monster.elmRes[element] = Math.min(100, Math.max(-100, baseValue + elementBonus));
+        });
+        monster.deepStatusResistBonus = statusBonus;
+        monster.deepElementResistBonus = elementBonus;
+    },
+
+    /**
+     * 深層モンスターの個別生成・スケーリング。
+     * ボスのみ、元マスターの耐性・技・特性を基準に順当強化する。
      */
     createDeepFloorMonster: (base, floor, isBoss) => {
         const m = new Monster(base, 1.0);
         const rank = Math.max(1, base.rank || 1);
-        
-        // ステータス倍率の決定
         const randMult = isBoss ? 2.0 : (0.9 + Math.random() * 0.4);
-        
-        // 基本ステータスのスケーリング（HP, MP, ATK, DEF, SPD, MAG, MDEF）
+
         m.hp = Math.floor((base.hp / rank) * floor * randMult);
         m.baseMaxHp = m.hp;
         m.mp = Math.floor((base.mp / rank) * floor * randMult);
         m.baseMaxMp = m.mp;
-
         m.baseStats.atk = Math.floor((base.atk / rank) * floor * randMult);
         m.baseStats.def = Math.floor((base.def / rank) * floor * randMult);
         m.baseStats.spd = Math.floor((base.spd / rank) * floor * randMult);
         m.baseStats.mag = Math.floor((base.mag / rank) * floor * randMult);
-        m.mdef           = Math.floor(((base.mdef || base.mag) / rank) * floor * randMult);
+        m.mdef = Math.floor(((base.mdef || base.mag) / rank) * floor * randMult);
 
-        // ★修正: 命中・回避・会心は階層倍率を適用せず、0〜20のランダム加算に留める
         m.hit = Battle.normalizeMonsterHitRate(base.hit, 100) + Math.floor(Math.random() * 21);
-        m.eva = (base.eva || 0)   + Math.floor(Math.random() * 21);
-        m.cri = (base.cri || 0)   + Math.floor(Math.random() * 21);
-
-        // 各種フラグ・データの継承
+        m.eva = (base.eva || 0) + Math.floor(Math.random() * 21);
+        m.cri = (base.cri || 0) + Math.floor(Math.random() * 21);
         m.id = base.id;
         m.baseId = base.id;
         m.rank = base.rank || rank;
@@ -2888,79 +3020,49 @@ const Battle = {
         m.isSpecialBoss = base.isSpecialBoss || base.isEstark || Number(base.id) === 902000;
         m.image = base.image || base.img || m.image || null;
         m.drops = JSON.parse(JSON.stringify(base.drops || null));
-        
-        // マスタ側の特性を継承
-        m.traits = JSON.parse(JSON.stringify(base.traits || []));
 
-        // ★新規追加: 武器以外の特性をランダムで 1〜3 つ付与 (Lv 1〜5)
-        if (typeof PassiveSkill !== 'undefined' && PassiveSkill.MASTER) {
-            const traitCount = 1 + Math.floor(Math.random() * 3); // 1〜3個
-            // 「武器」タイプ以外の特性IDを抽出
-            const availableTraitIds = Object.keys(PassiveSkill.MASTER).filter(tid => {
-                return PassiveSkill.MASTER[tid].type !== '武器';
-            });
-
-            for (let i = 0; i < traitCount; i++) {
-                const randomId = availableTraitIds[Math.floor(Math.random() * availableTraitIds.length)];
-                const randomLv = 1 + Math.floor(Math.random() * 5); // Lv 1〜5
-                
-                // 重複習得を避けるチェック
-                if (!m.traits.some(t => t.id === parseInt(randomId))) {
-                    m.traits.push({ id: parseInt(randomId), level: randomLv });
+        if (isBoss) {
+            Battle.applyDeepBossTraitEnhancements(m, base, floor);
+            Battle.applyDeepBossResistanceEnhancements(m, base, floor);
+            Battle.applyDeepBossSkillEnhancements(m, base, floor);
+            m.deepEnhancementVersion = 2;
+        } else {
+            m.traits = JSON.parse(JSON.stringify(base.traits || []));
+            if (typeof PassiveSkill !== 'undefined' && PassiveSkill.MASTER) {
+                const traitCount = 1 + Math.floor(Math.random() * 3);
+                const availableTraitIds = Object.keys(PassiveSkill.MASTER).filter(tid => PassiveSkill.MASTER[tid].type !== '武器');
+                for (let i = 0; i < traitCount; i++) {
+                    const randomId = availableTraitIds[Math.floor(Math.random() * availableTraitIds.length)];
+                    const randomLv = 1 + Math.floor(Math.random() * 5);
+                    if (!m.traits.some(t => Number(t.id) === Number(randomId))) m.traits.push({ id:Number(randomId), level:randomLv });
                 }
             }
+            m.resists = base.isRare
+                ? JSON.parse(JSON.stringify(base.resists || {}))
+                : { Poison:50, ToxicPoison:50, Shock:50, Fear:50, Debuff:50, InstantDeath:50, SkillSeal:50, SpellSeal:50, HealSeal:50 };
+            m.elmRes = {};
+            CONST.ELEMENTS.forEach(element => {
+                if (base.isRare && base.elmRes && base.elmRes[element] !== undefined) m.elmRes[element] = base.elmRes[element];
+                else m.elmRes[element] = -50 + Math.floor(Math.random() * 101);
+            });
+            m.acts = JSON.parse(JSON.stringify(base.acts || [{ id:1, rate:100, condition:0 }]));
+            const candidates = DB.SKILLS.filter(skill => skill.mp >= 150 && ['物理','魔法','特殊'].includes(skill.type));
+            for (let i = 0; i < 2; i++) {
+                const skill = candidates[Math.floor(Math.random() * candidates.length)];
+                if (skill && !m.acts.some(act => Number(act.id) === Number(skill.id))) m.acts.push({ id:skill.id, rate:20, condition:0 });
+            }
         }
 
-        // 報酬計算
         m.exp = Math.floor(((base.exp || 10) / rank) * floor * randMult);
         m.gold = Math.floor(((base.gold || 10) / rank) * floor * randMult);
-
-        // 耐性設定
-        if (!isBoss && !base.isRare) {
-            m.resists = { 
-                Poison:50, ToxicPoison:50, Shock:50, Fear:50,
-                Debuff:50, InstantDeath:50, SkillSeal:50, SpellSeal:50, HealSeal:50 
-            };
-        } else {
-            m.resists = JSON.parse(JSON.stringify(base.resists || {}));
-        }
-
-        // 属性耐性
-        m.elmRes = {};
-        CONST.ELEMENTS.forEach(el => {
-            if (base.isRare && base.elmRes && base.elmRes[el] !== undefined) {
-                m.elmRes[el] = base.elmRes[el];
-            } else {
-                const min = isBoss ? -30 : -50;
-                const max = isBoss ? 80 : 50;
-                m.elmRes[el] = min + Math.floor(Math.random() * (max - min + 1));
-            }
-        });
-
-        // 名前のクリーニング
         m.name = base.name.replace(/^(神・|強・|真・|極・)+/, '').replace(/\s?Lv\d+[A-Z]?$/, '').trim();
 
-        // スキルの追加
-        const skillCount = isBoss ? 4 : 2;
-        const candidates = DB.SKILLS.filter(s => s.mp >= 150 && ['物理', '魔法', '特殊'].includes(s.type));
-        
-        m.acts = JSON.parse(JSON.stringify(base.acts || [{id:1, rate:100}]));
-        for(let i=0; i<skillCount; i++) {
-            const sk = candidates[Math.floor(Math.random() * candidates.length)];
-            if (sk && !m.acts.some(a => a.id === sk.id)) {
-                m.acts.push({ id: sk.id, rate: 20, condition: 0 });
-            }
-        }
-        
-        // ★特性による最終ステータス補正の適用 (ランダム付与分も含む)
         if (typeof PassiveSkill !== 'undefined' && PassiveSkill.getSumValue) {
-            m.baseStats.atk  = Math.floor(m.baseStats.atk  * (1 + PassiveSkill.getSumValue(m, 'atk_pct') / 100));
-            m.baseStats.def  = Math.floor(m.baseStats.def  * (1 + PassiveSkill.getSumValue(m, 'def_pct') / 100));
-            m.baseStats.mag  = Math.floor(m.baseStats.mag  * (1 + PassiveSkill.getSumValue(m, 'mag_pct') / 100));
-            m.mdef           = Math.floor(m.mdef           * (1 + PassiveSkill.getSumValue(m, 'mdef_pct') / 100));
-            m.baseStats.spd  = Math.floor(m.baseStats.spd  * (1 + PassiveSkill.getSumValue(m, 'spd_pct') / 100));
-            
-            // 命中・回避・会心の特性補正を加算
+            m.baseStats.atk = Math.floor(m.baseStats.atk * (1 + PassiveSkill.getSumValue(m, 'atk_pct') / 100));
+            m.baseStats.def = Math.floor(m.baseStats.def * (1 + PassiveSkill.getSumValue(m, 'def_pct') / 100));
+            m.baseStats.mag = Math.floor(m.baseStats.mag * (1 + PassiveSkill.getSumValue(m, 'mag_pct') / 100));
+            m.mdef = Math.floor(m.mdef * (1 + PassiveSkill.getSumValue(m, 'mdef_pct') / 100));
+            m.baseStats.spd = Math.floor(m.baseStats.spd * (1 + PassiveSkill.getSumValue(m, 'spd_pct') / 100));
             m.hit += PassiveSkill.getSumValue(m, 'hit_pct');
             m.eva += PassiveSkill.getSumValue(m, 'eva_pct');
             m.cri += PassiveSkill.getSumValue(m, 'cri_pct');
@@ -2968,7 +3070,6 @@ const Battle = {
 
         m.passive = base.passive || {};
         Battle.initBattleStatus(m);
-        
         return m;
     },
 
@@ -6389,7 +6490,7 @@ findNextActor: () => {
             const id = Number(enemy.id);
             const baseId = Number(enemy.baseId);
             return enemy.isSpecialBoss || enemy.isEstark || id === 902000 || baseId === 902000 ||
-                id === 401200 || baseId === 401200 || id === 401100 || baseId === 401100 ||
+                id === 401200 || baseId === 401200 ||
                 id === 302101 || baseId === 302101;
         });
         const hasSpecialBoss = hasShowcaseBoss && totalCount === 1;

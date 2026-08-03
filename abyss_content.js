@@ -8,6 +8,92 @@
     const BOSS_MONSTER_IDS = Object.freeze([302001, 302000, 302010, 302020, 302030, 302040, 302050, 302060, 302070, 502001, 502002, 502003, 502004, 502005, 502006, 302080, 302081, 302082, 302083, 302084, 302100, 302101]);
     const VISTA_SKILL_BOOK_ITEM_IDS = Object.freeze([600101,600119,600200,600202,600300,600400]);
 
+
+    // 深淵101階以降・訓練所のボス強化でのみ使う正式マスター。
+    // 元技と無関係な高位技を混ぜないため、同系統の弱→強だけを明示する。
+    const DEEP_BOSS_SKILL_FAMILIES = Object.freeze([
+        { id:'physical_single', skillIds:[100,111,113,131,136,148,154,162,167,168] },
+        { id:'physical_multihit', skillIds:[102,121,123,124,125,132,134,135,142,147,149,150] },
+        { id:'physical_all', skillIds:[119,128,129,130,145,161,163,165] },
+        { id:'physical_def_down', skillIds:[107,143] },
+        { id:'physical_atk_down', skillIds:[117,144] },
+        { id:'physical_fire_single', skillIds:[104,153] },
+        { id:'physical_water_single', skillIds:[105,122] },
+        { id:'physical_water_all', skillIds:[139] },
+        { id:'physical_wind_single', skillIds:[103] },
+        { id:'physical_wind_all', skillIds:[127,159] },
+        { id:'physical_thunder_single', skillIds:[106,118,158,164] },
+        { id:'physical_thunder_all', skillIds:[138,155] },
+        { id:'physical_light_single', skillIds:[156] },
+        { id:'physical_light_all', skillIds:[126,160] },
+        { id:'physical_dark_single', skillIds:[114] },
+        { id:'physical_dark_all', skillIds:[137,140] },
+        { id:'physical_dark_random', skillIds:[166] },
+        { id:'physical_chaos_single', skillIds:[109,157] },
+        { id:'magic_fire_single', skillIds:[200,207,213,224,243] },
+        { id:'magic_fire_all', skillIds:[204,209,216,223] },
+        { id:'magic_fire_random', skillIds:[219,231,233] },
+        { id:'magic_water_single', skillIds:[201,229] },
+        { id:'magic_water_all', skillIds:[210,217,221,235] },
+        { id:'magic_wind_all', skillIds:[202,211,215,222,236] },
+        { id:'magic_dark_single', skillIds:[203,208,214,225,247] },
+        { id:'magic_dark_random', skillIds:[234] },
+        { id:'magic_light_all', skillIds:[205,212,218,227,228] },
+        { id:'magic_light_random', skillIds:[232,246] },
+        { id:'magic_thunder_single', skillIds:[206] },
+        { id:'magic_thunder_all', skillIds:[226,237] },
+        { id:'magic_thunder_random', skillIds:[230] },
+        { id:'magic_chaos_all', skillIds:[220,238,242,244,245] },
+        { id:'magic_chaos_random', skillIds:[239] },
+        { id:'magic_arcane_single', skillIds:[240] },
+        { id:'magic_arcane_random', skillIds:[241] },
+        { id:'magic_arcane_all', skillIds:[248] },
+        { id:'breath_fire', skillIds:[300,302,306,310] },
+        { id:'breath_water', skillIds:[301,305,307,309] },
+        { id:'breath_wind', skillIds:[311] },
+        { id:'breath_thunder', skillIds:[304] },
+        { id:'breath_light', skillIds:[312] },
+        { id:'breath_dark_all', skillIds:[303,313] },
+        { id:'breath_dark_random', skillIds:[314] },
+        { id:'breath_chaos', skillIds:[308,315] },
+        { id:'heal_single', skillIds:[400,401,411,412,417] },
+        { id:'heal_all', skillIds:[404,413,416,418] },
+        { id:'revive', skillIds:[407,414,419] },
+        { id:'cleanse', skillIds:[405,408] },
+        { id:'buff_attack', skillIds:[500,508] },
+        { id:'buff_defense', skillIds:[501,509] },
+        { id:'buff_speed', skillIds:[502] },
+        { id:'buff_element', skillIds:[503,504] },
+        { id:'buff_magic_self', skillIds:[506] },
+        { id:'buff_physical_self', skillIds:[507] },
+        { id:'buff_dark_self', skillIds:[510,700101] },
+        { id:'debuff_defense', skillIds:[600,602] },
+        { id:'debuff_speed', skillIds:[601] },
+        { id:'debuff_attack', skillIds:[603,604] },
+        { id:'dispel', skillIds:[705] },
+        { id:'poison', skillIds:[700,702] },
+        { id:'fear', skillIds:[701,711,712,714] },
+        { id:'instant_death', skillIds:[706,707,708,709,710,715] }
+    ].map(family => Object.freeze({
+        id: family.id,
+        skillIds: Object.freeze(family.skillIds.slice())
+    })));
+
+    // ボスの基礎能力・使用技から役割を判定した後、この範囲からだけ追加特性を選ぶ。
+    // 武器専用・探索専用・永続成長特性（58～60）は含めない。
+    const DEEP_BOSS_ROLE_TRAIT_POOLS = Object.freeze({
+        physical: Object.freeze([10,19,22,46,47,49]),
+        magic: Object.freeze([11,19,20,31,50,53]),
+        breath: Object.freeze([12,17,19,21,52]),
+        tank: Object.freeze([15,16,17,18,20,21,43,51,52]),
+        speed: Object.freeze([14,19,22,46,48]),
+        support: Object.freeze([13,20,21,52,53])
+    });
+
+    const DEEP_BOSS_STATUS_RESIST_KEYS = Object.freeze([
+        'Poison','ToxicPoison','Shock','Fear','SkillSeal','SpellSeal','HealSeal','InstantDeath','Debuff','Seal'
+    ]);
+
     globalThis.ABYSS_REGION_CONTENT = Object.freeze({
         regularMonsterIds: REGULAR_MONSTER_IDS,
         bossMonsterIds: BOSS_MONSTER_IDS,
@@ -17,6 +103,9 @@
         spiritBossByElement: Object.freeze({ 火:502001, 水:502002, 風:502003, 雷:502004, 光:502005, 闇:502006 }),
         octaprismItemId: 701008,
         chaosFragmentItemId: 701007,
-        vistaSkillBookItemIds: VISTA_SKILL_BOOK_ITEM_IDS
+        vistaSkillBookItemIds: VISTA_SKILL_BOOK_ITEM_IDS,
+        deepBossSkillFamilies: DEEP_BOSS_SKILL_FAMILIES,
+        deepBossRoleTraitPools: DEEP_BOSS_ROLE_TRAIT_POOLS,
+        deepBossStatusResistKeys: DEEP_BOSS_STATUS_RESIST_KEYS
     });
 })();

@@ -76,7 +76,7 @@ const monsters = context.MONSTERS_DATA;
 
 // Master completeness and explicit assignment.
 assert.strictEqual(Object.keys(growthMaster.types).length, 24, 'Growth type master must contain 24 profiles.');
-assert.strictEqual(monsters.length, 348, 'Unexpected monster master count.');
+assert.strictEqual(monsters.length, 336, 'Unexpected monster master count after legacy abyss boss removal.');
 assert(monsters.every(monster => growthMaster.types[monster.allyGrowthType]), 'Every monster must have a valid explicit allyGrowthType.');
 
 // HP/MP references and combat profile shape.

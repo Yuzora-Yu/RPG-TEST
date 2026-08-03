@@ -998,7 +998,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v32.20260803-runtime',
+    fullDataCacheName: 'prisma-abyss-v33.20260803-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -2545,6 +2545,113 @@ const App = {
                 changed = true;
             }
         });
+        return changed;
+    },
+
+
+    // カルメナ北門は二将の討伐記録を正本とし、無関係なクエスト戦でフラグだけが立った旧セーブを修復する。
+    reconcileCarmenaGateProgress: (data = App.data) => {
+        if (!data || typeof data !== 'object') return false;
+        data.progress = (data.progress && typeof data.progress === 'object') ? data.progress : {};
+        data.progress.flags = (data.progress.flags && typeof data.progress.flags === 'object') ? data.progress.flags : {};
+        data.progress.defeatedBosses = (data.progress.defeatedBosses && typeof data.progress.defeatedBosses === 'object') ? data.progress.defeatedBosses : {};
+        data.book = (data.book && typeof data.book === 'object') ? data.book : {};
+        data.book.killCounts = (data.book.killCounts && typeof data.book.killCounts === 'object') ? data.book.killCounts : {};
+        const flags = data.progress.flags;
+        const kills = data.book.killCounts;
+        const getKills = id => Math.max(0, Number(kills[id] || kills[String(id)] || 0));
+        const gateIds = [302000, 302001];
+        const laterBossIds = [302010,302020,302030,302040,302050,302060,302070,302080,302081,302082,302083,302084,302100,302101];
+        const laterFlags = [
+            'abyssLeonardDefeated','abyssEliciaDefeated','abyssFirstBarrierCleared','abyssSyrisDefeated',
+            'abyssGradDefeated','abyssSecondBarrierCleared','abyssLegacionNorthGateOpen','abyssVeldDefeated',
+            'abyssJasperDefeated','abyssIlluminaciaDefeated','abyssVegnasisDefeated','abyssAzelgaragDefeated',
+            'abyssEpilogueSeen','abyssRandomUnlocked'
+        ];
+        const bothKilled = gateIds.every(id => getKills(id) >= 1);
+        const anyGateKilled = gateIds.some(id => getKills(id) >= 1);
+        const laterProgress = laterFlags.some(flag => !!flags[flag]) || laterBossIds.some(id => getKills(id) >= 1);
+        let changed = false;
+        if (bothKilled || laterProgress || (!!flags.abyssCarmenaGateCleared && anyGateKilled)) {
+            gateIds.forEach(id => {
+                if (getKills(id) < 1) { kills[id] = 1; changed = true; }
+            });
+            if (!flags.abyssCarmenaGateCleared) { flags.abyssCarmenaGateCleared = true; changed = true; }
+        } else if (flags.abyssCarmenaGateCleared) {
+            flags.abyssCarmenaGateCleared = false;
+            const gatePositions = new Set(['18,2','20,2']);
+            Object.keys(data.progress.defeatedBosses).forEach(key => {
+                if (!['CARMENA','MAP000054'].includes(String(key).toUpperCase())) return;
+                const entries = data.progress.defeatedBosses[key];
+                if (!Array.isArray(entries)) return;
+                const next = entries.filter(pos => !gatePositions.has(String(pos)));
+                if (next.length !== entries.length) { data.progress.defeatedBosses[key] = next; changed = true; }
+            });
+            changed = true;
+        }
+        return changed;
+    },
+
+    // 終極形態302101の討伐済みセーブでは、旧版で欠落し得た関連3形態の討伐数を一度だけ救済する。
+    migrateAbyssBossKillCountsV1: (data = App.data) => {
+        if (!data || typeof data !== 'object') return false;
+        data.system = (data.system && typeof data.system === 'object') ? data.system : {};
+        data.book = (data.book && typeof data.book === 'object') ? data.book : {};
+        data.book.killCounts = (data.book.killCounts && typeof data.book.killCounts === 'object') ? data.book.killCounts : {};
+        if (data.system.abyssBossKillCountRecoveryV1Completed) return false;
+        const kills = data.book.killCounts;
+        const finalKills = Math.max(0, Number(kills[302101] || kills['302101'] || 0));
+        if (finalKills < 1) return false;
+        [302000, 302001, 302100].forEach(id => {
+            if (Math.max(0, Number(kills[id] || kills[String(id)] || 0)) < 1) kills[id] = 1;
+        });
+        data.system.abyssBossKillCountRecoveryV1Completed = true;
+        return true;
+    },
+
+    // 完全削除した旧深淵ボスが保存中の戦闘・図鑑・依頼へ残っている場合は参照ごと除去する。
+    purgeRemovedLegacyAbyssBossReferences: (data = App.data) => {
+        if (!data || typeof data !== 'object') return false;
+        const removed = id => Number.isFinite(Number(id)) && Number(id) >= 401010 && Number(id) <= 401100;
+        let changed = false;
+        if (Array.isArray(data.book?.monsters)) {
+            const next = data.book.monsters.filter(id => !removed(id));
+            if (next.length !== data.book.monsters.length) { data.book.monsters = next; changed = true; }
+        }
+        if (data.book?.killCounts && typeof data.book.killCounts === 'object') {
+            Object.keys(data.book.killCounts).forEach(key => { if (removed(key)) { delete data.book.killCounts[key]; changed = true; } });
+        }
+        const filterIds = value => (Array.isArray(value) ? value : [value]).filter(id => !removed(id));
+        if (data.battle && typeof data.battle === 'object') {
+            if (Array.isArray(data.battle.fixedBossId)) {
+                const next = filterIds(data.battle.fixedBossId);
+                if (next.length !== data.battle.fixedBossId.length) { data.battle.fixedBossId = next.length ? next : null; changed = true; }
+            } else if (removed(data.battle.fixedBossId)) { data.battle.fixedBossId = null; changed = true; }
+            ['fixedEnemyIds','monsters'].forEach(key => {
+                if (!Array.isArray(data.battle[key])) return;
+                const next = filterIds(data.battle[key]);
+                if (next.length !== data.battle[key].length) { data.battle[key] = next; changed = true; }
+            });
+            if (Array.isArray(data.battle.enemies)) {
+                const next = data.battle.enemies.filter(enemy => !removed(enemy?.id) && !removed(enemy?.baseId));
+                if (next.length !== data.battle.enemies.length) { data.battle.enemies = next; changed = true; }
+            }
+            if (data.battle.active && (!Array.isArray(data.battle.enemies) || data.battle.enemies.length === 0) && !data.battle.fixedBossId) {
+                data.battle.active = false; changed = true;
+            }
+        }
+        const encounter = data.dungeon?.abyssBossEncounter;
+        if (encounter && Array.isArray(encounter.monsterIds)) {
+            const next = filterIds(encounter.monsterIds);
+            if (next.length !== encounter.monsterIds.length) { encounter.monsterIds = next; changed = true; }
+            if (!next.length) { data.dungeon.abyssBossEncounter = null; changed = true; }
+        }
+        const guildLists = [data.guild?.availableQuests, data.guild?.acceptedQuests, data.guild?.completedQuests];
+        guildLists.filter(Array.isArray).forEach(list => list.forEach(quest => {
+            if (!Array.isArray(quest?.bossMonsterIds)) return;
+            const next = filterIds(quest.bossMonsterIds);
+            if (next.length !== quest.bossMonsterIds.length) { quest.bossMonsterIds = next; changed = true; }
+        }));
         return changed;
     },
 
@@ -4596,6 +4703,9 @@ const App = {
             if (Array.isArray(App.data.dungeon.returnStack)) App.data.dungeon.returnStack.forEach(repairConceptWorldPoint);
             App.data.system.abyssRegionSchemaVersion = 7;
         }
+        if (typeof App.migrateAbyssBossKillCountsV1 === 'function') App.migrateAbyssBossKillCountsV1(App.data);
+        if (typeof App.purgeRemovedLegacyAbyssBossReferences === 'function') App.purgeRemovedLegacyAbyssBossReferences(App.data);
+        if (typeof App.reconcileCarmenaGateProgress === 'function') App.reconcileCarmenaGateProgress(App.data);
         if (typeof App.reconcileDerivedProgressFlags === 'function') App.reconcileDerivedProgressFlags();
     },
 
@@ -6561,6 +6671,9 @@ load: () => {
         if (!data.book || typeof data.book !== 'object' || Array.isArray(data.book)) data.book = { monsters: [] };
         if (!Array.isArray(data.book.monsters)) data.book.monsters = [];
         if (!data.book.killCounts || typeof data.book.killCounts !== 'object' || Array.isArray(data.book.killCounts)) data.book.killCounts = {};
+        App.migrateAbyssBossKillCountsV1(data);
+        App.purgeRemovedLegacyAbyssBossReferences(data);
+        App.reconcileCarmenaGateProgress(data);
 
         if (!data.battle || typeof data.battle !== 'object' || Array.isArray(data.battle)) data.battle = { active: false };
 

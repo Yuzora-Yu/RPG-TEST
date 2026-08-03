@@ -412,60 +412,6 @@
       "targetFile": "assets/monsters/monster_001160.png"
     },
     {
-      "targetId": 302001,
-      "name": "深淵門将レオン",
-      "sourceId": 401010,
-      "targetFile": "assets/monsters/monster_302001.png"
-    },
-    {
-      "targetId": 302000,
-      "name": "深淵門将グレン",
-      "sourceId": 401020,
-      "targetFile": "assets/monsters/monster_302000.png"
-    },
-    {
-      "targetId": 302010,
-      "name": "黒雷のレナード",
-      "sourceId": 401030,
-      "targetFile": "assets/monsters/monster_302010.png"
-    },
-    {
-      "targetId": 302020,
-      "name": "死風のエリシア",
-      "sourceId": 401040,
-      "targetFile": "assets/monsters/monster_302020.png"
-    },
-    {
-      "targetId": 302030,
-      "name": "極零のシーリス",
-      "sourceId": 401050,
-      "targetFile": "assets/monsters/monster_302030.png"
-    },
-    {
-      "targetId": 302040,
-      "name": "焦熱のグラド",
-      "sourceId": 401060,
-      "targetFile": "assets/monsters/monster_302040.png"
-    },
-    {
-      "targetId": 302050,
-      "name": "昏迷の黒騎士ヴェルド",
-      "sourceId": 401070,
-      "targetFile": "assets/monsters/monster_302050.png"
-    },
-    {
-      "targetId": 302060,
-      "name": "妄執の神官ジャスパー",
-      "sourceId": 401090,
-      "targetFile": "assets/monsters/monster_302060.png"
-    },
-    {
-      "targetId": 302070,
-      "name": "混沌姫イルミナシア",
-      "sourceId": 401081,
-      "targetFile": "assets/monsters/monster_302070.png"
-    },
-    {
       "targetId": 502001,
       "name": "火の大精霊",
       "sourceId": 354,
@@ -506,12 +452,6 @@
       "name": "死幻の魔柱ヴェグナシス共通画像",
       "sourceId": 401180,
       "targetFile": "assets/monsters/monster_302080.png"
-    },
-    {
-      "targetId": 302100,
-      "name": "深淵王アゼルガラグ",
-      "sourceId": 401100,
-      "targetFile": "assets/monsters/monster_302100.png"
     },
     {
       "targetId": 302101,
