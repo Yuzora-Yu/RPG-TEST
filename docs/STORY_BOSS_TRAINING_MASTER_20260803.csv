@@ -1,0 +1,19 @@
+﻿training_id,category,opponent_name,monster_ids,unlock_flag,difficulty_floors
+surface_glad,地上編,炎楔のグラド,301010,firePrismRestored,101|151|201|301
+surface_elicia,地上編,風楔のエリシア,301020,windVillageCleared,101|151|201|301
+surface_syris,地上編,氷楔のシーリス ,301030,waterCityCleared,101|151|201|301
+surface_leonard,地上編,雷楔のレナード,301040,thunderFortCleared,101|151|201|301
+surface_lilith,地上編,常闇のリリス,301061,bigTowerCleared,101|151|201|301
+surface_jasper,地上編,魔道神官ジャスパー,301070,lightPalaceCleared,101|151|201|301
+surface_veld,地上編,聖騎士ヴェルド,301050,lightPalaceCleared,101|151|201|301
+surface_zenon,地上編,魔王ゼノン,301100,darkCastleCleared,101|151|201|301
+abyss_glen,深淵編,深淵門将グレン,302000,abyssCarmenaGateCleared,101|151|201|301
+abyss_galeon,深淵編,深淵門将ガレオン,302001,abyssCarmenaGateCleared,101|151|201|301
+abyss_leonard,深淵編,黒雷のレナード,302010,abyssLeonardDefeated,101|151|201|301
+abyss_elicia,深淵編,死風のエリシア,302020,abyssEliciaDefeated,101|151|201|301
+abyss_syris,深淵編,極零のシーリス,302030,abyssSyrisDefeated,101|151|201|301
+abyss_grad,深淵編,焦熱のグラド,302040,abyssGradDefeated,101|151|201|301
+abyss_veld,深淵編,昏迷の黒騎士ヴェルド,302050,abyssVeldDefeated,101|151|201|301
+abyss_jasper,深淵編,妄執の神官ジャスパー,302060,abyssJasperDefeated,101|151|201|301
+abyss_illuminacia,深淵編,混沌姫イルミナシア,302070,abyssIlluminaciaDefeated,101|151|201|301
+abyss_azelgarag_final,深淵編,深淵王アゼルガラグ・終極,302101,abyssAzelgaragDefeated,101|151|201|301

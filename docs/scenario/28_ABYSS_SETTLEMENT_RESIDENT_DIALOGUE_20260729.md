@@ -15,6 +15,7 @@
 - `ABYSS_CARMENA_RESIDENT_RATIONS`: 北門へ連れていかれた者の皿を片づけられない宿の手伝い。
 - `ABYSS_CARMENA_RESIDENT_OLD_KINGDOM`: 昼に七度鳴った王都の鐘と、地図にない国を記憶する老人。
 - `ABYSS_CARMENA_RESIDENT_GATE_CHILD`: 将軍に見られた回数と失踪者を結びつけて数える子ども。
+- `ABYSS_CARMENA_RESIDENT_LIGHTHOUSE`: 地上の大灯台北側にある魔境を語る、外出を恐れた地上出身の男。
 
 ## ビスタ
 

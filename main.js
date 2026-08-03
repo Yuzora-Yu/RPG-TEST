@@ -998,7 +998,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v33.20260803-runtime',
+    fullDataCacheName: 'prisma-abyss-v34.20260803-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -7218,6 +7218,12 @@ load: () => {
                         resumed = Battle.resumePendingMonsterSkillEvolution();
                     }
 
+                    // 固定MAPの初回到着イベント。会話・戦闘結果などの復元を優先し、
+                    // 何も再開しなかった時だけ現在地の正式マスターから判定する。
+                    if (!resumed && typeof Field !== 'undefined' && typeof Field.runCurrentFixedMapEntryEvent === 'function') {
+                        resumed = Field.runCurrentFixedMapEntryEvent();
+                    }
+
                     // 現在地タイルのアクション再評価。
                     // 以前は「移動した瞬間」だけアクションボタンを出していたため、
                     // 戦闘・宿屋・メニューなどを挟んでフィールドへ戻ると、同じタイル上でも
@@ -7254,6 +7260,7 @@ load: () => {
         if(sceneId === 'alchemy' && typeof Alchemy !== 'undefined') Alchemy.init();
         if(sceneId === 'blacksmith' && typeof MenuBlacksmith !== 'undefined' && typeof MenuBlacksmith.initFacility === 'function') MenuBlacksmith.initFacility();
         if(sceneId === 'monster-nursery' && typeof MonsterNursery !== 'undefined') MonsterNursery.init();
+        if(sceneId === 'boss-training' && typeof BossTraining !== 'undefined') BossTraining.init();
         if(sceneId === 'guild' && typeof Guild !== 'undefined' && typeof Guild.initFacility === 'function') Guild.initFacility();
     }
 };
@@ -7505,6 +7512,20 @@ const Field = {
             || App.data?.location?.worldKey
             || App.data?.mapReturnPoint?.worldKey
             || 'WORLD';
+    },
+
+    runCurrentFixedMapEntryEvent: () => {
+        if (typeof FIXED_MAPS === 'undefined' || typeof StoryManager === 'undefined' ||
+            typeof StoryManager.executeEvent !== 'function') return false;
+        const areaKey = Field.getCurrentAreaKey?.();
+        const areaDef = areaKey ? FIXED_MAPS[areaKey] : null;
+        const eventId = String(areaDef?.entryEventId || '').trim();
+        if (!eventId) return false;
+        const flagKey = String(areaDef.entryEventFlag || '').trim();
+        const flags = App.data?.progress?.flags || {};
+        if (flagKey && flags[flagKey]) return false;
+        StoryManager.executeEvent(eventId);
+        return true;
     },
 
     enterFixedMap: (targetAreaKey, options = {}) => {
@@ -9697,6 +9718,11 @@ const Field = {
 
         if (action.type === 'monsterNursery' && typeof MonsterNursery !== 'undefined' && typeof MonsterNursery.openFromField === 'function') {
             MonsterNursery.openFromField(action);
+            return;
+        }
+
+        if (action.type === 'bossTraining' && typeof BossTraining !== 'undefined' && typeof BossTraining.openFromField === 'function') {
+            BossTraining.openFromField();
             return;
         }
 

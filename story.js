@@ -3023,11 +3023,11 @@ const STORY_MANAGER_DATA = {
         ],
         "ABYSS_FLOOR_010_LEON_GUARDIAN": [
                 { "name": "システム", "text": "割れた軍旗が床に刺さっている。\n布だけが、ありもしない風を受けて、まだ命令を待っていた。" },
-                { "name": "レオン将軍", "text": "ここより先、兵を通すな。\n帰った兵も、死んだ兵も、名簿から消えた兵も関係ない。" },
+                { "name": "ガレオン将軍", "text": "ここより先、兵を通すな。\n帰った兵も、死んだ兵も、名簿から消えた兵も関係ない。" },
                 { "name": "ジョセフ", "text": "……声まで似せやがる。\n深淵ってのは、墓荒らしの手つきだけは丁寧だな。", "charId": 101 },
-                { "name": "レオン将軍", "text": "盾を掲げる者よ、何を守る。\n国か。民か。あるいは、守れなかった名だけか。" },
+                { "name": "ガレオン将軍", "text": "盾を掲げる者よ、何を守る。\n国か。民か。あるいは、守れなかった名だけか。" },
                 { "name": "ジョセフ", "text": "全部だ。欲張りだって笑えよ。\n守れなかった名を背負って、まだ生きてる奴らを守る。", "charId": 101 },
-                { "name": "レオン将軍", "text": "ならば来い。\n命令の残骸を越え、次の戦場へ進む足を見せろ。" },
+                { "name": "ガレオン将軍", "text": "ならば来い。\n命令の残骸を越え、次の戦場へ進む足を見せろ。" },
                 { "name": "ジョセフ", "text": "来い、亡霊の将軍。\nその古い号令ごと、俺の盾で止めてやる。", "charId": 101 }
         ],
         "ABYSS_FLOOR_010_CLEAR": [
@@ -5199,10 +5199,13 @@ const STORY_MANAGER_DATA = {
     };
 
     Object.assign(data.scripts, {
+        ABYSS_CARMENA_ARRIVAL_WARNING: [
+            { name:'システム', text:'プリズムの加護も届かない場所まで来てしまったようだ……。\n今、攻撃を受ければ大きな傷を負うかもしれない……。' }
+        ],
         ABYSS_CARMENA_GATE: [
             { name:'システム', text:'北門の前で、二人の将軍が同時に武器を構えた。\n黒い空気が鎧の隙間から流れ、町を覆う淀みと結びついている。' },
             { name:'グレン将軍', text:'ここより先は、深淵王の領域。\n地上の者を一歩たりとも通すわけにはいかぬ。' },
-            { name:'レオン将軍', text:'退け。これは二将に下された最後の命令だ。\n我らの命が尽きぬ限り、北門は開かない。' },
+            { name:'ガレオン将軍', text:'退け。これは二将に下された最後の命令だ。\n我らの命が尽きぬ限り、北門は開かない。' },
             { name:'ジョセフ', text:'町の連中まで巻き込んで守る門に、何の意味がある。\nその命令ごと、ここで止める。', charId:101 },
             { name:'シャニー', text:'二人を縛る力が、カルメナの汚染を支えている。\nここで断てば、みんなの体も元に戻る。', charId:306 },
             { name:'魔王ゼノン', text:'ならば二将まとめて引導を渡す。\n門を開けろ。深淵の王へ至る道を、我らが切り拓く。', charId:402 }
@@ -5210,7 +5213,7 @@ const STORY_MANAGER_DATA = {
         ABYSS_CARMENA_GATE_CLEAR: [
             { name:'システム', text:'二将の鎧から黒い霧が抜け、北門を塞いでいた力が砕けた。\n町を覆っていた息苦しさも、潮が引くように薄れていく。' },
             { name:'グレン将軍', text:'……守るべき巣は、とうに失われていたか。' },
-            { name:'レオン将軍', text:'それでも門に立ち続けた。命令だけを、最後の名として。' },
+            { name:'ガレオン将軍', text:'それでも門に立ち続けた。命令だけを、最後の名として。' },
             { name:'ジョセフ', text:'もう休め。門の先は、生きてる俺たちが引き受ける。', charId:101 },
             { name:'システム', text:'全身を蝕んでいた深淵の汚染が消え、仲間たちの属性耐性が元に戻った。\nカルメナの北門が開いた。' }
         ],
@@ -5343,6 +5346,11 @@ const STORY_MANAGER_DATA = {
             { name:'魔王ゼノン', text:'王を失ってなお力だけが残ったか。\nよかろう。腕試しの穴として、何度でも踏破してやる。', charId:402 },
             { name:'システム', text:'さらなる深淵の奥深くへ挑戦できるようになった！' },
             { name:'システム', text:'【Tips】メニューや宿屋からも挑戦が可能になりました。' }
+        ],
+        ABYSS_CARMENA_RESIDENT_LIGHTHOUSE: [
+            { name:'地上から落ちた男', text:'……地上にいた頃、大灯台の北に流れ着いたことがあったんだ。' },
+            { name:'地上から落ちた男', text:'あそこには、人が入るべきじゃねえ魔境があった。\n今思えば、ここと似た雰囲気だったな。' },
+            { name:'地上から落ちた男', text:'あんたらくらい強ければ、良い訓練になるのかね。\n俺は無理だ、怖くてもうどこにもいけねえよ。' }
         ],
         ABYSS_CARMENA_RESIDENT_SPRING: [
             { name:'泉辺の男', text:'その水面を、あまり長く見るな。\n帰りたい場所の匂いがする。' },
@@ -5518,6 +5526,8 @@ const STORY_MANAGER_DATA = {
             {type:'STEP',value:10},{type:'SUB',value:2},{type:'LOG',value:'終焉の祭壇には、なお深い亀裂が残っている・・・'}
         ]),
         abyss_postgame_crack: clearEvent('ABYSS_POSTGAME_CRACK',['abyssRandomUnlocked','abyssDungeonMenuUnlocked'],[{type:'UNLOCK',value:['dungeonMenu','teleport']},{type:'START_ABYSS_DUNGEON',mode:'random',floor:1,direct:true}]),
+        abyss_carmena_arrival_warning: {actions:[{type:'CONV',value:'ABYSS_CARMENA_ARRIVAL_WARNING'},{type:'FLAG',key:'abyssCarmenaArrivalWarningSeen'}],winActions:[]},
+        abyss_carmena_resident_lighthouse: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_LIGHTHOUSE'}],winActions:[]},
         abyss_carmena_resident_spring: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_SPRING'}],winActions:[]},
         abyss_carmena_resident_rations: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_RATIONS'}],winActions:[]},
         abyss_carmena_resident_old_kingdom: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_OLD_KINGDOM'}],winActions:[]},

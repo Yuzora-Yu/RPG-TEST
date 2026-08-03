@@ -1344,6 +1344,7 @@ const Battle = {
     // 最大ダメージ記録の共通処理。
     // ストーリー演出用の一時LB99中も、裏技的な達成として記録対象にする。
     recordMaxDamage: (actor, skillData, dmg, cmd = {}) => {
+        if (Battle.isStoryBossTrainingBattle()) return;
         if (cmd && cmd.isEnemy) return;
         if (!Number.isFinite(Number(dmg)) || Number(dmg) <= 0) return;
         if (Number(dmg) > (App.data.stats.maxDamage?.val || 0)) {
@@ -2369,6 +2370,35 @@ const Battle = {
                     if (m) newEnemies.push(m);
                 }
             }
+            return newEnemies;
+        }
+
+        // ストーリーボス訓練所は、正式マスターのボスをPhase2Dの深層強化規則で再現する。
+        // fixedBossIdを使わず専用コンテキストから生成し、本編進行と完全に分離する。
+        const storyBossTraining = battleData.storyBossTraining;
+        if (isBoss && storyBossTraining && Array.isArray(storyBossTraining.monsterIds)) {
+            const trainingIds = storyBossTraining.monsterIds.map(Number).filter(Number.isFinite);
+            const trainingFloor = Math.max(101, Number(storyBossTraining.strengthFloor || 101));
+            Battle.log(`<span style="color:#d8b5ff;font-weight:bold;">${Battle.escapeHtml(storyBossTraining.opponentName || '物語の強敵')}が訓練用に再現された！</span>`);
+            trainingIds.forEach((id, index) => {
+                const base = Battle.getMonsterBaseById(id);
+                if (!base) return;
+                const enemy = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), trainingFloor, true);
+                if (!enemy) return;
+                enemy.exp = 0;
+                enemy.gold = 0;
+                enemy.drops = null;
+                enemy.isSpecialBoss = false;
+                enemy.isEstark = false;
+                enemy.isStoryBossTrainingEnemy = true;
+                enemy.storyBossTrainingId = storyBossTraining.trainingId || null;
+                enemy.storyBossTrainingFloor = trainingFloor;
+                delete enemy.phaseTransition;
+                delete enemy.phaseTransitionMonsterId;
+                delete enemy.phaseTransitionConversation;
+                if (trainingIds.length > 1) enemy.name += String.fromCharCode(65 + index);
+                newEnemies.push(enemy);
+            });
             return newEnemies;
         }
 
@@ -6332,6 +6362,49 @@ findNextActor: () => {
     },
 	
 
+    isStoryBossTrainingBattle: () => !!App.data?.battle?.storyBossTraining,
+
+    getStoryBossTrainingContext: () => {
+        const context = App.data?.battle?.storyBossTraining;
+        return context && typeof context === 'object' ? context : null;
+    },
+
+    getStoryBossTrainingJournalContext: () => {
+        const context = Battle.getStoryBossTrainingContext();
+        if (!context) return null;
+        return {
+            version: Math.max(1, Number(context.version || 1)),
+            trainingId: context.trainingId || null,
+            opponentName: context.opponentName || null,
+            monsterIds: Array.isArray(context.monsterIds) ? context.monsterIds.map(Number).filter(Number.isFinite) : [],
+            strengthFloor: Math.max(101, Number(context.strengthFloor || 101)),
+            difficultyId: context.difficultyId || null,
+            difficultyLabel: context.difficultyLabel || null,
+            startedAt: Number(context.startedAt || 0) || null
+        };
+    },
+
+    restoreStoryBossTrainingPartyState: () => {
+        const context = Battle.getStoryBossTrainingContext();
+        const snapshot = Array.isArray(context?.partySnapshot) ? context.partySnapshot : [];
+        if (!snapshot.length) return false;
+        snapshot.forEach(entry => {
+            const character = entry?.uid ? App.getChar?.(entry.uid) : null;
+            if (!character) return;
+            character.currentHp = Math.max(0, Number(entry.currentHp || 0));
+            character.currentMp = Math.max(0, Number(entry.currentMp || 0));
+            delete character.battleStatus;
+            const runtime = Battle.party.find(member => member?.uid === entry.uid);
+            if (runtime) {
+                runtime.hp = character.currentHp;
+                runtime.mp = character.currentMp;
+                runtime.isDead = runtime.hp <= 0;
+                delete runtime.battleStatus;
+            }
+        });
+        return true;
+    },
+
     getQuestProgressContext: () => {
         const currentMap = (typeof Field !== 'undefined') ? Field.currentMapData : null;
         const areaKey = String(
@@ -6447,7 +6520,7 @@ findNextActor: () => {
             const raceFallbacks = {
                 '粘体': 'ジェリー',
                 '獣': 'ホーンラビット',
-                '獣人': 'レオン将軍',
+                '獣人': 'ガレオン将軍',
                 '精霊': 'ライトウィスプ',
                 '植物': 'アビスヴァイン',
                 '死霊': 'ゴースト',
@@ -7100,6 +7173,8 @@ findNextActor: () => {
         const keyReward = App.data.battle?.keyReward || App.data.battle?.fixedKeyReward || null;
         const fixedHunter = App.data.battle?.fixedHunter || null;
         const guildPromotionTarget = App.data.battle?.guildPromotionTarget || null;
+        const isTrainingBattle = Battle.isStoryBossTrainingBattle();
+        const trainingJournalContext = Battle.getStoryBossTrainingJournalContext();
         let guildPromotionMessage = null;
 		
 		// 戦闘データはフィールド復帰時に初期化されるため、勝利後会話で使う
@@ -7158,12 +7233,13 @@ findNextActor: () => {
             // 形態変化前に倒した形態も、最終形態と同じ戦闘結果へ含める。
             // マスタの phaseTransition 設定だけで第二・第三形態以降も図鑑・討伐数・報酬へ記録される。
             const defeatedResultEnemies = Battle.collectDefeatedEnemiesForResult();
+            const rewardResultEnemies = isTrainingBattle ? [] : defeatedResultEnemies;
 			const defeatedMonsterIds = [];
 		let hasRareDrop = false;      // 白フラッシュ用
 		let hasUltraRareDrop = false; // 赤黒フラッシュ用
 
 		// --- [1] 内部データ集計（討伐数・図鑑・経験値・ゴールドの計算） ---
-		defeatedResultEnemies.forEach(e => {
+		rewardResultEnemies.forEach(e => {
 			if (e.isDead && !e.isFled) {
 				const id = e.baseId || e.id;
 					if (id) {
@@ -7184,7 +7260,7 @@ findNextActor: () => {
 
 		// 討伐系クエストの進捗は、勝利時に確定した全撃破個体から一度だけ更新する。
 		// ダンジョン指定のギルド依頼は戦闘場所も判定し、施設内で開始する昇格試験は除外する。
-		if (typeof App.noteQuestKills === 'function') {
+		if (!isTrainingBattle && typeof App.noteQuestKills === 'function') {
 			App.noteQuestKills(defeatedMonsterIds, Battle.getQuestProgressContext(), { save: false });
 		}
 
@@ -7207,10 +7283,10 @@ findNextActor: () => {
                     rate: active ? (alive ? 1 : 0.5) : 0.25
                 };
             });
-		const lbGrowthLogs = (typeof App.noteBattleVictory === 'function')
+		const lbGrowthLogs = (!isTrainingBattle && typeof App.noteBattleVictory === 'function')
 			? App.noteBattleVictory(Battle.party.filter(p => p))
 			: [];
-        if (typeof Dungeon !== 'undefined' && typeof Dungeon.completeAngelTrialIfNeeded === 'function') {
+        if (!isTrainingBattle && typeof Dungeon !== 'undefined' && typeof Dungeon.completeAngelTrialIfNeeded === 'function') {
             lbGrowthLogs.push(...Dungeon.completeAngelTrialIfNeeded());
         }
 		
@@ -7257,7 +7333,7 @@ findNextActor: () => {
 
 		// --- [2] 報酬アイテムの生成と確定 ---
 		if (isEstark) {
-			const specialEnemy = defeatedResultEnemies.find(e => e.isSpecialBoss || e.isEstark || Number(e.id) === 902000 || Number(e.baseId) === 902000);
+			const specialEnemy = rewardResultEnemies.find(e => e.isSpecialBoss || e.isEstark || Number(e.id) === 902000 || Number(e.baseId) === 902000);
 			if (specialEnemy) {
 				const specialId = specialEnemy.baseId || specialEnemy.id || 902000;
 				const killCount = (App.data.book.killCounts && App.data.book.killCounts[specialId]) ? App.data.book.killCounts[specialId] : 1;
@@ -7302,7 +7378,7 @@ findNextActor: () => {
 				}
 			}
 		} else {
-			defeatedResultEnemies.forEach(e => {
+			rewardResultEnemies.forEach(e => {
 				if (e.isFled) return;
 				const base = Battle.getMonsterBaseById(e.baseId || e.id) || e;
 				// 追憶の魔境では元モンスター固有の低Rank／物語ボス報酬を持ち込まず、
@@ -7396,11 +7472,11 @@ findNextActor: () => {
 		}
 
 		// 敵ごとに0.5%で、その個体が所持するID100以上のスキル書を抽選する。
-		defeatedResultEnemies.forEach(enemy => {
+		rewardResultEnemies.forEach(enemy => {
 		    if (Battle.tryCreateSkillBookDrop(enemy, drops)) hasRareDrop = true;
 		});
 
-        const elementalTrialMessages = Battle.completeAbyssElementalTrial(drops);
+        const elementalTrialMessages = isTrainingBattle ? [] : Battle.completeAbyssElementalTrial(drops);
         if (elementalTrialMessages.length) hasRareDrop = true;
 
         // クリア後の通常ランダムダンジョンでは、合成の壺をごく低確率で追加する。
@@ -7408,7 +7484,7 @@ findNextActor: () => {
             && App.data?.location?.area === 'ABYSS'
             && globalThis.ABYSS_FLOOR_RULES?.isRandomMode?.(App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode) === true
             && !App.data?.dungeon?.guildQuestRun;
-        if (isPostgameRandomDungeon && Math.random() < 0.0005) {
+        if (!isTrainingBattle && isPostgameRandomDungeon && Math.random() < 0.0005) {
             const potId = Number(window.PRISMA_SYNTHESIS_POT_ITEM_ID || 599999);
             const pot = DB.ITEMS.find(item => Number(item.id) === potId);
             if (pot) {
@@ -7419,7 +7495,7 @@ findNextActor: () => {
         }
 
 		// --- [3] 深淵系ダンジョン限定：撃破した対象1体ごとに1%の仲間加入判定 ---
-		const monsterRecruitResult = (typeof App.tryRecruitMonsterAfterBattle === 'function')
+		const monsterRecruitResult = (!isTrainingBattle && typeof App.tryRecruitMonsterAfterBattle === 'function')
 			? App.tryRecruitMonsterAfterBattle(Battle.enemies)
 			: null;
 
@@ -7461,7 +7537,7 @@ findNextActor: () => {
             // 戦闘後の特性成長・回復は、従来どおり生存して戦ったメンバーだけ。
             if (active && alive) {
                 let traitGrowthLog = null;
-                if (typeof PassiveSkill !== 'undefined' && PassiveSkill.checkTraitGrowth) {
+                if (!isTrainingBattle && typeof PassiveSkill !== 'undefined' && PassiveSkill.checkTraitGrowth) {
                     traitGrowthLog = PassiveSkill.checkTraitGrowth(charData);
                 }
                 if (traitGrowthLog) {
@@ -7512,7 +7588,7 @@ findNextActor: () => {
 
 		// --- [4] 世界状態・フラグの先行確定 ---
 		// 演出中のリロード対策として、ボスマスを階段にする等の処理をログ表示前に完結させます
-		if ((isBossBattle && !isEstark) || fixedHunter) {
+		if (!isTrainingBattle && ((isBossBattle && !isEstark) || fixedHunter)) {
 			if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
 				Dungeon.onBossDefeated(); // ここで mapChanges 等が更新される
 			}
@@ -7522,7 +7598,7 @@ findNextActor: () => {
 
         // ギルド昇格試験は通常の固定マップボス進行から分離し、
         // 勝利時にだけ冒険者ランクを確定する。
-        if (guildPromotionTarget && typeof Guild !== 'undefined' && typeof Guild.completePromotionTrial === 'function') {
+        if (!isTrainingBattle && guildPromotionTarget && typeof Guild !== 'undefined' && typeof Guild.completePromotionTrial === 'function') {
             guildPromotionMessage = Guild.completePromotionTrial(guildPromotionTarget);
         }
 		const keyRewards = keyReward
@@ -7534,7 +7610,7 @@ findNextActor: () => {
 				: [keyReward])
 			: [];
 
-		if (keyRewards.length > 0 && typeof Dungeon !== 'undefined' && typeof Dungeon.completeKeyGuardianReward === 'function') {
+		if (!isTrainingBattle && keyRewards.length > 0 && typeof Dungeon !== 'undefined' && typeof Dungeon.completeKeyGuardianReward === 'function') {
 			keyRewards.forEach(reward => {
 				Dungeon.completeKeyGuardianReward(reward);
 			});
@@ -7546,14 +7622,18 @@ findNextActor: () => {
 		}
 
         // 演出前に参加者の最終HP/MPと全報酬を同じcommitへ含める。
-        Battle.party.forEach(member => {
-            const charData = member?.uid ? App.getChar(member.uid) : null;
-            if (!charData) return;
-            charData.currentHp = Math.max(0, Number(member.hp || 0));
-            charData.currentMp = Math.max(0, Number(member.mp || 0));
-            delete charData.battleStatus;
-        });
-        const pendingMonsterSkillEvolution = Battle.prepareMonsterSkillEvolutionAfterBattle();
+        if (isTrainingBattle) {
+            Battle.restoreStoryBossTrainingPartyState();
+        } else {
+            Battle.party.forEach(member => {
+                const charData = member?.uid ? App.getChar(member.uid) : null;
+                if (!charData) return;
+                charData.currentHp = Math.max(0, Number(member.hp || 0));
+                charData.currentMp = Math.max(0, Number(member.mp || 0));
+                delete charData.battleStatus;
+            });
+        }
+        const pendingMonsterSkillEvolution = isTrainingBattle ? null : Battle.prepareMonsterSkillEvolutionAfterBattle();
         const battleId = App.data.battle?.battleId ||
             `battle-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
         App.data.battle.battleId = battleId;
@@ -7569,6 +7649,7 @@ findNextActor: () => {
             worldApplied: true,
             eventQueued: !!(storyWinEventId || fixedStoryEventId || eventId),
             pendingMonsterSkillEvolution,
+            storyBossTraining: trainingJournalContext,
             summary: {
                 gold: totalGold,
                 exp: totalExp,
@@ -7593,12 +7674,16 @@ findNextActor: () => {
         } finally {
             Battle.resultInputLocked = false;
         }
-		Battle.log(`${totalGold} Goldを獲得！`);
-		Battle.log(`${totalExp} ポイントの経験値を 獲得した！`);
-        if (expRecipients.some(recipient => recipient.active && !recipient.alive)) {
+        if (isTrainingBattle) {
+            Battle.log('<span style="color:#d8b5ff;font-weight:bold;">訓練戦のため報酬・討伐記録は発生しない。HP・MPは開始前の状態へ戻った。</span>');
+        } else {
+		    Battle.log(`${totalGold} Goldを獲得！`);
+		    Battle.log(`${totalExp} ポイントの経験値を 獲得した！`);
+        }
+        if (!isTrainingBattle && expRecipients.some(recipient => recipient.active && !recipient.alive)) {
             Battle.log('<span style="color:#bbb;">戦闘不能の仲間は経験値を50%取得した。</span>');
         }
-        if (expRecipients.some(recipient => !recipient.active)) {
+        if (!isTrainingBattle && expRecipients.some(recipient => !recipient.active)) {
             Battle.log('<span style="color:#bbb;">控えの仲間は経験値を25%取得した。</span>');
         }
         if (guildPromotionMessage) {
@@ -7825,11 +7910,13 @@ findNextActor: () => {
         rollbackSerialized = (typeof App.serializeSaveData === 'function')
             ? App.serializeSaveData(App.data)
             : JSON.stringify(App.data);
+        const isTrainingBattle = Battle.isStoryBossTrainingBattle();
+        const trainingJournalContext = Battle.getStoryBossTrainingJournalContext();
         Battle.phase = 'result';
         Battle.active = false;
         Battle.resultProcessing = true;
         Battle.resultReadyToEnd = false;
-        Battle.resultEndIsGameOver = true;
+        Battle.resultEndIsGameOver = !isTrainingBattle;
         Battle.resultInputLocked = false;
         Battle.resultAdvanceResolver = null;
         Battle.resultSkipRequested = false;
@@ -7837,7 +7924,7 @@ findNextActor: () => {
         if (!App.data.battle) App.data.battle = {};
         App.data.battle.active = false;
         if (typeof App.beginSaveTransaction === 'function') App.beginSaveTransaction();
-        Battle.log("全滅した...");
+        Battle.log(isTrainingBattle ? "訓練戦に敗北した..." : "全滅した...");
 
         if (App.data.battle?.isChestTrapBattle && App.data.battle?.fixedChestTrap &&
             typeof Dungeon !== 'undefined' && typeof Dungeon.rollbackFixedChestTrap === 'function') {
@@ -7847,7 +7934,7 @@ findNextActor: () => {
         if (App.data.battle?.guildPromotionTarget && App.data.progress?.guild) {
             App.data.progress.guild.pendingPromotion = null;
         }
-        if (App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
+        if (!isTrainingBattle && App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
 
         const eventId = App.data.battle?.eventId || null;
         const storyLossEventId = App.data.battle?.storyLossEventId || null;
@@ -7876,13 +7963,17 @@ findNextActor: () => {
             }
         }
 
-        Battle.party.forEach(member => {
-            const charData = member?.uid ? App.getChar(member.uid) : null;
-            if (!charData) return;
-            charData.currentHp = Math.max(0, Number(member.hp || 0));
-            charData.currentMp = Math.max(0, Number(member.mp || 0));
-            delete charData.battleStatus;
-        });
+        if (isTrainingBattle) {
+            Battle.restoreStoryBossTrainingPartyState();
+        } else {
+            Battle.party.forEach(member => {
+                const charData = member?.uid ? App.getChar(member.uid) : null;
+                if (!charData) return;
+                charData.currentHp = Math.max(0, Number(member.hp || 0));
+                charData.currentMp = Math.max(0, Number(member.mp || 0));
+                delete charData.battleStatus;
+            });
+        }
 
         let returnPoint = null;
         if (Battle.resultEndIsGameOver) {
@@ -7927,7 +8018,8 @@ findNextActor: () => {
             committedAt: Date.now(),
             gameOver: Battle.resultEndIsGameOver,
             returnPoint,
-            eventQueued: !!queuedLossEventId
+            eventQueued: !!queuedLossEventId,
+            storyBossTraining: trainingJournalContext
         };
         App.save();
         if (typeof App.commitSaveTransaction === 'function') {
@@ -7938,6 +8030,9 @@ findNextActor: () => {
         Battle.finishState = 'committed';
 
         if (typeof AudioManager !== 'undefined') AudioManager.playBgm?.('battle_wipeout', { resume: false });
+        if (isTrainingBattle) {
+            Battle.log('<span style="color:#d8b5ff;font-weight:bold;">訓練開始前のHP・MPへ戻った。</span>');
+        }
         Battle.resultProcessing = false;
         Battle.resultReadyToEnd = true;
         Battle.log("\n▼ 画面タップ / Enterキーで終了 ▼");

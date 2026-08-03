@@ -94,6 +94,41 @@
         'Poison','ToxicPoison','Shock','Fear','SkillSeal','SpellSeal','HealSeal','InstantDeath','Debuff','Seal'
     ]);
 
+    // レガシオンのストーリーボス訓練所で使用する正式マスター。
+    // 解放判定は各ボスの討伐記録を正本とし、対応する進行フラグも旧セーブ補助として参照する。
+    const STORY_BOSS_TRAINING_MASTER = Object.freeze([
+        { id:'surface_glad', category:'地上編', monsterIds:[301010], unlockFlag:'firePrismRestored' },
+        { id:'surface_elicia', category:'地上編', monsterIds:[301020], unlockFlag:'windVillageCleared' },
+        { id:'surface_syris', category:'地上編', monsterIds:[301030], unlockFlag:'waterCityCleared' },
+        { id:'surface_leonard', category:'地上編', monsterIds:[301040], unlockFlag:'thunderFortCleared' },
+        { id:'surface_lilith', category:'地上編', monsterIds:[301061], unlockFlag:'bigTowerCleared' },
+        { id:'surface_jasper', category:'地上編', monsterIds:[301070], unlockFlag:'lightPalaceCleared' },
+        { id:'surface_veld', category:'地上編', monsterIds:[301050], unlockFlag:'lightPalaceCleared' },
+        { id:'surface_zenon', category:'地上編', monsterIds:[301100], unlockFlag:'darkCastleCleared' },
+        { id:'abyss_glen', category:'深淵編', monsterIds:[302000], unlockFlag:'abyssCarmenaGateCleared' },
+        { id:'abyss_galeon', category:'深淵編', monsterIds:[302001], unlockFlag:'abyssCarmenaGateCleared' },
+        { id:'abyss_leonard', category:'深淵編', monsterIds:[302010], unlockFlag:'abyssLeonardDefeated' },
+        { id:'abyss_elicia', category:'深淵編', monsterIds:[302020], unlockFlag:'abyssEliciaDefeated' },
+        { id:'abyss_syris', category:'深淵編', monsterIds:[302030], unlockFlag:'abyssSyrisDefeated' },
+        { id:'abyss_grad', category:'深淵編', monsterIds:[302040], unlockFlag:'abyssGradDefeated' },
+        { id:'abyss_veld', category:'深淵編', monsterIds:[302050], unlockFlag:'abyssVeldDefeated' },
+        { id:'abyss_jasper', category:'深淵編', monsterIds:[302060], unlockFlag:'abyssJasperDefeated' },
+        { id:'abyss_illuminacia', category:'深淵編', monsterIds:[302070], unlockFlag:'abyssIlluminaciaDefeated' },
+        { id:'abyss_azelgarag_final', category:'深淵編', monsterIds:[302101], unlockFlag:'abyssAzelgaragDefeated' }
+    ].map(entry => Object.freeze({
+        id: entry.id,
+        category: entry.category,
+        monsterIds: Object.freeze(entry.monsterIds.slice()),
+        unlockFlag: entry.unlockFlag || null
+    })));
+
+    const STORY_BOSS_TRAINING_DIFFICULTIES = Object.freeze([
+        Object.freeze({ id:'floor101', label:'初級', strengthFloor:101, description:'深淵101階相当' }),
+        Object.freeze({ id:'floor151', label:'中級', strengthFloor:151, description:'深淵151階相当' }),
+        Object.freeze({ id:'floor201', label:'上級', strengthFloor:201, description:'深淵201階相当' }),
+        Object.freeze({ id:'floor301', label:'極限', strengthFloor:301, description:'深淵301階相当' })
+    ]);
+
     globalThis.ABYSS_REGION_CONTENT = Object.freeze({
         regularMonsterIds: REGULAR_MONSTER_IDS,
         bossMonsterIds: BOSS_MONSTER_IDS,
@@ -106,6 +141,8 @@
         vistaSkillBookItemIds: VISTA_SKILL_BOOK_ITEM_IDS,
         deepBossSkillFamilies: DEEP_BOSS_SKILL_FAMILIES,
         deepBossRoleTraitPools: DEEP_BOSS_ROLE_TRAIT_POOLS,
-        deepBossStatusResistKeys: DEEP_BOSS_STATUS_RESIST_KEYS
+        deepBossStatusResistKeys: DEEP_BOSS_STATUS_RESIST_KEYS,
+        storyBossTrainingMaster: STORY_BOSS_TRAINING_MASTER,
+        storyBossTrainingDifficulties: STORY_BOSS_TRAINING_DIFFICULTIES
     });
 })();

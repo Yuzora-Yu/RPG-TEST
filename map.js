@@ -2449,6 +2449,8 @@ const FIXED_MAPS = {
             "y": 25
         },
         "battleBg": "battle_bg_abyss_boss",
+        "entryEventId": "abyss_carmena_arrival_warning",
+        "entryEventFlag": "abyssCarmenaArrivalWarningSeen",
         "tiles": [
             "WWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWGGGGGGGWWWWWWWWWWWWWWW",
@@ -2480,7 +2482,7 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWGGTGGWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         ],
-        "nextActorPlacementId": 5,
+        "nextActorPlacementId": 6,
         "mapActors": [
             {
                 "placementId": 1,
@@ -2565,6 +2567,27 @@ const FIXED_MAPS = {
                         }
                     }
                 ]
+            },
+            {
+                "placementId": 5,
+                "actorId": "abyss_carmena_resident_lighthouse",
+                "name": "地上から落ちた男",
+                "x": 34,
+                "y": 20,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G",
+                "states": [
+                    {
+                        "stateId": "abyss_carmena_resident_lighthouse",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_carmena_resident_lighthouse",
+                            "label": "地上から落ちた男と話す"
+                        }
+                    }
+                ]
             }
         ],
         "mapActions": [
@@ -2626,7 +2649,7 @@ const FIXED_MAPS = {
                 "startEventId": "abyss_carmena_gate_battle",
                 "storyEventId": "abyss_carmena_gate_clear",
                 "actionLabel": "二将に挑む",
-                "challengeText": "グレン将軍とレオン将軍が同時に武器を構えた。\n二人を相手に戦いますか？"
+                "challengeText": "グレン将軍とガレオン将軍が同時に武器を構えた。\n二人を相手に戦いますか？"
             },
             {
                 "x": 20,
@@ -2641,7 +2664,7 @@ const FIXED_MAPS = {
                 "startEventId": "abyss_carmena_gate_battle",
                 "storyEventId": "abyss_carmena_gate_clear",
                 "actionLabel": "二将に挑む",
-                "challengeText": "レオン将軍とグレン将軍が同時に武器を構えた。\n二人を相手に戦いますか？"
+                "challengeText": "ガレオン将軍とグレン将軍が同時に武器を構えた。\n二人を相手に戦いますか？"
             }
         ],
         "exitPoint": {
@@ -3226,6 +3249,13 @@ const FIXED_MAPS = {
             }
         ],
         "mapActions": [
+            {
+                "x": 7,
+                "y": 23,
+                "type": "bossTraining",
+                "label": "訓練所へ入る",
+                "suppressEventMarker": true
+            },
             {
                 "x": 8,
                 "y": 28,
