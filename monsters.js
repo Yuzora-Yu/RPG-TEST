@@ -51,7 +51,7 @@ const BALANCE_RULE = {
 // allyGrowthType は各モンスターレコードへ明示し、ゲーム実行時には推測・上書きしない。
 // A/B/C の特化倍率は、非特化能力に対して概ね 1.5倍 / 2倍 / 5倍。
 const MONSTER_ALLY_GROWTH_TYPE_MASTER = Object.freeze({
-  schemaVersion: 2,
+  schemaVersion: 3,
   referenceCharacterIds: Object.freeze({
     BALANCE: 301,   // 主人公アルス
     PHYSICAL: 109,  // ガイル
@@ -82,6 +82,8 @@ const MONSTER_ALLY_GROWTH_TYPE_MASTER = Object.freeze({
     BALANCE_A: Object.freeze({ label: 'バランス型A', hpMpReference: 'BALANCE', weights: Object.freeze({ atk:1, def:1, mag:1, mdef:1, spd:1 }) }),
     BALANCE_B: Object.freeze({ label: 'バランス型B', hpMpReference: 'PHYSICAL', weights: Object.freeze({ atk:1.15, def:1.1, mag:0.9, mdef:0.9, spd:1.05 }) }),
     BALANCE_C: Object.freeze({ label: 'バランス型C', hpMpReference: 'MAGIC', weights: Object.freeze({ atk:0.9, def:0.9, mag:1.15, mdef:1.1, spd:1 }) }),
+    // 裏ボス専用。ゼノンの成長基礎値を全能力で上回る固定成長型。
+    ALL_SPECIAL: Object.freeze({ label: '全特化型', hpMpReference: 'BALANCE', growthBase: Object.freeze({ hp:142, mp:50, atk:146, def:90, spd:76, mag:142, mdef:114 }) }),
   }),
 });
 
@@ -1333,7 +1335,7 @@ const FIXED_BOSS_MONSTERS = [
 
 
 const FIXED_SPECIAL_BOSSES = [
-  {"hit":150,"eva":20,"cri":30,"isBoss":true,"isRare":true,"isEstark":true,"isSpecialBoss":true,"drops":{"normal":{"id":106,"rate":50},"rare":{"id":107,"rate":10}},"elmRes":{"火":80,"水":80,"風":80,"雷":80,"光":80,"闇":80,"混沌":0,"json":0},"resists":{"Poison":90,"Shock":90,"Fear":200,"InstantDeath":200,"Debuff":90,"Seal":200},"traits":[{"id":52,"level":5},{"id":19,"level":10},{"id":10,"level":10}],"archives":[],"id":902000,"allyGrowthType":"DEF_MDEF_A","name":"ギルガメッシュ","race":"魔族","rank":999,"minF":999,"hp":132000,"mp":2950,"atk":829,"def":1034,"spd":527,"mag":797,"mdef":979,"gold":9999999,"exp":9999999,"actCount":3,"acts":[{"id":1,"rate":55,"condition":0},{"id":167,"rate":15,"condition":0},{"id":161,"rate":15,"condition":0},{"id":712,"rate":10,"condition":0},{"id":234,"rate":10,"condition":2},{"id":237,"rate":10,"condition":2},{"id":314,"rate":20,"condition":2},{"id":315,"rate":20,"condition":2},{"id":510,"rate":10,"condition":2},{"id":408,"rate":8,"condition":3},{"id":705,"rate":8,"condition":3},{"id":230,"rate":30,"condition":3}]}
+  {"hit":180,"eva":30,"cri":40,"isBoss":true,"isRare":true,"isEstark":true,"isSpecialBoss":true,"drops":{"normal":{"id":106,"rate":50},"rare":{"id":107,"rate":10}},"elmRes":{"火":80,"水":80,"風":80,"雷":80,"光":80,"闇":80,"混沌":0,"json":0},"resists":{"Poison":90,"Shock":90,"Fear":200,"InstantDeath":200,"Debuff":90,"Seal":200},"traits":[{"id":52,"level":5},{"id":19,"level":10},{"id":10,"level":10}],"archives":[],"id":902000,"allyGrowthType":"ALL_SPECIAL","name":"ギルガメッシュ","race":"魔族","rank":999,"minF":999,"hp":460000,"mp":16000,"atk":4300,"def":4500,"spd":2450,"mag":4250,"mdef":4500,"gold":999999,"exp":999999,"actCount":3,"acts":[{"id":1,"rate":55,"condition":0},{"id":167,"rate":15,"condition":0},{"id":161,"rate":15,"condition":0},{"id":712,"rate":10,"condition":0},{"id":234,"rate":10,"condition":2},{"id":237,"rate":10,"condition":2},{"id":314,"rate":20,"condition":2},{"id":315,"rate":20,"condition":2},{"id":510,"rate":10,"condition":2},{"id":408,"rate":8,"condition":3},{"id":705,"rate":8,"condition":3},{"id":230,"rate":30,"condition":3}],"specialBossRules":{"statScalePerDefeat":0.2,"requiredItemId":98,"consumeRequiredItemOnVictory":true,"gemReward":10000,"linkedRareDropItemId":599999,"recruitBaseRate":0.05,"recruitRatePerDefeat":0.05,"recruitMaxRate":1,"guaranteedEquipment":{"plus":3,"minRarities":["UR","EX"],"valueMultiplier":3,"namePrefix":"【EX】"}}}
 ];
 
 // 宝箱トラップも通常モンスターと同じ正本・画像参照規約で管理する。

@@ -998,7 +998,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v34.20260803-runtime',
+    fullDataCacheName: 'prisma-abyss-v35.20260803-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -2775,7 +2775,7 @@ const App = {
     // 仲間モンスターの成長型は monsters.js の各レコードへ明示する。
     // ゲーム実行時には能力値から型を推測せず、マスターの allyGrowthType を正本として扱う。
     monsterAllyGrowthConfig: Object.freeze({
-        schemaVersion: 2,
+        schemaVersion: 3,
         stats: Object.freeze(['hp', 'mp', 'atk', 'def', 'mag', 'mdef', 'spd']),
         combatStats: Object.freeze(['atk', 'def', 'mag', 'mdef', 'spd']),
         labels: Object.freeze({ hp:'HP', mp:'MP', atk:'攻撃', def:'防御', mag:'魔力', mdef:'魔防', spd:'速さ' }),
@@ -2835,21 +2835,26 @@ const App = {
         const data = typeMaster.data || { hpMpReference:'BALANCE', weights:{ atk:1, def:1, mag:1, mdef:1, spd:1 }, label:'バランス型A' };
         const hpMpRef = App.getMonsterAllyGrowthReferenceCharacter(data.hpMpReference);
         const neutral = App.getMonsterAllyNeutralCombatGrowth();
+        const explicitGrowthBase = data.growthBase && typeof data.growthBase === 'object' ? data.growthBase : null;
         const weights = data.weights || {};
         const baseTotal = App.monsterAllyGrowthConfig.combatStats.reduce((sum, key) => sum + Math.max(1, Number(neutral[key]) || 1), 0);
         const weightedTotal = App.monsterAllyGrowthConfig.combatStats.reduce((sum, key) => {
             return sum + Math.max(1, Number(neutral[key]) || 1) * Math.max(0.01, Number(weights[key]) || 1);
         }, 0);
         const normalize = weightedTotal > 0 ? baseTotal / weightedTotal : 1;
-        const growthBase = {
-            hp: Math.max(1, Math.round(Number(hpMpRef?.growthBase?.hp) || 50)),
-            mp: Math.max(1, Math.round(Number(hpMpRef?.growthBase?.mp) || 18))
-        };
-        App.monsterAllyGrowthConfig.combatStats.forEach(key => {
-            growthBase[key] = Math.max(1, Math.round((Number(neutral[key]) || 1) * (Number(weights[key]) || 1) * normalize));
-        });
+        const growthBase = explicitGrowthBase
+            ? Object.fromEntries(App.monsterAllyGrowthConfig.stats.map(key => [key, Math.max(1, Math.round(Number(explicitGrowthBase[key]) || 1))]))
+            : {
+                hp: Math.max(1, Math.round(Number(hpMpRef?.growthBase?.hp) || 50)),
+                mp: Math.max(1, Math.round(Number(hpMpRef?.growthBase?.mp) || 18))
+            };
+        if (!explicitGrowthBase) {
+            App.monsterAllyGrowthConfig.combatStats.forEach(key => {
+                growthBase[key] = Math.max(1, Math.round((Number(neutral[key]) || 1) * (Number(weights[key]) || 1) * normalize));
+            });
+        }
         const ordered = App.monsterAllyGrowthConfig.combatStats
-            .map(key => ({ key, weight:Number(weights[key]) || 1 }))
+            .map(key => ({ key, weight: explicitGrowthBase ? (growthBase[key] / Math.max(1, Number(neutral[key]) || 1)) : (Number(weights[key]) || 1) }))
             .sort((a, b) => b.weight - a.weight || a.key.localeCompare(b.key));
         const strengths = ordered.filter(entry => entry.weight > 1).map(entry => entry.key);
         const weaknesses = ordered.filter(entry => entry.weight < 1).reverse().map(entry => entry.key);
@@ -2860,7 +2865,9 @@ const App = {
             growthBase,
             strengths,
             weaknesses,
-            multipliers: Object.fromEntries(App.monsterAllyGrowthConfig.combatStats.map(key => [key, Number(((Number(weights[key]) || 1) * normalize).toFixed(4))]))
+            multipliers: Object.fromEntries(App.monsterAllyGrowthConfig.combatStats.map(key => [key, Number((explicitGrowthBase
+                ? growthBase[key] / Math.max(1, Number(neutral[key]) || 1)
+                : (Number(weights[key]) || 1) * normalize).toFixed(4))]))
         };
     },
 

@@ -1958,6 +1958,8 @@ const Battle = {
             isRare: !!enemy.isRare,
             isSpecialBoss: !!enemy.isSpecialBoss,
             isEstark: !!enemy.isEstark,
+            specialBossScale: Number.isFinite(Number(enemy.specialBossScale)) ? Number(enemy.specialBossScale) : undefined,
+            specialBossDefeatsAtStart: Number.isFinite(Number(enemy.specialBossDefeatsAtStart)) ? Number(enemy.specialBossDefeatsAtStart) : undefined,
             gutsLevel: Number(enemy.gutsLevel || 0),
             linkedDeathIndex: Number.isFinite(Number(enemy.linkedDeathIndex)) ? Number(enemy.linkedDeathIndex) : null,
             linkedBattleGroup: enemy.linkedBattleGroup || null,
@@ -2033,6 +2035,8 @@ const Battle = {
         enemy.isRare = !!(snapshot.isRare || base.isRare);
         enemy.isEstark = !!(snapshot.isEstark || base.isEstark);
         enemy.isSpecialBoss = !!(snapshot.isSpecialBoss || base.isSpecialBoss || enemy.isEstark);
+        enemy.specialBossScale = finiteOr(snapshot.specialBossScale, enemy.specialBossScale ?? 1);
+        enemy.specialBossDefeatsAtStart = Math.max(0, Math.floor(finiteOr(snapshot.specialBossDefeatsAtStart, enemy.specialBossDefeatsAtStart ?? 0)));
         enemy.gutsLevel = finiteOr(snapshot.gutsLevel, enemy.gutsLevel ?? base.gutsLevel ?? 0);
         enemy.linkedDeathIndex = Number.isFinite(Number(snapshot.linkedDeathIndex)) ? Number(snapshot.linkedDeathIndex) : (base.linkedDeathIndex ?? null);
         enemy.linkedBattleGroup = snapshot.linkedBattleGroup || enemy.linkedBattleGroup || base.linkedBattleGroup || null;
@@ -2075,6 +2079,148 @@ const Battle = {
     },
 
     isSpecialBossBase: (base) => !!(base && (base.isSpecialBoss || base.isEstark || Number(base.id) === 902000)),
+
+    // 裏ボス固有ルールはモンスターマスターの specialBossRules を正本とする。
+    // 通常の深層強化とは分離し、討伐回数補正・勝利時消費・加入率を一か所で扱う。
+    getSpecialBossRules: (baseOrEnemy) => {
+        if (!baseOrEnemy) return null;
+        const baseId = Number(baseOrEnemy.baseId || baseOrEnemy.id);
+        const base = Battle.getMonsterBaseById(baseId) || baseOrEnemy;
+        const raw = base?.specialBossRules;
+        if (!raw || typeof raw !== 'object') return null;
+        return {
+            statScalePerDefeat: Math.max(0, Number(raw.statScalePerDefeat) || 0),
+            requiredItemId: Number.isFinite(Number(raw.requiredItemId)) ? Number(raw.requiredItemId) : null,
+            consumeRequiredItemOnVictory: raw.consumeRequiredItemOnVictory === true,
+            gemReward: Math.max(0, Math.floor(Number(raw.gemReward) || 0)),
+            linkedRareDropItemId: Number.isFinite(Number(raw.linkedRareDropItemId)) ? Number(raw.linkedRareDropItemId) : null,
+            recruitBaseRate: Math.max(0, Number(raw.recruitBaseRate) || 0),
+            recruitRatePerDefeat: Math.max(0, Number(raw.recruitRatePerDefeat) || 0),
+            recruitMaxRate: Math.max(0, Math.min(1, Number(raw.recruitMaxRate) || 1)),
+            guaranteedEquipment: raw.guaranteedEquipment && typeof raw.guaranteedEquipment === 'object'
+                ? JSON.parse(JSON.stringify(raw.guaranteedEquipment))
+                : null
+        };
+    },
+
+    getSpecialBossScale: (baseOrEnemy, previousDefeats = 0) => {
+        const rules = Battle.getSpecialBossRules(baseOrEnemy);
+        const count = Math.max(0, Math.floor(Number(previousDefeats) || 0));
+        return 1 + count * Math.max(0, Number(rules?.statScalePerDefeat) || 0);
+    },
+
+    // completedDefeats は今回の勝利を含む討伐数。ギルガメッシュは 1回目5%、2回目10%…。
+    getSpecialBossRecruitChance: (baseOrEnemy, completedDefeats = 1) => {
+        const rules = Battle.getSpecialBossRules(baseOrEnemy);
+        if (!rules) return 0;
+        const count = Math.max(1, Math.floor(Number(completedDefeats) || 1));
+        const chance = rules.recruitBaseRate + Math.max(0, count - 1) * rules.recruitRatePerDefeat;
+        return Math.max(0, Math.min(rules.recruitMaxRate, chance));
+    },
+
+    applySpecialBossVictoryOutcome: (specialEnemy, options = {}) => {
+        if (!specialEnemy || !App.data) return null;
+        if (!App.data.battle) App.data.battle = {};
+        if (!App.data.items) App.data.items = {};
+        if (!Array.isArray(App.data.inventory)) App.data.inventory = [];
+        const specialId = Number(specialEnemy.baseId || specialEnemy.id);
+        const base = Battle.getMonsterBaseById(specialId) || specialEnemy;
+        const rules = Battle.getSpecialBossRules(base);
+        if (!rules) return null;
+
+        const battleId = String(App.data.battle.battleId || Battle.finishToken || 'active-special-battle');
+        const prior = App.data.battle.specialBossOutcome;
+        if (prior && String(prior.battleId) === battleId && Number(prior.monsterId) === specialId && prior.applied === true) {
+            return { ...prior, reused: true, recruitResult: null };
+        }
+
+        const completedDefeats = Math.max(1, Math.floor(Number(options.completedDefeats) || 1));
+        const drops = Array.isArray(options.drops) ? options.drops : [];
+        const createEquipment = options.createEquipment;
+        const bonusRare = Number(options.bonusRare || 0);
+        const bonusNormal = Number(options.bonusNormal || 0);
+        let requiredItemConsumed = false;
+        let requiredItemName = '';
+
+        if (rules.consumeRequiredItemOnVictory && rules.requiredItemId != null) {
+            const current = Math.max(0, Math.floor(Number(App.data.items[rules.requiredItemId]) || 0));
+            if (current < 1) throw new Error(`勝利時消費アイテム(ID:${rules.requiredItemId})がありません。`);
+            App.data.items[rules.requiredItemId] = current - 1;
+            const itemDef = DB.ITEMS.find(item => Number(item.id) === rules.requiredItemId);
+            requiredItemName = itemDef?.name || `アイテム${rules.requiredItemId}`;
+            requiredItemConsumed = true;
+        }
+
+        let equipmentName = '';
+        const equipRule = rules.guaranteedEquipment;
+        if (equipRule && typeof createEquipment === 'function') {
+            const baseRank = Math.max(1, Number(specialEnemy.rank || base.rank || 999));
+            const rewardFloor = baseRank + completedDefeats * 5;
+            const eq = createEquipment(
+                rewardFloor,
+                Math.max(0, Math.floor(Number(equipRule.plus) || 3)),
+                Array.isArray(equipRule.minRarities) && equipRule.minRarities.length ? equipRule.minRarities : ['UR', 'EX']
+            );
+            if (eq) {
+                if (Number.isFinite(Number(eq.val))) eq.val = Math.floor(Number(eq.val) * Math.max(1, Number(equipRule.valueMultiplier) || 1));
+                eq.name = `${equipRule.namePrefix || ''}${eq.name || '特殊装備'}`;
+                equipmentName = eq.name;
+                App.data.inventory.push(eq);
+                drops.push({ name:eq.name, isRare:true, isUltra:true, isSpecialBoss:true, isEstark:true, kind:'equip' });
+            }
+        }
+
+        if (rules.gemReward > 0) App.data.gems = Math.max(0, Number(App.data.gems) || 0) + rules.gemReward;
+
+        const monsterDrops = base.drops || specialEnemy.drops || null;
+        const grantConfiguredItem = (drop, bonus, linked = false) => {
+            if (!drop || drop.id == null || !Battle.rollConfiguredDrop(drop, bonus)) return null;
+            const itemDef = DB.ITEMS.find(item => Number(item.id) === Number(drop.id));
+            if (!itemDef) return null;
+            App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
+            const isRare = linked || Number(itemDef.id) === 107 || drop === monsterDrops?.rare;
+            drops.push({ name:itemDef.name, isRare, type:isRare ? 'kai' : 'item', kind:'item' });
+            return itemDef.id;
+        };
+
+        const rareDropId = grantConfiguredItem(monsterDrops?.rare, bonusRare);
+        const normalDropId = grantConfiguredItem(monsterDrops?.normal, bonusNormal);
+        let linkedRareDropId = null;
+        if (rules.linkedRareDropItemId != null && monsterDrops?.rare) {
+            linkedRareDropId = grantConfiguredItem({ ...monsterDrops.rare, id:rules.linkedRareDropItemId }, bonusRare, true);
+        }
+
+        const recruitChance = Battle.getSpecialBossRecruitChance(base, completedDefeats);
+        let recruitResult = null;
+        let recruitSucceeded = false;
+        if (recruitChance > 0 && Math.random() < recruitChance && typeof App.addOrLimitBreakMonsterAlly === 'function') {
+            recruitResult = App.addOrLimitBreakMonsterAlly(specialEnemy, base);
+            recruitSucceeded = recruitResult?.ok === true;
+        }
+
+        const outcome = {
+            version:1,
+            battleId,
+            monsterId:specialId,
+            applied:true,
+            completedDefeats,
+            statScale:Number(specialEnemy.specialBossScale || Battle.getSpecialBossScale(base, Math.max(0, completedDefeats - 1))),
+            requiredItemId:rules.requiredItemId,
+            requiredItemConsumed,
+            requiredItemName,
+            gemReward:rules.gemReward,
+            equipmentName,
+            rareDropId,
+            normalDropId,
+            linkedRareDropId,
+            recruitChance,
+            recruitSucceeded,
+            recruitExisting:recruitResult?.existing === true,
+            limitBreakChanged:recruitResult?.lbChanged === true
+        };
+        App.data.battle.specialBossOutcome = outcome;
+        return { ...outcome, recruitResult };
+    },
     isNormalEncounterBase: (base) => !!(base && !base.isBoss && !base.isRare && !Battle.isSpecialBossBase(base)),
     isAbyssRandomBossBase: (base) => {
         if (!base) return false;
@@ -2319,6 +2465,7 @@ const Battle = {
                 Battle.applyMapEnemyBoost(m, options.trialEnemyBoost);
             }
             if (m) newEnemies.push(m);
+            return m;
         };
 
         // 深淵の裂け目戦は「10フロア先相当の通常強敵3体」を出す。
@@ -2462,12 +2609,25 @@ const Battle = {
         if (isBoss && targetId) {
             const bases = Battle.getMonsterBasesByIds(targetId);
             if (bases.length > 0) {
-                bases.forEach((base, i) => pushBase(base, i, bases.length, {
-                    isBossBattle: true,
-                    forceSpecialBoss: Battle.isSpecialBossBase(base),
-                    storyBossStatMultiplier: bossStatMultiplier,
-                    trialEnemyBoost: battleData.trialEnemyBoost || null,
-                }));
+                bases.forEach((base, i) => {
+                    const special = Battle.isSpecialBossBase(base);
+                    const previousDefeats = special
+                        ? Math.max(0, Math.floor(Number(App.data.book?.killCounts?.[base.id]) || 0))
+                        : 0;
+                    const specialScale = special ? Battle.getSpecialBossScale(base, previousDefeats) : 1;
+                    const enemy = pushBase(base, i, bases.length, {
+                        isBossBattle: true,
+                        forceSpecialBoss: special,
+                        scale: specialScale,
+                        // 裏ボスは専用の討伐回数補正だけを使用し、深層・試練倍率と重複させない。
+                        storyBossStatMultiplier: special ? 1 : bossStatMultiplier,
+                        trialEnemyBoost: special ? null : (battleData.trialEnemyBoost || null),
+                    });
+                    if (enemy && special) {
+                        enemy.specialBossScale = specialScale;
+                        enemy.specialBossDefeatsAtStart = previousDefeats;
+                    }
+                });
                 return newEnemies;
             }
         }
@@ -2481,10 +2641,15 @@ const Battle = {
                 const gilgamesh = Battle.getMonsterBaseById(902000);
                 if (gilgamesh) bases = [gilgamesh];
             }
-            const specialId = bases[0]?.id || 902000;
-            const kills = (App.data.book && App.data.book.killCounts) ? (App.data.book.killCounts[specialId] || 0) : 0;
-            const scale = 1.0 + (kills * 0.05);
-            bases.forEach((base, i) => pushBase(base, i, bases.length, { isBossBattle: true, forceSpecialBoss: true, scale }));
+            bases.forEach((base, i) => {
+                const previousDefeats = Math.max(0, Math.floor(Number(App.data.book?.killCounts?.[base.id]) || 0));
+                const scale = Battle.getSpecialBossScale(base, previousDefeats);
+                const enemy = pushBase(base, i, bases.length, { isBossBattle:true, forceSpecialBoss:true, scale });
+                if (enemy) {
+                    enemy.specialBossScale = scale;
+                    enemy.specialBossDefeatsAtStart = previousDefeats;
+                }
+            });
             return newEnemies;
         }
 
@@ -7140,6 +7305,9 @@ findNextActor: () => {
                 ? App.serializeSaveData(App.data)
                 : JSON.stringify(App.data);
             if (!App.data.battle) App.data.battle = { active: true };
+            if (!App.data.battle.battleId) {
+                App.data.battle.battleId = `battle-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+            }
             App.data.battle.resultJournal = {
                 version: 2,
                 battleId: App.data.battle.battleId || null,
@@ -7332,50 +7500,21 @@ findNextActor: () => {
 		};
 
 		// --- [2] 報酬アイテムの生成と確定 ---
+		let specialBossOutcome = null;
 		if (isEstark) {
 			const specialEnemy = rewardResultEnemies.find(e => e.isSpecialBoss || e.isEstark || Number(e.id) === 902000 || Number(e.baseId) === 902000);
 			if (specialEnemy) {
-				const specialId = specialEnemy.baseId || specialEnemy.id || 902000;
-				const killCount = (App.data.book.killCounts && App.data.book.killCounts[specialId]) ? App.data.book.killCounts[specialId] : 1;
-				const baseRank = specialEnemy.rank || 999; 
-				const rewardFloor = baseRank + (killCount * 5);
-				const eq = createEquipWithMinRarity(rewardFloor, 3, ['UR', 'EX']);
-				eq.val *= 3;
-				eq.name = "【EX】" + eq.name;
-				App.data.gems = (App.data.gems || 0) + 10000;
-				App.data.inventory.push(eq);
-				drops.push({ name: eq.name, isRare: true, isUltra: true, isSpecialBoss: true, isEstark: true, kind: 'equip' });
-				hasUltraRareDrop = true;
-
-				// 特殊ボス（ギルガメッシュ等）専用報酬だけで終わらせず、
-				// monsters.js 側に個別設定された drops も同じ勝利で判定する。
-				// 以前は isEstark 分岐に入ると通常ボス用の drops 処理へ進まなかったため、
-				// ギルガメッシュの drops.normal / drops.rare が実質無視されていた。
-				// 今後、特殊ボスを追加する場合も固有ドロップは monsters.js の drops に統一すること。
-				const specialBase = Battle.getMonsterBaseById(specialId) || specialEnemy;
-				const monsterDrops = specialBase.drops || specialEnemy.drops;
-
-				if (monsterDrops && monsterDrops.rare && monsterDrops.rare.id != null) {
-					if (Battle.rollConfiguredDrop(monsterDrops.rare, bonusRare)) {
-						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.rare.id);
-						if (itemDef) {
-							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
-							hasRareDrop = true;
-							const type = (itemDef.id === 107) ? 'kai' : 'boss';
-							drops.push({ name: itemDef.name, isRare: true, type: type, kind: 'item' });
-						}
-					}
-				}
-
-				if (monsterDrops && monsterDrops.normal && monsterDrops.normal.id != null) {
-					if (Battle.rollConfiguredDrop(monsterDrops.normal, bonusNormal)) {
-						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.normal.id);
-						if (itemDef) {
-							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
-							drops.push({ name: itemDef.name, isRare: false, type: 'item', kind: 'item' });
-						}
-					}
-				}
+				const specialId = Number(specialEnemy.baseId || specialEnemy.id || 902000);
+				const completedDefeats = Math.max(1, Math.floor(Number(App.data.book?.killCounts?.[specialId]) || 1));
+				specialBossOutcome = Battle.applySpecialBossVictoryOutcome(specialEnemy, {
+					completedDefeats,
+					drops,
+					bonusRare,
+					bonusNormal,
+					createEquipment:createEquipWithMinRarity
+				});
+				if (specialBossOutcome?.equipmentName || specialBossOutcome?.linkedRareDropId) hasUltraRareDrop = true;
+				if (specialBossOutcome?.rareDropId || specialBossOutcome?.linkedRareDropId) hasRareDrop = true;
 			}
 		} else {
 			rewardResultEnemies.forEach(e => {
@@ -7494,10 +7633,13 @@ findNextActor: () => {
             }
         }
 
-		// --- [3] 深淵系ダンジョン限定：撃破した対象1体ごとに1%の仲間加入判定 ---
-		const monsterRecruitResult = (!isTrainingBattle && typeof App.tryRecruitMonsterAfterBattle === 'function')
+		// --- [3] 深淵系ダンジョン限定：通常魔物は1%、裏ボスは専用の累積加入率で判定 ---
+		const normalMonsterRecruitResult = (!isTrainingBattle && typeof App.tryRecruitMonsterAfterBattle === 'function')
 			? App.tryRecruitMonsterAfterBattle(Battle.enemies)
 			: null;
+		const monsterRecruitResult = specialBossOutcome?.recruitResult?.ok
+			? specialBossOutcome.recruitResult
+			: normalMonsterRecruitResult;
 
 		const resultLevelEvents = [];
         const resultLevelLooseLogs = [];
@@ -7634,9 +7776,7 @@ findNextActor: () => {
             });
         }
         const pendingMonsterSkillEvolution = isTrainingBattle ? null : Battle.prepareMonsterSkillEvolutionAfterBattle();
-        const battleId = App.data.battle?.battleId ||
-            `battle-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
-        App.data.battle.battleId = battleId;
+        const battleId = App.data.battle.battleId;
         App.data.battle.resultJournal = {
             version: 2,
             battleId,
@@ -7650,9 +7790,11 @@ findNextActor: () => {
             eventQueued: !!(storyWinEventId || fixedStoryEventId || eventId),
             pendingMonsterSkillEvolution,
             storyBossTraining: trainingJournalContext,
+            specialBossOutcome: specialBossOutcome ? { ...specialBossOutcome, recruitResult: undefined } : null,
             summary: {
                 gold: totalGold,
                 exp: totalExp,
+                gems: Math.max(0, Number(specialBossOutcome?.gemReward) || 0),
                 drops: drops.map(drop => ({ name: drop.name, kind: drop.kind || drop.type || null }))
             }
         };
@@ -7688,6 +7830,9 @@ findNextActor: () => {
         }
         if (guildPromotionMessage) {
             Battle.log(`<span style="color:#ffd56b; font-weight:bold;">${Battle.escapeHtml(guildPromotionMessage).replace(/\n/g, '<br>')}</span>`);
+        }
+        if (specialBossOutcome?.requiredItemConsumed) {
+            Battle.log(`<span style="color:#d8b5ff; font-weight:bold;">${Battle.escapeHtml(specialBossOutcome.requiredItemName || '災厄の楔')}が砕け散った。</span>`);
         }
 		if (monsterRecruitResult && monsterRecruitResult.message) {
 			Battle.log(`<span style="color:#7fffd4; font-weight:bold;">${monsterRecruitResult.message}</span>`);

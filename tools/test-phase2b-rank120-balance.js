@@ -67,6 +67,6 @@ const fivePillars = [302080, 302081, 302082, 302083, 302084].map(id => byId.get(
 assert(fivePillars.reduce((sum, monster) => sum + Number(monster.exp), 0) === 40000,
     '五柱戦の合計EXPが40000ではありません。');
 assert(Number(byId.get(200204)?.exp) === 416000, 'プリズムキングの特殊EXPを変更しています。');
-assert(Number(byId.get(902000)?.exp) === 9999999, 'ギルガメッシュは今回の調整対象外です。');
+assert(Number(byId.get(902000)?.exp) === 999999, 'Phase2FのギルガメッシュEXP調整が失われています。');
 
 console.log(`Phase2B Rank120バランス検証: OK（通常敵 ${lateNormals.length}体 / ボス ${Object.keys(bossTargets).length}体）`);

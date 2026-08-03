@@ -75,7 +75,7 @@ const growthMaster = context.MONSTER_ALLY_GROWTH_TYPE_MASTER;
 const monsters = context.MONSTERS_DATA;
 
 // Master completeness and explicit assignment.
-assert.strictEqual(Object.keys(growthMaster.types).length, 24, 'Growth type master must contain 24 profiles.');
+assert.strictEqual(Object.keys(growthMaster.types).length, 25, 'Growth type master must contain 25 profiles including the special boss profile.');
 assert.strictEqual(monsters.length, 336, 'Unexpected monster master count after legacy abyss boss removal.');
 assert(monsters.every(monster => growthMaster.types[monster.allyGrowthType]), 'Every monster must have a valid explicit allyGrowthType.');
 
@@ -91,6 +91,11 @@ assert.strictEqual(physical.mp, refs[109].growthBase.mp);
 assert.strictEqual(magical.hp, refs[110].growthBase.hp);
 assert.strictEqual(magical.mp, refs[110].growthBase.mp);
 assert.strictEqual(Math.max(balance.atk, balance.def, balance.mag, balance.mdef, balance.spd), Math.min(balance.atk, balance.def, balance.mag, balance.mdef, balance.spd), 'BALANCE_A combat growth must be equal.');
+const allSpecial = App.buildMonsterAllyGrowthProfile('ALL_SPECIAL').growthBase;
+for (const key of ['hp','mp','atk','def','spd','mag','mdef']) {
+  assert(allSpecial[key] > refs[402].growthBase[key], `ALL_SPECIAL ${key} must exceed Zenon.`);
+}
+assert.strictEqual(monsters.find(monster => Number(monster.id) === 902000)?.allyGrowthType, 'ALL_SPECIAL', 'Gilgamesh must use the ALL_SPECIAL ally growth profile.');
 
 function approximateRatio(type, specialKeys, expected) {
   const g = App.buildMonsterAllyGrowthProfile(type).growthBase;
