@@ -2137,6 +2137,68 @@ const StoryManager = {
             }
         }
 
+        if (action.type === 'ABYSS_SPIRIT_TRIAL_BATTLE') {
+            const element = String(action.element || action.value || '');
+            const master = (typeof App.getAbyssSpiritTrialMaster === 'function')
+                ? App.getAbyssSpiritTrialMaster()
+                : (globalThis.ABYSS_SPIRIT_TRIAL_MASTER || {});
+            const definition = master[element];
+            if (!definition) throw new Error(`六属性プリズムの正式マスターが見つかりません: ${element}`);
+            const progress = App.ensureAbyssSpiritTrialEvents?.() || App.ensureAbyssRegionProgress?.() || data;
+            progress.abyssSpiritTrialEvents = progress.abyssSpiritTrialEvents || {};
+            const record = progress.abyssSpiritTrialEvents[element] || (progress.abyssSpiritTrialEvents[element] = {});
+            record.state = 'challenged';
+            record.attempts = Math.max(0, Math.floor(Number(record.attempts) || 0)) + 1;
+            record.lastAttemptAt = Date.now();
+            const requiredElements = Object.keys(master);
+            return this.processAction({
+                type:'BOSS',
+                value:Number(definition.bossId),
+                winEventId:definition.victoryEventId,
+                suppressFixedBossDefeat:true,
+                bossStatMultiplier:1,
+                elementalSpiritTrial:{
+                    version:1,
+                    element,
+                    rewardItemId:Number(definition.rewardItemId || 0),
+                    completionItemId:Number(globalThis.ABYSS_REGION_CONTENT?.octaprismItemId || 701008),
+                    requiredElements,
+                    attemptNumber:record.attempts,
+                    victoryEventId:definition.victoryEventId
+                }
+            }, eventId, lineIndex, context);
+        }
+
+        if (action.type === 'ABYSS_SPIRIT_TRIAL_COMPLETE') {
+            const element = String(action.element || action.value || '');
+            const progress = App.ensureAbyssSpiritTrialEvents?.() || App.ensureAbyssRegionProgress?.() || data;
+            progress.flags = progress.flags || {};
+            progress.abyssSpiritBlessings = progress.abyssSpiritBlessings || {};
+            progress.abyssSpiritTrialEvents = progress.abyssSpiritTrialEvents || {};
+            const record = progress.abyssSpiritTrialEvents[element] || (progress.abyssSpiritTrialEvents[element] = {});
+            progress.abyssSpiritBlessings[element] = true;
+            record.state = 'completed';
+            record.completedAt = record.completedAt || Date.now();
+            const master = (typeof App.getAbyssSpiritTrialMaster === 'function') ? App.getAbyssSpiritTrialMaster() : {};
+            const elements = Object.keys(master).length ? Object.keys(master) : ['火','水','風','雷','光','闇'];
+            if (elements.every(key => progress.abyssSpiritBlessings[key])) {
+                progress.flags.abyssAllSpiritTrialsCleared = true;
+                const itemId = Number(globalThis.ABYSS_REGION_CONTENT?.octaprismItemId || 701008);
+                if (Number(App.data?.items?.[itemId] || 0) <= 0) {
+                    progress.flags.abyssOctaprismGrantPending = true;
+                }
+            }
+        }
+
+        if (action.type === 'ABYSS_SPIRIT_TRIAL_GRANT_OCTAPRISM') {
+            const progress = App.ensureAbyssSpiritTrialEvents?.() || App.ensureAbyssRegionProgress?.() || data;
+            progress.flags = progress.flags || {};
+            progress.flags.abyssOctaprismGrantPending = false;
+            progress.flags.abyssOctaprismGrantEventSeen = true;
+            progress.flags.abyssAllSpiritTrialsCleared = true;
+            progress.abyssOctaprismGrantedAt = progress.abyssOctaprismGrantedAt || Date.now();
+        }
+
         if (action.type === 'BOSS') {
             const requestedBossId = action.value !== undefined ? action.value : null;
             const requestedIds = (Array.isArray(requestedBossId) ? requestedBossId : [requestedBossId])
@@ -2218,6 +2280,9 @@ const StoryManager = {
 
             const battleChainId = action.battleChainId || activeFixedBossContext?.battleChainId || inheritedChainId ||
                 `battle-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+            const elementalSpiritTrial = action.elementalSpiritTrial && typeof action.elementalSpiritTrial === 'object'
+                ? JSON.parse(JSON.stringify(action.elementalSpiritTrial))
+                : null;
             App.data.battle = {
                 active: false,
                 isBossBattle: true,
@@ -2238,7 +2303,17 @@ const StoryManager = {
                 storyLossEventId: action.lossEventId || null,
                 battleChainId,
                 battleChainPhase: Math.max(0, Number(action.battleChainPhase ?? activeFixedBossContext?.phase ?? 0)),
-                fixedBossContextNonce: activeFixedBossContext?.nonce || null
+                fixedBossContextNonce: activeFixedBossContext?.nonce || null,
+                ...(elementalSpiritTrial ? {
+                    elementalSpiritTrial,
+                    abyssSpiritElement: elementalSpiritTrial.element,
+                    fixedTrialElement: elementalSpiritTrial.element,
+                    fixedTrialRewardItemId: Number(elementalSpiritTrial.rewardItemId || 0),
+                    fixedTrialCompletionItemId: Number(elementalSpiritTrial.completionItemId || 0),
+                    fixedTrialRequiredElements: Array.isArray(elementalSpiritTrial.requiredElements)
+                        ? elementalSpiritTrial.requiredElements.slice()
+                        : []
+                } : {})
             };
             if (!deferSave) App.save();
             this.isTyping = false;

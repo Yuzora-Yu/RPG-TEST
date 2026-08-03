@@ -5458,6 +5458,132 @@ const STORY_MANAGER_DATA = {
         ]
     });
 
+    // 六属性プリズム会話の実装枠。本文は2026/08/03時点の仮稿で、
+    // シナリオ承認後もイベントID・保存状態を変えずに台詞だけ差し替えられる。
+    const spiritTrialNameByElement = Object.freeze({
+        火:'炎の大精霊', 水:'水の大精霊', 風:'風の大精霊',
+        雷:'雷の大精霊', 光:'光の大精霊', 闇:'闇の大精霊'
+    });
+    // 通常起動ではabyss_content.jsを正本とする。story.js単体を読むエディタ・検証器だけは
+    // 同一IDの静的フォールバックを使い、イベント枠そのものが欠落しないようにする。
+    const loadedSpiritTrialMaster = globalThis.ABYSS_REGION_CONTENT?.spiritTrials;
+    const spiritTrialContentMaster = loadedSpiritTrialMaster && Object.keys(loadedSpiritTrialMaster).length
+        ? loadedSpiritTrialMaster
+        : Object.freeze({
+            火:Object.freeze({key:'fire',bossId:502001,rewardItemId:701001}),
+            水:Object.freeze({key:'water',bossId:502002,rewardItemId:701002}),
+            風:Object.freeze({key:'wind',bossId:502003,rewardItemId:701003}),
+            雷:Object.freeze({key:'thunder',bossId:502004,rewardItemId:701004}),
+            光:Object.freeze({key:'light',bossId:502005,rewardItemId:701005}),
+            闇:Object.freeze({key:'dark',bossId:502006,rewardItemId:701006})
+        });
+    const spiritTrialDefinitions = Object.freeze(Object.fromEntries(
+        Object.entries(spiritTrialContentMaster).map(([element, definition]) => [element, Object.freeze({
+            ...definition,
+            spiritName:spiritTrialNameByElement[element] || `${element}の大精霊`
+        })])
+    ));
+    const spiritTrialDialogueDrafts = {
+        火: {
+            intro:[
+                {name:'炎の大精霊',text:'この火は、力だけを求める者には渡せぬ。\n守るために燃える覚悟があるなら、炎の試練へ進め。'},
+                {name:'システム',text:'炎のプリズムが激しく脈動している。'}
+            ],
+            retry:[
+                {name:'炎の大精霊',text:'一度消えた火でも、意志が残るなら再び灯る。\n立てるのなら、もう一度示してみよ。'}
+            ],
+            victory:[
+                {name:'炎の大精霊',text:'熱に呑まれず、誰かを照らす火を選んだか。\nその意志を認め、炎の加護を授けよう。'}
+            ]
+        },
+        水: {
+            intro:[
+                {name:'水の大精霊',text:'水は形を変え、すべてを映す。\n揺らぎの中でも自分を失わぬか、試させてもらいます。'},
+                {name:'システム',text:'水のプリズムから、静かな波紋が広がっている。'}
+            ],
+            retry:[
+                {name:'水の大精霊',text:'敗北もまた、心を映す一つの波。\n濁りを鎮めたのなら、再び水面へ立ちなさい。'}
+            ],
+            victory:[
+                {name:'水の大精霊',text:'激流の中でも、あなたたちの心は離れなかった。\nその結びつきを認め、水の加護を授けます。'}
+            ]
+        },
+        風: {
+            intro:[
+                {name:'風の大精霊',text:'縛られぬことと、逃げ続けることは違うよ。\nどこへ吹くかを自分で選べるか、見せておくれ。'},
+                {name:'システム',text:'風のプリズムの周囲で、淡い旋風が踊っている。'}
+            ],
+            retry:[
+                {name:'風の大精霊',text:'向かい風に押し戻されたくらいで、旅は終わらない。\n今度はどこまで飛べるか、もう一度見せておくれ。'}
+            ],
+            victory:[
+                {name:'風の大精霊',text:'誰かを置き去りにせず、それでも前へ進む風か。\n気に入ったよ。風の加護を連れておいき。'}
+            ]
+        },
+        雷: {
+            intro:[
+                {name:'雷の大精霊',text:'迷いは刃を鈍らせる。\n守るものを定めたなら、雷より速く決断してみせろ。'},
+                {name:'システム',text:'雷のプリズムから、鋭い火花が走った。'}
+            ],
+            retry:[
+                {name:'雷の大精霊',text:'倒れた事実は消えん。だが、次の一歩は選べる。\n再び来るなら、今度こそ迷うな。'}
+            ],
+            victory:[
+                {name:'雷の大精霊',text:'よい決断だった。速さに心を奪われず、仲間と同じ敵を見た。\n雷の加護を受け取れ。'}
+            ]
+        },
+        光: {
+            intro:[
+                {name:'光の大精霊',text:'光は善を名乗るだけでは足りません。\n影を見つめ、それでも手を伸ばせる者かを確かめます。'},
+                {name:'システム',text:'光のプリズムが、逃げ場のない白光を放っている。'}
+            ],
+            retry:[
+                {name:'光の大精霊',text:'敗北を隠して光を装う必要はありません。\n弱さを知った今のあなたたちを、改めて見定めましょう。'}
+            ],
+            victory:[
+                {name:'光の大精霊',text:'影を切り捨てず、互いを照らして進みましたね。\nその選択を認め、光の加護を授けます。'}
+            ]
+        },
+        闇: {
+            intro:[
+                {name:'闇の大精霊',text:'闇を恐れる者ほど、都合の悪い心を底へ捨てる。\n自分の影を連れたまま戦えるか、確かめよう。'},
+                {name:'システム',text:'闇のプリズムの奥で、六つの影が揺らめいた。'}
+            ],
+            retry:[
+                {name:'闇の大精霊',text:'負けた記憶まで捨てて戻ったのではあるまいな。\nその傷ごと抱えて来たなら、また相手をしよう。'}
+            ],
+            victory:[
+                {name:'闇の大精霊',text:'弱さを否定せず、それに支配もされなかった。\nならば闇もまた、お前たちの歩みを支えよう。'}
+            ]
+        }
+    };
+
+    Object.entries(spiritTrialDefinitions).forEach(([element, definition]) => {
+        const prefix = `ABYSS_SPIRIT_TRIAL_${definition.key.toUpperCase()}`;
+        data.scripts[`${prefix}_INTRO`] = spiritTrialDialogueDrafts[element].intro;
+        data.scripts[`${prefix}_RETRY`] = spiritTrialDialogueDrafts[element].retry;
+        data.scripts[`${prefix}_VICTORY`] = spiritTrialDialogueDrafts[element].victory;
+    });
+    data.scripts.ABYSS_SPIRIT_TRIAL_ALL_COMPLETE = [
+        {name:'システム',text:'六つの加護が呼応し、色の異なる光が一つの輪を描いた。'},
+        {name:'光の神',text:'火、水、風、雷、光、闇。\n異なる力を従えるのではなく、共に歩む者よ。'},
+        {name:'光の神',text:'深淵の混沌へ抗う時、この結晶が六精霊の道を繋ぐでしょう。\nオクタプリズマを受け取りなさい。'},
+        {name:'システム',text:'六色の光が結晶となり、静かに手の中へ降りた。'}
+    ];
+
+    data.abyssSpiritTrials = Object.freeze(Object.fromEntries(
+        Object.entries(spiritTrialDefinitions).map(([element, definition]) => [element, Object.freeze({
+            ...definition,
+            introScriptId:`ABYSS_SPIRIT_TRIAL_${definition.key.toUpperCase()}_INTRO`,
+            retryScriptId:`ABYSS_SPIRIT_TRIAL_${definition.key.toUpperCase()}_RETRY`,
+            victoryScriptId:`ABYSS_SPIRIT_TRIAL_${definition.key.toUpperCase()}_VICTORY`,
+            introEventId:`abyss_spirit_trial_${definition.key}_intro`,
+            retryEventId:`abyss_spirit_trial_${definition.key}_retry`,
+            victoryEventId:`abyss_spirit_trial_${definition.key}_victory`
+        })])
+    ));
+    globalThis.ABYSS_SPIRIT_TRIAL_MASTER = data.abyssSpiritTrials;
+
     const bossEvent = (conversation, boss, clearEvent, extraActions = []) => ({
         actions:[{type:'CONV',value:conversation}, ...extraActions, {type:'BOSS',value:boss,winEventId:clearEvent}], winActions:[]
     });
@@ -5556,6 +5682,44 @@ const STORY_MANAGER_DATA = {
         abyss_legacion_west_sentry: {actions:[{type:'CONV',value:'ABYSS_LEGACION_WEST_SENTRY'}],winActions:[]},
         abyss_legacion_east_observer: {actions:[{type:'CONV',value:'ABYSS_LEGACION_EAST_OBSERVER'}],winActions:[]}
     });
+
+    Object.entries(data.abyssSpiritTrials).forEach(([element, definition]) => {
+        const battleAction = { type:'ABYSS_SPIRIT_TRIAL_BATTLE', element };
+        data.events[definition.introEventId] = {
+            actions:[
+                {type:'CONV',value:definition.introScriptId},
+                {type:'CHOICE',text:`${definition.spiritName}の試練を受けますか？`,yes:[battleAction],no:[{type:'LOG',value:'今は試練を受けないことにした。'}]}
+            ],
+            winActions:[]
+        };
+        data.events[definition.retryEventId] = {
+            actions:[
+                {type:'CONV',value:definition.retryScriptId},
+                {type:'CHOICE',text:`${definition.spiritName}へ再挑戦しますか？`,yes:[battleAction],no:[{type:'LOG',value:'態勢を整えてから戻ることにした。'}]}
+            ],
+            winActions:[]
+        };
+        data.events[definition.victoryEventId] = {
+            actions:[
+                {type:'CONV',value:definition.victoryScriptId},
+                {type:'ABYSS_SPIRIT_TRIAL_COMPLETE',element},
+                {type:'EVENT',value:'abyss_spirit_trials_octaprism_grant'}
+            ],
+            winActions:[]
+        };
+    });
+    data.events.abyss_spirit_trials_octaprism_grant = {
+        actions:[{
+            type:'IF_FLAG',key:'abyssOctaprismGrantPending',
+            then:[
+                {type:'CONV',value:'ABYSS_SPIRIT_TRIAL_ALL_COMPLETE'},
+                {type:'IF_ITEM',id:701008,count:1,then:[],else:[{type:'ITEM',id:701008,count:1}]},
+                {type:'ABYSS_SPIRIT_TRIAL_GRANT_OCTAPRISM'}
+            ],
+            else:[]
+        }],
+        winActions:[]
+    };
 
 })();
 

@@ -36,7 +36,7 @@ const Battle = {
     
     // ステータス表示名マッピング
     statNames: {
-        atk: '攻撃力', def: '守備力', spd: '素早さ', mag: '魔力', mdef: '魔法防御',
+        atk: '攻撃力', def: '守備力', octaprismDef: '守備力', spd: '素早さ', mag: '魔力', mdef: '魔法防御',
         cri: '会心率', eva: '回避率',
         elmResUp: '全属性耐性', elmResDown: '全属性耐性',
         Poison: '毒', ToxicPoison: '猛毒', Shock: '感電', Fear: '怯え',
@@ -352,39 +352,84 @@ const Battle = {
 
     completeAbyssElementalTrial: (drops = []) => {
         const battleData = App.data?.battle || {};
-        const element = String(battleData.fixedTrialElement || battleData.abyssSpiritElement || '');
-        if (!element || !Number.isFinite(Number(battleData.fixedTrialRewardItemId))) return [];
+        const trial = battleData.elementalSpiritTrial && typeof battleData.elementalSpiritTrial === 'object'
+            ? battleData.elementalSpiritTrial
+            : {};
+        const element = String(trial.element || battleData.fixedTrialElement || battleData.abyssSpiritElement || '');
+        const rewardId = Number(trial.rewardItemId || battleData.fixedTrialRewardItemId || 0);
+        if (!element || !Number.isFinite(rewardId) || rewardId <= 0) return [];
 
-        const progress = App.ensureAbyssRegionProgress?.() || App.data.progress || {};
+        if (!App.data.items || typeof App.data.items !== 'object') App.data.items = {};
+        const progress = App.ensureAbyssSpiritTrialEvents?.() || App.ensureAbyssRegionProgress?.() || App.data.progress || {};
         progress.flags = progress.flags || {};
         progress.abyssSpiritBlessings = progress.abyssSpiritBlessings || {};
-        if (progress.abyssSpiritBlessings[element]) return [];
+        progress.abyssSpiritTrialEvents = progress.abyssSpiritTrialEvents || {};
+        const record = progress.abyssSpiritTrialEvents[element] || (progress.abyssSpiritTrialEvents[element] = {});
+        const battleId = battleData.battleId || null;
+        record.state = 'victory';
+        record.victoryBattleId = record.victoryBattleId || battleId;
+        record.lastVictoryAt = Date.now();
 
         const messages = [];
-        progress.abyssSpiritBlessings[element] = true;
-        const rewardId = Number(battleData.fixedTrialRewardItemId || 0);
-        if (rewardId > 0) {
-            App.data.items[rewardId] = Number(App.data.items[rewardId] || 0) + 1;
-            const item = (DB.ITEMS || []).find(entry => Number(entry.id) === rewardId);
-            drops.push({ name: item?.name || `${element}の結晶片`, isRare: true, type: 'boss', kind: 'item' });
+        let blessingGranted = false;
+        if (!progress.abyssSpiritBlessings[element]) {
+            progress.abyssSpiritBlessings[element] = true;
+            blessingGranted = true;
+            if (rewardId > 0) {
+                App.data.items[rewardId] = Number(App.data.items[rewardId] || 0) + 1;
+                const item = (DB.ITEMS || []).find(entry => Number(entry.id) === rewardId);
+                drops.push({ name: item?.name || `${element}の結晶片`, isRare: true, type: 'boss', kind: 'item' });
+            }
+            messages.push(`${element}の精霊に認められ、全員の${element}属性耐性が20%上昇した！`);
         }
-        messages.push(`${element}の精霊に認められ、全員の${element}属性耐性が20%上昇した！`);
 
-        const required = Array.isArray(battleData.fixedTrialRequiredElements)
-            ? battleData.fixedTrialRequiredElements.map(String)
-            : ['火', '水', '風', '雷', '光', '闇'];
-        if (required.length > 0 && required.every(key => progress.abyssSpiritBlessings[key])
-            && !progress.flags.abyssAllSpiritTrialsCleared) {
+        const required = Array.isArray(trial.requiredElements)
+            ? trial.requiredElements.map(String)
+            : (Array.isArray(battleData.fixedTrialRequiredElements)
+                ? battleData.fixedTrialRequiredElements.map(String)
+                : ['火', '水', '風', '雷', '光', '闇']);
+        if (required.length > 0 && required.every(key => progress.abyssSpiritBlessings[key])) {
             progress.flags.abyssAllSpiritTrialsCleared = true;
-            const completionId = Number(battleData.fixedTrialCompletionItemId || 0);
-            if (completionId > 0) {
-                App.data.items[completionId] = Number(App.data.items[completionId] || 0) + 1;
-                const item = (DB.ITEMS || []).find(entry => Number(entry.id) === completionId);
-                drops.push({ name: item?.name || 'オクタプリズマ', isRare: true, type: 'kai', kind: 'item' });
+            const completionId = Number(trial.completionItemId || battleData.fixedTrialCompletionItemId || 701008);
+            if (Number(App.data.items?.[completionId] || 0) <= 0) {
+                // 旧版で「演出済み」だけ残り、アイテム本体が欠けたセーブも授与イベントで救済する。
+                progress.flags.abyssOctaprismGrantPending = true;
             }
             messages.push('六属性すべての精霊に認められた。');
         }
+        battleData.elementalSpiritTrialOutcome = {
+            version: 1,
+            element,
+            rewardItemId: rewardId,
+            blessingGranted,
+            allCleared: required.length > 0 && required.every(key => progress.abyssSpiritBlessings[key]),
+            octaprismGrantPending: progress.flags.abyssOctaprismGrantPending === true,
+            victoryBattleId: battleId
+        };
         return messages;
+    },
+
+    recordAbyssElementalTrialLoss: () => {
+        const battleData = App.data?.battle || {};
+        const trial = battleData.elementalSpiritTrial && typeof battleData.elementalSpiritTrial === 'object'
+            ? battleData.elementalSpiritTrial
+            : {};
+        const element = String(trial.element || battleData.fixedTrialElement || battleData.abyssSpiritElement || '');
+        if (!element) return null;
+        const progress = App.ensureAbyssSpiritTrialEvents?.() || App.ensureAbyssRegionProgress?.() || App.data.progress || {};
+        progress.abyssSpiritTrialEvents = progress.abyssSpiritTrialEvents || {};
+        const record = progress.abyssSpiritTrialEvents[element] || (progress.abyssSpiritTrialEvents[element] = {});
+        record.state = 'lost';
+        record.lostOnce = true;
+        record.lastLossAt = Date.now();
+        record.lastLossBattleId = battleData.battleId || null;
+        battleData.elementalSpiritTrialOutcome = {
+            version: 1,
+            element,
+            lost: true,
+            lossBattleId: battleData.battleId || null
+        };
+        return battleData.elementalSpiritTrialOutcome;
     },
 
     getUnitBaseId: (unit) => Number(unit?.baseId || unit?.id || 0),
@@ -1299,6 +1344,238 @@ const Battle = {
         return true;
     },
 
+    getOctaprismSupportMaster: () => globalThis.ABYSS_REGION_CONTENT?.octaprismSupportMaster || null,
+
+    isAzelgaragBattle: () => {
+        if (Battle.isStoryBossTrainingBattle?.()) return false;
+        const master = Battle.getOctaprismSupportMaster();
+        const targetIds = Array.isArray(master?.azelgaragMonsterIds)
+            ? master.azelgaragMonsterIds.map(Number)
+            : Battle.abyssAzelgaragIds.slice();
+        const fixedIds = (Array.isArray(App.data?.battle?.fixedBossId)
+            ? App.data.battle.fixedBossId
+            : [App.data?.battle?.fixedBossId]).map(Number).filter(Number.isFinite);
+        if (fixedIds.some(id => targetIds.includes(id))) return true;
+        return (Battle.enemies || []).some(enemy => targetIds.includes(Battle.getUnitBaseId(enemy)));
+    },
+
+    initializeOctaprismBattleState: () => {
+        const battleData = App.data?.battle;
+        const master = Battle.getOctaprismSupportMaster();
+        if (!battleData || !master) return null;
+        const eligible = Battle.isAzelgaragBattle();
+        const itemId = Number(master.itemId || 701008);
+        const legacyActivated = battleData.abyssOctaprismUsed === true;
+        const previous = battleData.octaprismState && typeof battleData.octaprismState === 'object'
+            ? battleData.octaprismState
+            : null;
+        // 一度戦闘状態を作成した後は、現在の所持数を再参照しない。
+        // 再読込や形態移行で途中から有効化・無効化されないよう、開始時判定を正本にする。
+        const hasPossessionSnapshot = previous && typeof previous.possessedAtBattleStart === 'boolean';
+        const possessedAtBattleStart = hasPossessionSnapshot
+            ? previous.possessedAtBattleStart === true
+            : (legacyActivated || Number(App.data?.items?.[itemId] || 0) > 0);
+        const state = previous || {
+            version: 1,
+            startedAt: Date.now(),
+            supportHistory: [],
+            lastSpirit: null,
+            turnSupport: null
+        };
+        state.version = 1;
+        state.eligible = eligible;
+        state.possessedAtBattleStart = possessedAtBattleStart;
+        state.active = eligible && possessedAtBattleStart;
+        if (legacyActivated) state.legacyManualUseConverted = true;
+        if (!Array.isArray(state.supportHistory)) state.supportHistory = [];
+        battleData.octaprismState = state;
+        if (state.active) Battle.applyOctaprismHeroChaosResistance(state);
+        return state;
+    },
+
+    getOctaprismHero: () => {
+        const master = Battle.getOctaprismSupportMaster();
+        const heroId = Number(master?.heroCharacterId || 301);
+        return (Battle.party || []).find(member => Number(member?.originData?.charId || member?.charId || 0) === heroId) || null;
+    },
+
+    applyOctaprismHeroChaosResistance: (state = App.data?.battle?.octaprismState) => {
+        if (!state?.active) return false;
+        const master = Battle.getOctaprismSupportMaster();
+        const hero = Battle.getOctaprismHero();
+        if (!hero) return false;
+        if (!hero.elmRes || typeof hero.elmRes !== 'object') hero.elmRes = {};
+        const floor = Math.max(0, Number(master?.heroChaosResistanceFloor || 90));
+        const before = Number(hero.elmRes['混沌'] || 0);
+        hero.elmRes['混沌'] = Math.max(before, floor);
+        state.heroChaosResistance = {
+            characterId: Number(hero?.originData?.charId || hero?.charId || 0),
+            before,
+            after: Number(hero.elmRes['混沌'] || 0),
+            applied: before < floor
+        };
+        return before < floor;
+    },
+
+    getOctaprismCurrentPhaseId: () => {
+        const current = (Battle.enemies || []).find(enemy => Battle.isBattleAlive(enemy))
+            || (Battle.enemies || [])[0];
+        return Battle.getUnitBaseId(current) || Number(App.data?.battle?.currentPhaseMonsterId || 0);
+    },
+
+    mergeOctaprismStatusEffect: (target, category, key, value, turns, mode = 'replace') => {
+        if (!target) return null;
+        const status = Battle.ensureUnitBattleStatus(target);
+        const bucket = status[category] || (status[category] = {});
+        const current = bucket[key];
+        let mergedValue = Number(value);
+        if (current && Number.isFinite(Number(current.val))) {
+            if (mode === 'max') mergedValue = Math.max(Number(current.val), Number(value));
+            else if (mode === 'min') mergedValue = Math.min(Number(current.val), Number(value));
+        }
+        bucket[key] = {
+            val: mergedValue,
+            turns: Math.max(Number(current?.turns || 0), Math.max(1, Number(turns || 1))),
+            source: `octaprism_${String(key)}`
+        };
+        return bucket[key];
+    },
+
+    showOctaprismSpiritEffect: (support, targets) => {
+        const fx = (typeof window !== 'undefined') ? window.PolishBattleFX : null;
+        if (!fx || typeof fx.screenEffect !== 'function') return;
+        try {
+            fx.screenEffect(support.fx || 'light', {
+                big: true,
+                targets: Array.isArray(targets) ? targets.filter(Boolean) : []
+            });
+        } catch (error) {
+            console.warn('[Battle] octaprism spirit effect skipped:', error);
+        }
+    },
+
+    applyOctaprismSpiritSupport: (element, turnNumber) => {
+        const master = Battle.getOctaprismSupportMaster();
+        const support = master?.supports?.[element];
+        const state = App.data?.battle?.octaprismState;
+        if (!state?.active || !support) return null;
+        const livingParty = (Battle.party || []).filter(member => Battle.isBattleAlive(member));
+        const allParty = (Battle.party || []).filter(Boolean);
+        const livingEnemies = (Battle.enemies || []).filter(enemy => Battle.isBattleAlive(enemy));
+        let effected = 0;
+        let total = 0;
+        let targets = [];
+
+        if (support.type === 'hpRecovery') {
+            targets = livingParty;
+            targets.forEach(member => {
+                const maxHp = Math.max(1, Number(member.baseMaxHp || member.maxHp || member.hp || 1));
+                const amount = Math.max(Number(support.minimum || 1), Math.floor(maxHp * Number(support.maxHpRate || 0)));
+                const healed = Math.max(0, Math.min(amount, maxHp - Number(member.hp || 0)));
+                member.hp = Math.min(maxHp, Number(member.hp || 0) + healed);
+                total += healed;
+                if (healed > 0) effected += 1;
+            });
+            Battle.log(`<span style="color:#9fffe0;">風の大精霊の支援！ 味方全体のHPが${total}回復した！</span>`);
+        } else if (support.type === 'mpRecovery') {
+            targets = allParty;
+            targets.forEach(member => {
+                const maxMp = Math.max(0, Number(member.baseMaxMp || member.maxMp || member.mp || 0));
+                const amount = maxMp > 0
+                    ? Math.max(Number(support.minimum || 1), Math.floor(maxMp * Number(support.maxMpRate || 0)))
+                    : 0;
+                const recovered = Math.max(0, Math.min(amount, maxMp - Number(member.mp || 0)));
+                member.mp = Math.min(maxMp, Number(member.mp || 0) + recovered);
+                total += recovered;
+                if (recovered > 0) effected += 1;
+            });
+            Battle.log(`<span style="color:#8fd8ff;">水の大精霊の支援！ 味方全体のMPが${total}回復した！</span>`);
+        } else if (support.type === 'elementResistance') {
+            targets = livingParty;
+            targets.forEach(member => {
+                Battle.mergeOctaprismStatusEffect(member, 'buffs', 'elmResUp', Number(support.value || 50), support.turns || 1, 'max');
+                effected += 1;
+            });
+            Battle.log(`<span style="color:#fff3a8;">光の大精霊の支援！ このターン、味方全体の全属性耐性が${Number(support.value || 50)}%上昇！</span>`);
+        } else if (support.type === 'allStatDown') {
+            targets = livingEnemies;
+            targets.forEach(enemy => {
+                (support.stats || ['atk','def','spd','mag','mdef']).forEach(key => {
+                    Battle.mergeOctaprismStatusEffect(enemy, 'debuffs', key, Number(support.multiplier || 0.9), support.turns || 2, 'min');
+                });
+                effected += 1;
+            });
+            Battle.log('<span style="color:#d7a6ff;">闇の大精霊の支援！ 深淵王の全能力が低下した！</span>');
+        } else if (support.type === 'damage' || support.type === 'damageAndDefenseDown') {
+            targets = livingEnemies;
+            const phaseId = Battle.getOctaprismCurrentPhaseId();
+            const cap = Math.max(1, Number(support.damageCapByPhase?.[phaseId] || Number.MAX_SAFE_INTEGER));
+            targets.forEach(enemy => {
+                const maxHp = Math.max(1, Number(enemy.baseMaxHp || enemy.maxHp || enemy.hp || 1));
+                const damage = Math.max(1, Math.min(cap, Math.floor(maxHp * Number(support.maxHpRate || 0))));
+                const applied = Math.min(Math.max(0, Number(enemy.hp || 0)), damage);
+                enemy.hp = Math.max(0, Number(enemy.hp || 0) - applied);
+                total += applied;
+                if (applied > 0) effected += 1;
+                if (support.type === 'damageAndDefenseDown' && enemy.hp > 0) {
+                    Battle.mergeOctaprismStatusEffect(enemy, 'debuffs', 'octaprismDef', Number(support.defenseMultiplier || 0.85), support.turns || 1, 'min');
+                }
+                if (enemy.hp <= 0) Battle.markDefeated(enemy, false);
+            });
+            if (support.type === 'damageAndDefenseDown') {
+                Battle.log(`<span style="color:#fff07a;">雷の大精霊の支援！ 深淵王へ${total}ダメージを与え、守備力を低下させた！</span>`);
+            } else {
+                Battle.log(`<span style="color:#ff9b72;">炎の大精霊の支援！ 深淵王へ${total}ダメージ！</span>`);
+            }
+        }
+
+        Battle.showOctaprismSpiritEffect(support, targets);
+        Battle.renderEnemies?.();
+        Battle.renderPartyStatus?.();
+        const outcome = {
+            turnNumber: Math.max(1, Number(turnNumber || 1)),
+            element,
+            type: support.type,
+            effected,
+            total,
+            appliedAt: Date.now()
+        };
+        state.lastSpirit = element;
+        state.turnSupport = outcome;
+        state.supportHistory.push(outcome);
+        if (state.supportHistory.length > 24) state.supportHistory.splice(0, state.supportHistory.length - 24);
+        return outcome;
+    },
+
+    processOctaprismTurnStart: (options = {}) => {
+        const state = App.data?.battle?.octaprismState || Battle.initializeOctaprismBattleState();
+        const master = Battle.getOctaprismSupportMaster();
+        if (!state?.active || !master) return null;
+        const turnNumber = Math.max(1, Number(options.turnNumber || App.data?.battle?.turnNumber || 1));
+        // エラー復旧や形態移行再開で同じターン実行経路へ戻っても、支援を二重適用しない。
+        if (Number(state.turnSupport?.turnNumber || 0) === turnNumber) return state.turnSupport;
+        const rng = typeof options.rng === 'function' ? options.rng : Math.random;
+        const triggerRoll = Math.max(0, Math.min(0.999999999, Number(rng()) || 0));
+        if (triggerRoll >= Number(master.triggerRate || 0.5)) {
+            state.turnSupport = { turnNumber, triggered:false, triggerRoll, appliedAt:Date.now() };
+            return state.turnSupport;
+        }
+        let elements = Object.keys(master.supports || {});
+        if (master.avoidImmediateRepeat && state.lastSpirit && elements.length > 1) {
+            elements = elements.filter(element => element !== state.lastSpirit);
+        }
+        if (!elements.length) return null;
+        const selectRoll = Math.max(0, Math.min(0.999999999, Number(rng()) || 0));
+        const index = Math.min(elements.length - 1, Math.floor(selectRoll * elements.length));
+        const outcome = Battle.applyOctaprismSpiritSupport(elements[index], turnNumber);
+        if (outcome) {
+            outcome.triggered = true;
+            outcome.triggerRoll = triggerRoll;
+            outcome.selectRoll = selectRoll;
+        }
+        return outcome;
+    },
+
     applyOctaprismToEnemy: (enemy) => {
         if (!enemy || !Battle.abyssAzelgaragIds.includes(Battle.getUnitBaseId(enemy))) return;
         const status = Battle.ensureUnitBattleStatus(enemy);
@@ -1749,6 +2026,15 @@ const Battle = {
         }
 
         Battle.initializeLinkedBattleGroups();
+        const octaprismState = Battle.initializeOctaprismBattleState();
+        if (octaprismState?.active && !octaprismState.activationLogged) {
+            const resistanceApplied = octaprismState.heroChaosResistance?.applied === true;
+            Battle.log(resistanceApplied
+                ? '<span style="color:#ffe78f;">オクタプリズマが六精霊の道を開き、主人公の混沌属性耐性を90%まで高めた！</span>'
+                : '<span style="color:#ffe78f;">オクタプリズマが輝き、六精霊が戦いを見守っている。</span>');
+            octaprismState.activationLogged = true;
+            App.save();
+        }
 
         if (typeof AudioManager !== 'undefined') AudioManager.syncForScene?.('battle');
 
@@ -1893,6 +2179,11 @@ const Battle = {
         
         if (b.buffs[key]) val = Math.floor(val * b.buffs[key].val);
         if (b.debuffs[key]) val = Math.floor(val * b.debuffs[key].val);
+        // 雷精霊の守備低下は闇精霊の全能力低下と別枠にし、1ターン後に
+        // 雷分だけが切れて闇分が正しく残るようにする。
+        if (key === 'def' && b.debuffs.octaprismDef) {
+            val = Math.floor(val * b.debuffs.octaprismDef.val);
+        }
         return val;
     },
 	
@@ -4913,10 +5204,17 @@ findNextActor: () => {
             });
 
             // 入力キューをこのターン専用のローカル配列へ切り離す。
-            // 形態移行が発生した後にグローバルキューを初期化しても、
-            // 旧配列の反復処理が残らないよう、実行世代の検査と組み合わせる。
+            // 精霊支援で形態移行した場合、旧形態へ入力済みだった命令は持ち越さない。
             const queuedCommands = Battle.commandQueue.slice();
             Battle.commandQueue = [];
+
+            if (App.data?.battle) {
+                App.data.battle.turnNumber = Math.max(0, Number(App.data.battle.turnNumber || 0)) + 1;
+                Battle.processOctaprismTurnStart({ turnNumber:App.data.battle.turnNumber });
+                Battle.updateDeadState();
+                if (Battle.hasPendingPhaseTransition()) return false;
+                if (Battle.checkFinish()) return false;
+            }
 
             if (!Battle.isPreemptive) {
                 Battle.enemies.forEach(enemy => {
@@ -5326,6 +5624,8 @@ findNextActor: () => {
             if (stats.elmRes) member.elmRes = stats.elmRes;
             if (stats.resists) member.resists = stats.resists;
         });
+        // 編成オーラ再計算でelmResが通常値へ戻るため、対象戦では混沌耐性下限を再適用する。
+        Battle.applyOctaprismHeroChaosResistance?.();
     },
 
     markDefeated: (unit, message) => {
@@ -7836,6 +8136,9 @@ findNextActor: () => {
             pendingMonsterSkillEvolution,
             storyBossTraining: trainingJournalContext,
             specialBossOutcome: specialBossOutcome ? { ...specialBossOutcome, recruitResult: undefined } : null,
+            elementalSpiritTrialOutcome: App.data.battle.elementalSpiritTrialOutcome
+                ? { ...App.data.battle.elementalSpiritTrialOutcome }
+                : null,
             summary: {
                 gold: totalGold,
                 exp: totalExp,
@@ -8134,6 +8437,7 @@ findNextActor: () => {
             App.data.progress.guild.pendingPromotion = null;
         }
         if (!isTrainingBattle && App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
+        const elementalSpiritTrialOutcome = !isTrainingBattle ? Battle.recordAbyssElementalTrialLoss() : null;
 
         const eventId = App.data.battle?.eventId || null;
         const storyLossEventId = App.data.battle?.storyLossEventId || null;
@@ -8218,7 +8522,8 @@ findNextActor: () => {
             gameOver: Battle.resultEndIsGameOver,
             returnPoint,
             eventQueued: !!queuedLossEventId,
-            storyBossTraining: trainingJournalContext
+            storyBossTraining: trainingJournalContext,
+            elementalSpiritTrialOutcome: elementalSpiritTrialOutcome ? { ...elementalSpiritTrialOutcome } : null
         };
         App.save();
         if (typeof App.commitSaveTransaction === 'function') {

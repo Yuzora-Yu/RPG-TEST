@@ -129,6 +129,34 @@
         Object.freeze({ id:'floor301', label:'極限', strengthFloor:301, description:'深淵301階相当' })
     ]);
 
+    // 六属性プリズムの進行と、オクタプリズマによるアゼルガラグ戦支援の正式マスター。
+    // 戦闘ごとの場当たり計算を避け、会話・報酬・支援効果が同じ正本を参照する。
+    const SPIRIT_TRIAL_ELEMENTS = Object.freeze(['火', '水', '風', '雷', '光', '闇']);
+    const SPIRIT_TRIALS = Object.freeze({
+        火: Object.freeze({ key:'fire', bossId:502001, rewardItemId:701001 }),
+        水: Object.freeze({ key:'water', bossId:502002, rewardItemId:701002 }),
+        風: Object.freeze({ key:'wind', bossId:502003, rewardItemId:701003 }),
+        雷: Object.freeze({ key:'thunder', bossId:502004, rewardItemId:701004 }),
+        光: Object.freeze({ key:'light', bossId:502005, rewardItemId:701005 }),
+        闇: Object.freeze({ key:'dark', bossId:502006, rewardItemId:701006 })
+    });
+    const OCTAPRISM_SUPPORT_MASTER = Object.freeze({
+        itemId: 701008,
+        azelgaragMonsterIds: Object.freeze([302100, 302101]),
+        heroCharacterId: 301,
+        heroChaosResistanceFloor: 90,
+        triggerRate: 0.5,
+        avoidImmediateRepeat: true,
+        supports: Object.freeze({
+            火: Object.freeze({ type:'damage', fx:'fire', maxHpRate:0.04, damageCapByPhase:Object.freeze({ 302100:4000, 302101:6000 }) }),
+            水: Object.freeze({ type:'mpRecovery', fx:'ice', maxMpRate:0.15, minimum:1 }),
+            風: Object.freeze({ type:'hpRecovery', fx:'wind', maxHpRate:0.18, minimum:1 }),
+            雷: Object.freeze({ type:'damageAndDefenseDown', fx:'thunder', maxHpRate:0.03, damageCapByPhase:Object.freeze({ 302100:3200, 302101:4800 }), defenseMultiplier:0.85, turns:1 }),
+            光: Object.freeze({ type:'elementResistance', fx:'light', value:50, turns:1 }),
+            闇: Object.freeze({ type:'allStatDown', fx:'dark', multiplier:0.9, turns:2, stats:Object.freeze(['atk','def','spd','mag','mdef']) })
+        })
+    });
+
     globalThis.ABYSS_REGION_CONTENT = Object.freeze({
         regularMonsterIds: REGULAR_MONSTER_IDS,
         bossMonsterIds: BOSS_MONSTER_IDS,
@@ -143,6 +171,9 @@
         deepBossRoleTraitPools: DEEP_BOSS_ROLE_TRAIT_POOLS,
         deepBossStatusResistKeys: DEEP_BOSS_STATUS_RESIST_KEYS,
         storyBossTrainingMaster: STORY_BOSS_TRAINING_MASTER,
-        storyBossTrainingDifficulties: STORY_BOSS_TRAINING_DIFFICULTIES
+        storyBossTrainingDifficulties: STORY_BOSS_TRAINING_DIFFICULTIES,
+        spiritTrialElements: SPIRIT_TRIAL_ELEMENTS,
+        spiritTrials: SPIRIT_TRIALS,
+        octaprismSupportMaster: OCTAPRISM_SUPPORT_MASTER
     });
 })();

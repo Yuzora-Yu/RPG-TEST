@@ -998,7 +998,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v37.20260803-runtime',
+    fullDataCacheName: 'prisma-abyss-v38.20260803-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -4984,6 +4984,7 @@ const App = {
         if (typeof App.migrateAbyssBossKillCountsV1 === 'function') App.migrateAbyssBossKillCountsV1(App.data);
         if (typeof App.purgeRemovedLegacyAbyssBossReferences === 'function') App.purgeRemovedLegacyAbyssBossReferences(App.data);
         if (typeof App.reconcileCarmenaGateProgress === 'function') App.reconcileCarmenaGateProgress(App.data);
+        if (typeof App.ensureAbyssSpiritTrialEvents === 'function') App.ensureAbyssSpiritTrialEvents();
         if (typeof App.reconcileDerivedProgressFlags === 'function') App.reconcileDerivedProgressFlags();
     },
 
@@ -5293,6 +5294,94 @@ load: () => {
             App.data.progress.abyssSpiritBlessings = {};
         }
         return App.data.progress;
+    },
+
+    getAbyssSpiritTrialMaster: () => {
+        const storyMaster = globalThis.ABYSS_SPIRIT_TRIAL_MASTER;
+        if (storyMaster && typeof storyMaster === 'object') return storyMaster;
+        const contentMaster = globalThis.ABYSS_REGION_CONTENT?.spiritTrials || {};
+        return Object.fromEntries(Object.entries(contentMaster).map(([element, entry]) => {
+            const key = String(entry?.key || '').toLowerCase();
+            return [element, {
+                ...entry,
+                spiritName: `${element}の大精霊`,
+                introEventId: `abyss_spirit_trial_${key}_intro`,
+                retryEventId: `abyss_spirit_trial_${key}_retry`,
+                victoryEventId: `abyss_spirit_trial_${key}_victory`
+            }];
+        }));
+    },
+
+    ensureAbyssSpiritTrialEvents: (options = {}) => {
+        const progress = App.ensureAbyssRegionProgress();
+        progress.flags = progress.flags || {};
+        if (!progress.abyssSpiritTrialEvents || typeof progress.abyssSpiritTrialEvents !== 'object') {
+            progress.abyssSpiritTrialEvents = {};
+        }
+        const validStates = new Set(['untouched', 'challenged', 'lost', 'victory', 'completed']);
+        const master = App.getAbyssSpiritTrialMaster();
+        const elements = Object.keys(master).length
+            ? Object.keys(master)
+            : ['火', '水', '風', '雷', '光', '闇'];
+        elements.forEach(element => {
+            const source = progress.abyssSpiritTrialEvents[element];
+            const record = source && typeof source === 'object' ? source : {};
+            record.state = validStates.has(record.state) ? record.state : 'untouched';
+            record.attempts = Math.max(0, Math.floor(Number(record.attempts) || 0));
+            record.lostOnce = record.lostOnce === true;
+            // 旧セーブの加護は再戦を要求せず完了扱いへ移す。ただし、今回の勝利後会話待ち
+            // (victoryBattleIdあり) は victory のまま残し、会話と六個目報酬を再開できるようにする。
+            if (progress.abyssSpiritBlessings[element] && record.state !== 'victory' && record.state !== 'completed') {
+                record.state = 'completed';
+                record.completedAt = record.completedAt || Date.now();
+                record.legacyBlessingImported = true;
+            }
+            progress.abyssSpiritTrialEvents[element] = record;
+        });
+
+        const allCleared = elements.length > 0 && elements.every(element => progress.abyssSpiritBlessings[element]);
+        const octaprismItemId = Number(globalThis.ABYSS_REGION_CONTENT?.octaprismItemId || 701008);
+        const ownsOctaprism = Number(App.data?.items?.[octaprismItemId] || 0) > 0;
+        if (allCleared) {
+            progress.flags.abyssAllSpiritTrialsCleared = true;
+            if (ownsOctaprism) {
+                progress.flags.abyssOctaprismGrantPending = false;
+                progress.flags.abyssOctaprismGrantEventSeen = true;
+                elements.forEach(element => {
+                    const record = progress.abyssSpiritTrialEvents[element];
+                    if (record.state !== 'victory') record.state = 'completed';
+                });
+            } else {
+                // 演出済みフラグだけが残ってアイテムを欠く旧セーブも、授与イベントへ戻して救済する。
+                progress.flags.abyssOctaprismGrantPending = true;
+            }
+        }
+        if (options.save === true && typeof App.save === 'function') App.save();
+        return progress;
+    },
+
+    resolveAbyssSpiritTrialEventId: (element) => {
+        const key = String(element || '');
+        const master = App.getAbyssSpiritTrialMaster();
+        const definition = master[key];
+        if (!definition) return null;
+        const progress = App.ensureAbyssSpiritTrialEvents();
+        const octaprismItemId = Number(globalThis.ABYSS_REGION_CONTENT?.octaprismItemId || 701008);
+        const elements = Object.keys(master);
+        const allCleared = elements.length > 0 && elements.every(name => progress.abyssSpiritBlessings[name]);
+        const record = progress.abyssSpiritTrialEvents[key];
+        // 六個目の勝利後会話待ちは、共通授与イベントより先に再開する。
+        if (progress.abyssSpiritBlessings[key] && record?.state === 'victory') {
+            return definition.victoryEventId;
+        }
+        if (allCleared && (progress.flags?.abyssOctaprismGrantPending || Number(App.data?.items?.[octaprismItemId] || 0) <= 0)) {
+            return 'abyss_spirit_trials_octaprism_grant';
+        }
+        if (progress.abyssSpiritBlessings[key]) {
+            return null;
+        }
+        if (record?.lostOnce || record?.state === 'lost' || record?.state === 'challenged') return definition.retryEventId;
+        return definition.introEventId;
     },
 
     getEnvironmentalElementModifiers: (char) => {
@@ -9862,35 +9951,18 @@ const Field = {
         }
 
         if (action.type === 'elementalTrialPrism') {
-            const progress = App.ensureAbyssRegionProgress();
-            const elements = Array.isArray(action.elements) ? action.elements : [];
-            const nextElement = elements.find(element => !progress.abyssSpiritBlessings[element]);
-            if (!nextElement) {
-                App.log(action.completedText || '六つのプリズムは、認めた者へ穏やかな光を返している。');
+            const element = String(action.element || (Array.isArray(action.elements) ? action.elements[0] : '') || '');
+            const eventId = App.resolveAbyssSpiritTrialEventId(element);
+            if (eventId && typeof StoryManager !== 'undefined') {
+                StoryManager.executeEvent(eventId);
                 return;
             }
-            const bossId = Number(action.bossByElement?.[nextElement]);
-            if (!bossId) {
+            const progress = App.ensureAbyssSpiritTrialEvents();
+            if (progress.abyssSpiritBlessings?.[element]) {
+                App.log(action.completedText || `${element}のプリズムは、認めた者へ穏やかな光を返している。`);
+            } else {
                 App.log('プリズムは沈黙している。');
-                return;
             }
-            App.data.battle = {
-                active: false,
-                isBossBattle: true,
-                isSpecialBoss: false,
-                isEstark: false,
-                fixedBossId: bossId,
-                abyssSpiritElement: nextElement,
-                fixedTrialElement: nextElement,
-                fixedTrialRewardItemId: Number(action.rewardItemByElement?.[nextElement] || 0),
-                fixedTrialCompletionItemId: Number(action.completionItemId || 0),
-                fixedTrialRequiredElements: (Array.isArray(action.requiredElements) ? action.requiredElements : elements).slice(),
-                bossStatMultiplier: Number(action.bossStatMultiplier || 1),
-                suppressFixedBossDefeat: true,
-                enemies: []
-            };
-            App.save();
-            App.changeScene('battle');
             return;
         }
 
