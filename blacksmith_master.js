@@ -1250,12 +1250,14 @@
 ];
 
     const MASTER = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         plusMultipliers: Object.freeze({ 0: 1.0, 1: 1.1, 2: 1.3, 3: 1.5 }),
         scalableStatKeys: Object.freeze(['atk', 'def', 'mag', 'mdef', 'spd', 'hp', 'mp']),
         materialUpgradeRecipes: Object.freeze(MATERIAL_UPGRADE_RECIPES.map(record => Object.freeze(record))),
         divineAnvilItemId: 599998,
-        divineAnvilTargetRankDelta: 10
+        divineAnvilTargetRankDelta: 10,
+        divineAnvilPreserveEquipmentIdentity: true,
+        divineAnvilPreserveNonScalableStats: true
     };
 
     window.PRISMA_BLACKSMITH_MASTER = Object.freeze(MASTER);

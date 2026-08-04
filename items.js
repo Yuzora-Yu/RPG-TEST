@@ -3682,7 +3682,7 @@ window.ITEMS_DATA.push(
     "price": 0,
     "sellPrice": 0,
     "icon": "assets/ui/menu-icons/item-material.png",
-    "desc": "任意の通常装備を、同じ部位・武器種の約Rank+10に相当する次段階の正式装備へ変換する。一度の使用で1個消費する。"
+    "desc": "任意の通常装備の名称・固有特性・固有スキル・ランダムオプションと特性を保ったまま、Rankを約10上げ、装備固有の基礎能力を高める。一度の使用で1個消費する。"
 },
 {
     "consumable": true,

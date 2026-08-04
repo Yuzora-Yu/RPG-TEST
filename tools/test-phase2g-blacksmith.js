@@ -150,34 +150,72 @@ function load(context, file, expose = '') {
   for (const req of recipe.requirementsByTargetPlus['2']) assert.strictEqual(App.data.items[req.itemId], req.count, 'Material was not rolled back.');
 
   const equipMasters = [
-    { eid:9101, name:'鉄の剣', type:'武器', baseName:'剣', rank:10, data:{ atk:100 }, grantSkills:[11] },
-    { eid:9102, name:'鋼の剣', type:'武器', baseName:'剣', rank:20, data:{ atk:180 }, grantSkills:[22] },
+    { eid:9101, name:'竜狩りの剣', type:'武器', baseName:'剣', rank:10, data:{ atk:100, mag:10, hit:7, spd:-2 }, possibleOpts:['cri'], traits:[{ id:36, level:5 }], grantSkills:[11] },
+    { eid:9102, name:'鋼の剣', type:'武器', baseName:'剣', rank:20, data:{ atk:180, hit:7 }, possibleOpts:['atk'], traits:[], grantSkills:[22] },
+    { eid:9103, name:'王者の剣', type:'武器', baseName:'剣', rank:30, data:{ atk:260, hit:7 }, possibleOpts:['finDmg'], traits:[], grantSkills:[33] },
     { eid:9199, name:'特殊剣', type:'武器', baseName:'剣', rank:21, data:{ atk:999 }, specialEquip:true }
   ];
   context.window.EQUIP_MASTER = equipMasters;
   context.EQUIP_MASTER = equipMasters;
   const anvilItem = { id:master.divineAnvilItemId, name:'神鉄の鍛冶台' };
   const anvilEquip = {
-    id:'anvil-uid', eid:9101, masterEid:9101, name:'鉄の剣+2', type:'武器', baseName:'剣', rank:10, plus:2,
-    data:{ atk:130 }, val:2000, opts:[{ key:'cri', val:3 }], traits:[{ id:7, level:3 }], locked:true,
-    grantSkills:[11], fixedTraitIds:[99], customMetadata:{ retained:true }
+    id:'anvil-uid', eid:9101, masterEid:9101, name:'竜狩りの剣+2', type:'武器', baseName:'剣', rank:10, plus:2,
+    data:{ atk:130, mag:13, hit:7, spd:-2, elmAtk:{ 炎:10 } }, val:2000,
+    opts:[{ key:'cri', val:3 }], traits:[{ id:36, level:5 }, { id:7, level:3 }], locked:true,
+    possibleOpts:['cri'], grantSkills:[11], fixedTraitIds:[99], customMetadata:{ retained:true }
   };
-  App.data = { inventory:[anvilEquip], characters:[], items:{ [anvilItem.id]:1 }, stats:{}, system:{} };
+  App.data = { inventory:[anvilEquip], characters:[], items:{ [anvilItem.id]:2 }, stats:{}, system:{} };
   App.save = () => true;
   ItemMenu.confirmDivineAnvilUse(anvilItem, anvilEquip);
   await context.__lastConfirmPromise;
   const transformed = App.data.inventory[0];
   assert.strictEqual(transformed.id, 'anvil-uid');
-  assert.strictEqual(transformed.eid, 9102);
+  assert.strictEqual(transformed.eid, 9101, 'Divine anvil must preserve the original equipment master identity.');
+  assert.strictEqual(transformed.masterEid, 9101);
   assert.strictEqual(transformed.rank, 20);
-  assert.strictEqual(transformed.name, '鋼の剣+2');
+  assert.strictEqual(transformed.name, '竜狩りの剣+2');
   assert.deepStrictEqual(transformed.opts, [{ key:'cri', val:3 }]);
-  assert.deepStrictEqual(transformed.traits, [{ id:7, level:3 }]);
+  assert.deepStrictEqual(transformed.traits, [{ id:36, level:5 }, { id:7, level:3 }]);
   assert.strictEqual(transformed.locked, true);
   assert.deepStrictEqual(transformed.fixedTraitIds, [99]);
   assert.deepStrictEqual(transformed.customMetadata, { retained:true });
-  assert.deepStrictEqual(transformed.grantSkills, [22], 'Formal target fixed skill was not applied cleanly.');
+  assert.deepStrictEqual(transformed.possibleOpts, ['cri'], 'Original random option candidates must be preserved.');
+  assert.deepStrictEqual(transformed.grantSkills, [11], 'Original fixed skills must be preserved.');
+  assert.strictEqual(transformed.data.atk, 234, 'Matching scalable stats must grow with the same-family Rank reference.');
+  assert.strictEqual(transformed.data.mag, 21, 'Unique scalable stats missing from the target reference must use the family growth scale.');
+  assert.strictEqual(transformed.data.hit, 7, 'Non-scalable fixed stats must be preserved.');
+  assert.strictEqual(transformed.data.spd, -2, 'Negative fixed drawbacks must not be worsened.');
+  assert.deepStrictEqual(transformed.data.elmAtk, { 炎:10 }, 'Nested elemental identity must be preserved.');
+  assert.strictEqual(Number(App.data.items[anvilItem.id] || 0), 1);
+
+  const secondPreview = ItemMenu.buildDivineAnvilPreview(transformed);
+  assert.strictEqual(secondPreview.ok, true);
+  assert.strictEqual(secondPreview.currentRank, 20, 'Repeated use must continue from the strengthened instance Rank, not the original master Rank.');
+  assert.strictEqual(secondPreview.target.rank, 30);
+  ItemMenu.confirmDivineAnvilUse(anvilItem, transformed);
+  await context.__lastConfirmPromise;
+  assert.strictEqual(transformed.rank, 30);
+  assert.strictEqual(transformed.eid, 9101);
+  assert.strictEqual(transformed.name, '竜狩りの剣+2');
+  assert.deepStrictEqual(transformed.traits, [{ id:36, level:5 }, { id:7, level:3 }]);
+  assert.deepStrictEqual(transformed.grantSkills, [11]);
+  assert.strictEqual(transformed.data.atk, 338, 'Repeated Rank growth must follow the next formal same-family reference.');
   assert.strictEqual(Number(App.data.items[anvilItem.id] || 0), 0);
+
+  const anvilRollback = {
+    id:'anvil-rollback', eid:9101, masterEid:9101, name:'竜狩りの剣+2', type:'武器', baseName:'剣', rank:10, plus:2,
+    data:{ atk:130, mag:13, hit:7, spd:-2 }, val:2000, opts:[{ key:'cri', val:7 }],
+    traits:[{ id:36, level:5 }, { id:8, level:1 }], possibleOpts:['cri'], grantSkills:[11], locked:true
+  };
+  App.data = { inventory:[anvilRollback], characters:[], items:{ [anvilItem.id]:1 }, stats:{}, system:{} };
+  App.save = () => false;
+  ItemMenu.confirmDivineAnvilUse(anvilItem, anvilRollback);
+  await context.__lastConfirmPromise;
+  assert.strictEqual(App.data.inventory[0].rank, 10, 'Divine anvil Rank was not rolled back after save failure.');
+  assert.strictEqual(App.data.inventory[0].name, '竜狩りの剣+2');
+  assert.strictEqual(App.data.inventory[0].data.atk, 130);
+  assert.deepStrictEqual(App.data.inventory[0].traits, [{ id:36, level:5 }, { id:8, level:1 }]);
+  assert.strictEqual(Number(App.data.items[anvilItem.id] || 0), 1, 'Divine anvil item was not restored after save failure.');
 
   const specialPreview = ItemMenu.buildDivineAnvilPreview({ ...anvilEquip, eid:9199, masterEid:9199, name:'特殊剣', rank:21 });
   assert.strictEqual(specialPreview.ok, false, 'Special equipment should not be eligible.');
