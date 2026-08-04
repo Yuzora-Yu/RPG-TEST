@@ -175,6 +175,21 @@ const Battle = {
         return Math.random() * 100 < rate;
     },
 
+    // ランダム迷宮の報酬補正は、戦闘開始時に保存された戦闘データを正本とする。
+    // 未設定の通常戦・旧セーブでは従来値へ安全にフォールバックする。
+    getBattleRewardRateModifiers: (battleData = App.data?.battle) => {
+        const rareDropMultiplier = Number(battleData?.rareDropMultiplier);
+        const equipPlus3BonusPct = Number(battleData?.equipPlus3BonusPct);
+        return {
+            rareDropMultiplier: Number.isFinite(rareDropMultiplier)
+                ? Math.max(0, rareDropMultiplier)
+                : 1,
+            equipPlus3BonusPct: Number.isFinite(equipPlus3BonusPct)
+                ? Math.max(0, equipPlus3BonusPct)
+                : 0
+        };
+    },
+
     getEndlessBossWedgeDropRule: (data = App.data) => {
         const master = globalThis.ABYSS_REGION_CONTENT?.randomDungeonPhase2IMaster?.endlessBossWedge || {};
         const battle = data?.battle || {};
@@ -8031,6 +8046,8 @@ findNextActor: () => {
             targetFloor:Math.max(1, Number(randomHunterContext.targetFloor || 1)),
             enemyCount:Math.max(1, Number(randomHunterContext.enemyCount || 3))
         } : null;
+        const battleRewardRateModifiers = Battle.getBattleRewardRateModifiers(App.data?.battle);
+        const rareDropMultiplier = battleRewardRateModifiers.rareDropMultiplier;
 		
 		// 特性「56:解体」のパーティ合計値算出
 		let bonusNormal = 0, bonusRare = 0, bonusPlus3 = 0;
@@ -8042,6 +8059,8 @@ findNextActor: () => {
 				bonusPlus3  += PassiveSkill.getSumValue(charData, 'equip_plus3_pct');
 			}
 		});
+        // 特殊階層の「+3抽選加算」は、装備特性による加算と同じ百分率ポイントとして扱う。
+        bonusPlus3 += battleRewardRateModifiers.equipPlus3BonusPct;
 
 		// オプション再抽選サブ関数 (内部用)
 		const createEquipWithMinRarity = (floor, plus, minRarityList, forcePart = null) => {

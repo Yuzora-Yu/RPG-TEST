@@ -1,0 +1,10 @@
+確認項目,現在の処理,判定,対応
+敵全滅判定,"Battle.checkFinishからscheduleBattleFinish('win')",正常,変更なし
+勝利結果開始,"Battle.winが結果ジャーナルpreparingを保存後に報酬計算",正常,変更なし
+Phase2Iレア倍率,"戦闘データrareDropMultiplierへ保存",正常,勝利処理から正式取得
+レアドロップ判定,"未定義rareDropMultiplierを参照",不具合,ローカル定義を追加
+スキル書判定,"未定義rareDropMultiplierを参照",不具合,同じローカル定義を利用
+Phase2I +3補正,"equipPlus3BonusPctを戦闘データへ保存するが未使用",接続漏れ,bonusPlus3へ加算
+結果例外時,"戦闘結果を巻き戻して保存済み戦闘をforceManualで再構築",安全処理,変更なし
+敵全復活,"結果例外による戦闘スナップショット再構築の見かけ",派生症状,根本例外の修正で解消
+オート解除,"結果例外時の安全な手動退避",派生症状,根本例外の修正で解消

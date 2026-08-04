@@ -1,0 +1,16 @@
+PRISMA ABYSS Phase2J battle result hotfix
+
+Primary application:
+- tools/apply-phase2j-battle-result-hotfix.js
+
+Regression test:
+- tools/test-phase2j-battle-result-hotfix.js
+
+Manual patch:
+- patches/PRISMA_ABYSS_phase2j_battle_result_hotfix_20260804.patch
+
+Documentation:
+- APPLY_PHASE2J_HOTFIX.md
+- docs/IMPLEMENTATION_PHASE2J_BATTLE_RESULT_HOTFIX_20260804.md
+- docs/BATTLE_RESULT_FAILURE_AUDIT_20260804.csv
+- PRISMA_ABYSS_phase2k_handoff_prompt_20260804.txt
