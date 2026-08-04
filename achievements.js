@@ -53,24 +53,24 @@ const ACHIEVEMENTS_DATA = [
     // --- 3. 深淵到達階層 ---
     // 既存ID 301～305 は旧セーブの解除状態と報酬受取状態を壊さないよう、
     // 旧階層と同じ地点を指す条件として維持する。
-    { id: 301, type: "FLAG", flag: "abyssCarmenaGateCleared", goal: 1, category: "探索", title: "最果ての門", desc: "カルメナの北門を解放", rewards: [{ type: 'GEM', val: 100 }] },
-    { id: 302, type: "FLAG", flag: "abyssFirstBarrierCleared", goal: 1, category: "探索", title: "第一層の解放者", desc: "深淵都市ビスタを覆う結界を解除", rewards: [{ type: 'GEM', val: 500 }] },
-    { id: 303, type: "FLAG", flag: "abyssSecondBarrierCleared", goal: 1, category: "探索", title: "第二層の解放者", desc: "混沌魔城レガシオンを覆う結界を解除", rewards: [{ type: 'GEM', val: 1000 }] },
-    { id: 304, type: "RANDOM_FLOOR", goal: 1, category: "探索", title: "深淵を越えし者", desc: "深淵の亀裂 1階に到達", rewards: [
+    { id: 301, type: "FLAG", flag: "abyssCarmenaGateCleared", goal: 1, category: "探索", secret: true, title: "最果ての門", desc: "カルメナの北門を解放", rewards: [{ type: 'GEM', val: 100 }] },
+    { id: 302, type: "FLAG", flag: "abyssFirstBarrierCleared", goal: 1, category: "探索", secret: true, title: "第一層の解放者", desc: "深淵都市ビスタを覆う結界を解除", rewards: [{ type: 'GEM', val: 500 }] },
+    { id: 303, type: "FLAG", flag: "abyssSecondBarrierCleared", goal: 1, category: "探索", secret: true, title: "第二層の解放者", desc: "混沌魔城レガシオンを覆う結界を解除", rewards: [{ type: 'GEM', val: 1000 }] },
+    { id: 304, type: "RANDOM_FLOOR", goal: 1, category: "探索", secret: true, title: "深淵を越えし者", desc: "深淵の亀裂 1階に到達", rewards: [
         { type: 'GEM', val: 3000 },
         { type: 'ITEM', id: 107, val: 1 }
     ] },
-    { id: 305, type: "RANDOM_FLOOR", goal: 101, category: "探索", title: "真装備の探索者", desc: "深淵の亀裂 101階に到達", rewards: [
+    { id: 305, type: "RANDOM_FLOOR", goal: 101, category: "探索", secret: true, title: "真装備の探索者", desc: "深淵の亀裂 101階に到達", rewards: [
         { type: 'GEM', val: 5000 },
         { type: 'ITEM', id: 106, val: 10 }
     ] },
 
     // --- 4. ストーリー進行度 ---
-    { id: 401, type: "STORY", goal: 2, category: "物語", secret: true, title: "旅立ちの決意", desc: "ストーリー進行度 2に到達", rewards: [
+    { id: 401, type: "STORY", goal: 4, category: "物語", secret: true, title: "プリズムの守護者", desc: "プリズムを狙われていることを知った者", rewards: [
         { type: 'GEM', val: 3000 },
         { type: 'GOLD', val: 10000 }
     ] },
-    { id: 402, type: "STORY", goal: 5, category: "物語", secret: true, title: "世界の真実", desc: "ストーリー進行度 5に到達", rewards: [
+    { id: 402, type: "STORY", goal: 9, category: "物語", secret: true, title: "世界の真実", desc: "魔王を倒し世界の真実を知った者", rewards: [
         { type: 'GEM', val: 3000 },
         { type: 'GOLD', val: 10000 }
     ] },
@@ -93,23 +93,23 @@ const ACHIEVEMENTS_DATA = [
     { id: 703, type: "GEM", goal: 10000, category: "収集", title: "輝石を集めし者", desc: "累計獲得GEM 10,000突破", rewards: [{ type: 'GOLD', val: 100000 }] },
 
     // --- 8. 特殊ボス討伐 ---
-    { id: 801, type: "BOSS", targetIds: [902000, 2000], goal: 1, category: "戦闘", title: "災厄への挑戦", desc: "災厄の王????を1体討伐", rewards: [{ type: 'GEM', val: 3000 }] },
-    { id: 802, type: "BOSS", targetIds: [902000, 2000], goal: 10, category: "戦闘", title: "災厄を撃ち払う者", desc: "災厄の王????を10体討伐", rewards: [{ type: 'GEM', val: 3000 }] },
-    { id: 803, type: "BOSS", targetIds: [902000, 2000], goal: 50, category: "戦闘", title: "災厄の征服者", desc: "災厄の王????を50体討伐", rewards: [{ type: 'EQUIP', eid: 801, plus: 3 }] },
+    { id: 801, type: "BOSS", targetIds: [902000, 2000], goal: 1, category: "戦闘", secret: true, title: "災厄への挑戦", desc: "ギルガメッシュを1体討伐", rewards: [{ type: 'GEM', val: 3000 }] },
+    { id: 802, type: "BOSS", targetIds: [902000, 2000], goal: 10, category: "戦闘", secret: true, title: "災厄を撃ち払う者", desc: "ギルガメッシュを10体討伐", rewards: [{ type: 'GEM', val: 3000 }] },
+    { id: 803, type: "BOSS", targetIds: [902000, 2000], goal: 50, category: "戦闘", secret: true, title: "災厄の征服者", desc: "ギルガメッシュを50体討伐", rewards: [{ type: 'EQUIP', eid: 801, plus: 3 }] },
 
     // --- 9. 仲間・パーティ ---
-    { id: 901, type: "ALLY", goal: 5, category: "仲間", title: "小さな仲間たち", desc: "主人公以外の仲間を5人集める", rewards: [{ type: 'GEM', val: 300 }] },
-    { id: 902, type: "ALLY", goal: 10, category: "仲間", title: "冒険者ギルド", desc: "主人公以外の仲間を10人集める", rewards: [{ type: 'GEM', val: 900 }] },
-    { id: 903, type: "ALLY", goal: 25, category: "仲間", title: "英雄団", desc: "主人公以外の仲間を25人集める", rewards: [
+    { id: 901, type: "ALLY", goal: 5, category: "仲間", title: "小さな仲間たち", desc: "仲間を5人集める", rewards: [{ type: 'GEM', val: 300 }] },
+    { id: 902, type: "ALLY", goal: 10, category: "仲間", title: "冒険者ギルド", desc: "仲間を10人集める", rewards: [{ type: 'GEM', val: 900 }] },
+    { id: 903, type: "ALLY", goal: 25, category: "仲間", title: "英雄団", desc: "仲間を25人集める", rewards: [
         { type: 'GEM', val: 1500 },
         { type: 'ITEM', id: 6, val: 5 }
     ] },
     { id: 904, type: "PARTY", goal: 4, category: "仲間", title: "四人の誓い", desc: "4人パーティを編成する", rewards: [{ type: 'GEM', val: 500 }] },
-    { id: 905, type: "RARITY_ALLY", rarity: "EX", goal: 1, category: "仲間", title: "神話との邂逅", desc: "EXレアリティの仲間を1人以上所持", rewards: [{ type: 'GEM', val: 1000 }] },
+    { id: 905, type: "RARITY_ALLY", rarity: "EX", goal: 1, category: "仲間", secret: true, title: "神話との邂逅", desc: "EXレアリティの仲間を1人以上所持", rewards: [{ type: 'GEM', val: 1000 }] },
 
     // --- 10. ダンジョン挑戦・宝箱・メダル ---
-    { id: 1001, type: "RUN", goal: 50, category: "探索", title: "探索者", desc: "ダンジョンに50回挑戦", rewards: [{ type: 'GEM', val: 1000 }] },
-    { id: 1002, type: "RUN", goal: 200, category: "探索", title: "深層常連", desc: "ダンジョンに200回挑戦", rewards: [{ type: 'GEM', val: 1000 }] },
+    { id: 1001, type: "RUN", goal: 50, category: "探索", title: "探索者", secret: true, desc: "深淵の魔窟に50回挑戦", rewards: [{ type: 'GEM', val: 1000 }] },
+    { id: 1002, type: "RUN", goal: 200, category: "探索", title: "深層常連", secret: true, desc: "深淵の魔窟に200回挑戦", rewards: [{ type: 'GEM', val: 1000 }] },
     { id: 1003, type: "CHEST", goal: 50, category: "探索", title: "宝箱ハンター", desc: "宝箱を50個開ける", rewards: [{ type: 'GEM', val: 500 }] },
     { id: 1004, type: "CHEST", goal: 200, category: "探索", title: "開封の達人", desc: "宝箱を200個開ける", rewards: [{ type: 'ITEM', id: 106, val: 5 }] },
 
@@ -130,12 +130,12 @@ const ACHIEVEMENTS_DATA = [
     { id: 1201, type: "EQUIP_EX", goal: 1, category: "装備", title: "極意の発現", desc: "EXオプション付き装備を1個入手", rewards: [{ type: 'GEM', val: 500 }] },
     { id: 1202, type: "EQUIP_SYNERGY", goal: 3, category: "装備", title: "共鳴", desc: "シナジー装備を3個所持", rewards: [{ type: 'GEM', val: 1000 }] },
     { id: 1203, type: "EQUIP_PLUS", goal: 3, category: "装備", title: "鍛え抜かれた逸品", desc: "+3装備を1個所持", rewards: [{ type: 'GEM', val: 300 }] },
-    { id: 1204, type: "EQUIP_TRUE", goal: 1, category: "装備", title: "真なる武具", desc: "真・装備を1個入手", rewards: [{ type: 'GEM', val: 1000 }] },
+    { id: 1204, type: "EQUIP_TRUE", goal: 1, category: "装備", secret: true, title: "真なる武具", desc: "真・装備を1個入手", rewards: [{ type: 'GEM', val: 1000 }] },
 
     // --- 12. 転生・リミットブレイク・スキルツリー ---
-    { id: 1301, type: "REBIRTH", goal: 1, category: "育成", title: "新たなる始まり", desc: "主人公が転生を1回行う", rewards: [{ type: 'GEM', val: 1000 }] },
-    { id: 1302, type: "REBIRTH", goal: 5, category: "育成", title: "輪廻の探究者", desc: "主人公が転生を5回行う", rewards: [{ type: 'GEM', val: 2000 }] },
-    { id: 1303, type: "REBIRTH", goal: 20, category: "育成", title: "永劫回帰", desc: "主人公が転生を20回行う", rewards: [
+    { id: 1301, type: "REBIRTH", goal: 1, category: "育成", secret: true, title: "新たなる始まり", desc: "主人公が転生を1回行う", rewards: [{ type: 'GEM', val: 1000 }] },
+    { id: 1302, type: "REBIRTH", goal: 5, category: "育成", secret: true, title: "輪廻の探究者", desc: "主人公が転生を5回行う", rewards: [{ type: 'GEM', val: 2000 }] },
+    { id: 1303, type: "REBIRTH", goal: 20, category: "育成", secret: true, title: "永劫回帰", desc: "主人公が転生を20回行う", rewards: [
         { type: 'GEM', val: 3000 },
         { type: 'ITEM', id: 107, val: 1 }
     ] },
@@ -150,10 +150,10 @@ const ACHIEVEMENTS_DATA = [
     { id: 1404, type: "WIPEOUT", goal: 10, category: "戦闘", title: "不屈の冒険者", desc: "全滅を10回経験する", rewards: [{ type: 'GEM', val: 1000 }] },
 
     // --- 14. 固有MAP発見 ---
-    { id: 1501, type: "MAP_DISCOVER", goal: 2, category: "探索", title: "旅の道標", desc: "固有MAPを2か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 1 }] },
-    { id: 1502, type: "MAP_DISCOVER", goal: 4, category: "探索", title: "空路の開拓者", desc: "固有MAPを4か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 2 }] },
-    { id: 1503, type: "MAP_DISCOVER", goal: 7, category: "探索", title: "世界を巡る者", desc: "固有MAPを7か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 3 }] },
-    { id: 1504, type: "MAP_DISCOVER", goal: 10, category: "探索", title: "地平の記録者", desc: "固有MAPを10か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 5 }] },
+    { id: 1501, type: "MAP_DISCOVER", goal: 3, category: "探索", title: "旅の道標", desc: "スカイプリズムに3か所登録する", rewards: [{ type: 'ITEM', id: 110, val: 1 }] },
+    { id: 1502, type: "MAP_DISCOVER", goal: 7, category: "探索", title: "空路の開拓者", desc: "スカイプリズムに7か所登録する", rewards: [{ type: 'ITEM', id: 110, val: 2 }] },
+    { id: 1503, type: "MAP_DISCOVER", goal: 10, category: "探索", title: "世界を巡る者", desc: "スカイプリズムに10か所登録する", rewards: [{ type: 'ITEM', id: 110, val: 3 }] },
+    { id: 1504, type: "MAP_DISCOVER", goal: 20, category: "探索", title: "地平の記録者", desc: "スカイプリズムに20か所登録する", rewards: [{ type: 'ITEM', id: 110, val: 5 }] },
 
     // --- 15. クエスト / ギルド ---
     { id: 1601, type: "QUEST_CLEAR", goal: 1, category: "依頼", title: "最初の依頼", desc: "通常クエストを1件クリア", rewards: [{ type:'GEM', val:100 }] },
@@ -182,13 +182,13 @@ const ACHIEVEMENTS_DATA = [
     { id: 2101, type: "BATTLE_COUNT", goal: 100, category: "戦闘", title: "百戦の経験", desc: "戦闘に100回勝利", rewards: [{ type:'GEM', val:500 }] },
     { id: 2102, type: "BATTLE_COUNT", goal: 1000, category: "戦闘", title: "千戦の覇者", desc: "戦闘に1,000回勝利", rewards: [{ type:'GEM', val:2000 }] },
     { id: 2201, type: "FLAG", flag: "abyssAzelgaragDefeated", goal: 1, category: "物語", secret: true, title: "深淵王の終焉", desc: "深淵王アゼルガラグを撃破", rewards: [{ type:'GEM', val:3000 }] },
-    { id: 2401, type: "FLAG", flag: "memoryRealmCleared", goal: 1, category: "探索", title: "追憶を越えし者", desc: "追憶の魔境30階を踏破", rewards: [] },
+    { id: 2401, type: "FLAG", flag: "memoryRealmCleared", goal: 1, category: "探索", secret: true, title: "追憶を越えし者", desc: "追憶の魔境30階を踏破", rewards: [] },
 
     // --- 17. 再編後深淵の亀裂の追加到達目標 ---
-    { id: 2301, type: "RANDOM_FLOOR", goal: 25, category: "探索", title: "深層への歩み", desc: "深淵の亀裂25階に到達", rewards: [{ type:'GEM', val:500 }] },
-    { id: 2302, type: "RANDOM_FLOOR", goal: 50, category: "探索", title: "深層観測者", desc: "深淵の亀裂50階に到達", rewards: [{ type:'GEM', val:1000 }] },
-    { id: 2303, type: "RANDOM_FLOOR", goal: 100, category: "探索", title: "百層の到達者", desc: "深淵の亀裂100階に到達", rewards: [{ type:'GEM', val:2500 }] },
-    { id: 2304, type: "RANDOM_FLOOR", goal: 200, category: "探索", title: "無限深層の探索者", desc: "深淵の亀裂200階に到達", rewards: [{ type:'ITEM', id:106, val:10 }] }
+    { id: 2301, type: "RANDOM_FLOOR", goal: 25, category: "探索", secret: true, title: "深層への歩み", desc: "深淵の亀裂25階に到達", rewards: [{ type:'GEM', val:500 }] },
+    { id: 2302, type: "RANDOM_FLOOR", goal: 50, category: "探索", secret: true, title: "深層観測者", desc: "深淵の亀裂50階に到達", rewards: [{ type:'GEM', val:1000 }] },
+    { id: 2303, type: "RANDOM_FLOOR", goal: 100, category: "探索", secret: true, title: "百層の到達者", desc: "深淵の亀裂100階に到達", rewards: [{ type:'GEM', val:2500 }] },
+    { id: 2304, type: "RANDOM_FLOOR", goal: 200, category: "探索", secret: true, title: "無限深層の探索者", desc: "深淵の亀裂200階に到達", rewards: [{ type:'ITEM', id:106, val:10 }] }
 
 ];
 
