@@ -1532,7 +1532,11 @@ const StoryManager = {
         this.active = false;
         this.isTyping = false;
         (async () => {
-            if (phase === 'win') {
+            // phase引数は検索フィルタにすぎない。nullで全種別を再開する場合も、
+            // 実際に取り出して有効化した予約のphaseに従って実行先を決める。
+            // ここでphase引数を見ると、win予約までactionsとして再実行され、
+            // 元イベント内のBOSS命令へ戻ってイベント戦闘がループする。
+            if (active.phase === 'win') {
                 await this.onBattleWin(entry.eventId, 0, 0, { token: entry.token, resume: true, meta: entry.meta });
             } else {
                 await this.executeEvent(entry.eventId, false, 0, 0, { token: entry.token, resume: true, meta: entry.meta });
