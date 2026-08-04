@@ -1334,7 +1334,10 @@
             });
             if (!Array.isArray(App.data.inventory)) App.data.inventory = [];
             const equipmentRewards = (def.rewardEquipment || []).map(reward => Guild.createRewardEquipment(reward)).filter(Boolean);
-            equipmentRewards.forEach(equip => App.data.inventory.push(equip));
+            equipmentRewards.forEach(equip => {
+                App.data.inventory.push(equip);
+                window.EquipAcquisitionCard?.enqueue(equip, { source:'guildQuest' });
+            });
             state.exp += Math.max(0, Number(def.guildExp || 0));
             state.points += Math.max(0, Number(def.guildPoints || 0));
             if (def.generatedQuest) state.generatedCompletionTotal = Number(state.generatedCompletionTotal || 0) + 1;

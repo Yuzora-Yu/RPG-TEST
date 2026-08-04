@@ -1,0 +1,17 @@
+PRISMA ABYSS Phase2S 軽量検証
+日付: 2026-08-04
+
+実施:
+- 変更・新規JavaScriptの node --check: 合格
+- +3装備取得カード専用試験: 合格
+- news.js データ検証: 合格
+- Service Worker App Shell検証: 合格
+  - index.htmlの59スクリプトを全件precache登録
+
+未実施:
+- 全回帰試験
+- 迷宮250階ストレス試験
+- ZIP再適用試験
+- PC / Android / iPhone実操作
+
+ユーザー指示により、今回は仕様意図を通した初版納品を優先し、重い検証は点検ターンへ分離した。

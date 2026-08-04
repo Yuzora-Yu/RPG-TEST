@@ -2670,11 +2670,13 @@ const Dungeon = {
                 const eq = Dungeon.createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
                 // ... (改＋3の強化処理)
                 App.data.inventory.push(eq);
+                window.EquipAcquisitionCard?.enqueue(eq, { source:'rareChest' });
                 msg = `なんと <span style="color:#ff00ff; font-weight:bold;">${eq.name}</span>`;
                 hasUltraRareDrop = true;
             } else {
                 const eq = Dungeon.createEquipWithMinRarity(floor, 3, ['SR', 'SSR', 'UR', 'EX']);
                 App.data.inventory.push(eq);
+                window.EquipAcquisitionCard?.enqueue(eq, { source:'rareChest' });
                 msg = `なんと <span class="log-rare-drop">${eq.name}</span>`;
                 hasRareDrop = true;
             }
@@ -2716,6 +2718,7 @@ const Dungeon = {
                 }
                 const eq = App.createEquipByFloor('chest', floor, plusValue);
                 App.data.inventory.push(eq); 
+                window.EquipAcquisitionCard?.enqueue(eq, { source:'fieldChest' });
                 msg = `${eq.name}`;
             } 
             // --- 【優先度3】ID99（メダル）の判定（出たら終了） ---
@@ -4049,6 +4052,7 @@ const Dungeon = {
                 const rewardFloor = Math.max(1, Dungeon.getBalanceFloor() + Number(master.equipmentFloorOffset || 5));
                 const eq = App.createEquipByFloor('adventurer', rewardFloor, Number(master.equipmentPlus || 3));
                 App.data.inventory.push(eq);
+                window.EquipAcquisitionCard?.enqueue(eq, { source:'adventurer' });
                 App.save();
                 await Dungeon.showAdventurerLines([
                     'こんなところで会うなんて、これも何かの縁だ。俺には扱えない装備を譲ろう。',
@@ -4210,6 +4214,7 @@ const Dungeon = {
         const rewardPlus = Math.max(0, Number(App.data.battle?.riftRewardPlus || Dungeon.getPhase2IMaster().abyssRift?.rewardPlus || 3));
         const eq = App.createEquipByFloor('rift', rewardFloor, rewardPlus);
         App.data.inventory.push(eq);
+        window.EquipAcquisitionCard?.enqueue(eq, { source:'abyssRift', delayMs:2600 });
 
         history.push(rewardId);
         App.data.dungeon.completedRiftRewardIds = history.slice(-50);
@@ -4674,6 +4679,7 @@ const Dungeon = {
             const equip = Dungeon.createMemoryRareEquipment();
             if (equip) {
                 App.data.inventory.push(equip);
+                window.EquipAcquisitionCard?.enqueue(equip, { source:'memoryChest' });
                 rewardName = equip.name;
             }
         } else {

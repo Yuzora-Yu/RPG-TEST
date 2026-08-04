@@ -6359,6 +6359,8 @@ load: () => {
 		// 4. ベース作成
 		const eq = { 
 			id: Date.now() + Math.random().toString(36).substring(2), 
+            eid: Number(base.eid),
+            masterEid: Number(base.eid),
             source: source || 'drop',
 			rank: base.rank, 
 			name: base.name, 
@@ -6496,6 +6498,8 @@ load: () => {
 
 		const eq = { 
 			id: Date.now() + Math.random().toString(36).substring(2), 
+            eid: Number(base.eid),
+            masterEid: Number(base.eid),
 			rank: base.rank, 
 			name: base.name, 
 			type: base.type, 

@@ -2712,6 +2712,7 @@ const Battle = {
                 eq.name = `${equipRule.namePrefix || ''}${eq.name || '特殊装備'}`;
                 equipmentName = eq.name;
                 App.data.inventory.push(eq);
+                window.EquipAcquisitionCard?.enqueue(eq, { source:'specialBoss' });
                 drops.push({ name:eq.name, isRare:true, isUltra:true, isSpecialBoss:true, isEstark:true, kind:'equip' });
             }
         }
@@ -8202,6 +8203,7 @@ findNextActor: () => {
 						drops.push({ name: eq.name, isRare: (isPlus3 || isBoss), type: isBoss ? 'boss' : 'normal', kind: 'equip' });
 					}
 					App.data.inventory.push(eq);
+                    window.EquipAcquisitionCard?.enqueue(eq, { source:'battleDrop' });
 				}
 				
 				// 3. 通常ドロップ判定 (独立)

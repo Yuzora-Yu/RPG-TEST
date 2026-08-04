@@ -312,6 +312,7 @@ const Facilities = {
                 const equip = App.createEquipById(reward.eid, reward.plus || 0, reward.opts || null, reward.traits || null);
                 if (equip) {
                     App.data.inventory.push(equip);
+                    window.EquipAcquisitionCard?.enqueue(equip, { source:'coinMilestone' });
                     granted.push(equip.name);
                 }
             }
@@ -411,6 +412,7 @@ const Facilities = {
             eq.source = 'coinExchange';
             if (!Array.isArray(App.data.inventory)) App.data.inventory = [];
             App.data.inventory.push(eq);
+            window.EquipAcquisitionCard?.enqueue(eq, { source:'coinExchange' });
         }
 
         if (typeof App.incrementLifetimeStat === 'function') {
@@ -1560,6 +1562,8 @@ const Facilities = {
         const targetFloor = Math.max(1, Number(shopRank || base.rank || 1));
         const eq = {
             id: Date.now() + Math.random().toString(36).substring(2),
+            eid: Number(base.eid),
+            masterEid: Number(base.eid),
             source: 'shop',
             rank: base.rank,
             name: base.name,
@@ -1659,6 +1663,7 @@ const Facilities = {
         if (!App.data.inventory) App.data.inventory = [];
         App.data.gold -= price;
         App.data.inventory.push(purchased);
+        window.EquipAcquisitionCard?.enqueue(purchased, { source:'shop' });
         App.save();
         Facilities.updateShopGoldDisplay();
         Facilities.renderShopEquip();
@@ -2061,7 +2066,10 @@ const Facilities = {
 
         App.data.gems -= reward.cost;
         if (itemToAdd) App.data.items[itemToAdd.id] = (App.data.items[itemToAdd.id] || 0) + (reward.qty || 1);
-        if (equipToAdd) App.data.inventory.push(equipToAdd);
+        if (equipToAdd) {
+            App.data.inventory.push(equipToAdd);
+            window.EquipAcquisitionCard?.enqueue(equipToAdd, { source:'casinoExchange' });
+        }
 
         App.save();
         Facilities.openCasinoExchange();
