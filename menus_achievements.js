@@ -64,7 +64,10 @@ const MenuAchievements = {
 
         AchievementManager.checkProgress({ save: true });
 
-        const data = (typeof ACHIEVEMENTS_DATA !== 'undefined') ? ACHIEVEMENTS_DATA : [];
+        const allData = (typeof ACHIEVEMENTS_DATA !== 'undefined') ? ACHIEVEMENTS_DATA : [];
+        // secret実績は達成するまで、一覧・カテゴリ・達成率・件数のすべてから除外する。
+        // 達成後は通常実績と同じ扱いで表示し、報酬も受け取れる。
+        const data = allData.filter(a => AchievementManager.isVisible(a));
         if (!App.data.achievements) App.data.achievements = {};
 
         const categories = ['ALL', ...Array.from(new Set(data.map(a => a.category || 'その他')))].filter(Boolean);

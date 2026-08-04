@@ -620,3 +620,12 @@ Do not give everything to the player immediately. The player should feel the wor
 During the main story, the player should struggle forward with story allies. The intended RPG identity is not "use farming to brute-force everything", but "travel through fire, wind, water, thunder, light, and dark regions while gathering allies, tools, and systems."
 
 After Demon King defeat and the later Abyss gates, expand the game as a long-term postgame RPG through the implemented Abyss, travel, and fixed-dungeon systems. Gacha is not part of the current player-facing unlock route.
+
+## Tutorial Impact Review
+
+大きな機能追加、操作導線の変更、既存仕様の大幅な変更を完了した際は、対象画面が確定した後にチュートリアルへの影響を確認する。
+
+- 既存チュートリアルが新しい画面・用語・操作と矛盾しないか確認する。
+- 初見プレイヤーが自力で理解しにくい変更であれば、チュートリアルの追加または修正案をユーザーへ提示する。
+- 画面や操作が未完成の段階では、将来変更が前提となるランタイムチュートリアルを先行実装しない。
+- チュートリアル変更が不要と判断した場合も、実装報告の影響確認欄へ理由を残す。

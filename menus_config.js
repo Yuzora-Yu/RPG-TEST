@@ -167,19 +167,12 @@ const MenuConfig = {
 
         if (MenuConfig.activeTab === 'save') {
             content.innerHTML = `
-                <div class="config-save-guide">
-                    <div class="config-save-guide-title">セーブデータ管理</div>
-                    <div>オートセーブは既存の仕組みで自動更新されます。手動セーブはNo.1～9へ保存できます。</div>
-                    <div>手動セーブのロードやデータ読込を行うと、現在のオートセーブは即時上書きされます。</div>
-                </div>
                 <div class="config-save-actions">
                     <button class="btn config-save-action" type="button" onclick="MenuConfig.openSaveSlots('save')">
                         <span class="config-save-action-title">セーブ</span>
-                        <span class="config-save-action-desc">手動セーブNo.1～9へ保存</span>
                     </button>
                     <button class="btn config-save-action" type="button" onclick="MenuConfig.openSaveSlots('load')">
                         <span class="config-save-action-title">ロード</span>
-                        <span class="config-save-action-desc">オート／手動セーブから再開</span>
                     </button>
                     <button class="btn config-save-action" type="button" onclick="App.downloadSave()">
                         <span class="config-save-action-title">データ出力</span>

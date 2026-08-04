@@ -66,11 +66,11 @@ const ACHIEVEMENTS_DATA = [
     ] },
 
     // --- 4. ストーリー進行度 ---
-    { id: 401, type: "STORY", goal: 2, category: "物語", title: "旅立ちの決意", desc: "ストーリー進行度 2に到達", rewards: [
+    { id: 401, type: "STORY", goal: 2, category: "物語", secret: true, title: "旅立ちの決意", desc: "ストーリー進行度 2に到達", rewards: [
         { type: 'GEM', val: 3000 },
         { type: 'GOLD', val: 10000 }
     ] },
-    { id: 402, type: "STORY", goal: 5, category: "物語", title: "世界の真実", desc: "ストーリー進行度 5に到達", rewards: [
+    { id: 402, type: "STORY", goal: 5, category: "物語", secret: true, title: "世界の真実", desc: "ストーリー進行度 5に到達", rewards: [
         { type: 'GEM', val: 3000 },
         { type: 'GOLD', val: 10000 }
     ] },
@@ -78,9 +78,8 @@ const ACHIEVEMENTS_DATA = [
     // --- 5. 鍛冶屋レベル ---
     { id: 501, type: "SMITH", goal: 2, category: "鍛冶", title: "見習い職人", desc: "鍛冶屋レベル 2に到達", rewards: [{ type: 'GEM', val: 200 }] },
     { id: 502, type: "SMITH", goal: 5, category: "鍛冶", title: "名匠の称号", desc: "鍛冶屋レベル 5に到達", rewards: [{ type: 'GEM', val: 500 }] },
-    { id: 503, type: "SMITH", goal: 10, category: "鍛冶", title: "神工の槌音", desc: "鍛冶屋レベル 10に到達", rewards: [
-        { type: 'GEM', val: 1500 },
-        { type: 'GOLD', val: 50000 }
+    { id: 503, type: "SMITH", goal: 10, category: "鍛冶", rewardVersion: 2, title: "神工の槌音", desc: "鍛冶屋レベル 10に到達", rewards: [
+        { type: 'ITEM', id: 599998, val: 1 }
     ] },
 
     // --- 6. 魔物図鑑 ---
@@ -182,7 +181,7 @@ const ACHIEVEMENTS_DATA = [
     { id: 2004, type: "BLACKSMITH_COUNT", goal: 500, category: "鍛冶", title: "神工への道", desc: "鍛冶を500回行う", rewards: [{ type:'ITEM', id:107, val:1 }] },
     { id: 2101, type: "BATTLE_COUNT", goal: 100, category: "戦闘", title: "百戦の経験", desc: "戦闘に100回勝利", rewards: [{ type:'GEM', val:500 }] },
     { id: 2102, type: "BATTLE_COUNT", goal: 1000, category: "戦闘", title: "千戦の覇者", desc: "戦闘に1,000回勝利", rewards: [{ type:'GEM', val:2000 }] },
-    { id: 2201, type: "FLAG", flag: "abyssAzelgaragDefeated", goal: 1, category: "物語", title: "深淵王の終焉", desc: "深淵王アゼルガラグを撃破", rewards: [{ type:'GEM', val:3000 }] },
+    { id: 2201, type: "FLAG", flag: "abyssAzelgaragDefeated", goal: 1, category: "物語", secret: true, title: "深淵王の終焉", desc: "深淵王アゼルガラグを撃破", rewards: [{ type:'GEM', val:3000 }] },
     { id: 2401, type: "FLAG", flag: "memoryRealmCleared", goal: 1, category: "探索", title: "追憶を越えし者", desc: "追憶の魔境30階を踏破", rewards: [] },
 
     // --- 17. 再編後深淵の亀裂の追加到達目標 ---
@@ -194,6 +193,8 @@ const ACHIEVEMENTS_DATA = [
 ];
 
 const AchievementManager = {
+    getRewardVersion: (ach) => Math.max(1, Math.floor(Number(ach?.rewardVersion) || 1)),
+
     normalize: () => {
         if (typeof App === 'undefined' || !App.data) return false;
         let changed = false;
@@ -204,13 +205,39 @@ const AchievementManager = {
         ACHIEVEMENTS_DATA.forEach((ach) => {
             const key = String(ach.id);
             const current = App.data.achievements[key];
+            const rewardVersion = AchievementManager.getRewardVersion(ach);
             if (!current || typeof current !== 'object') {
-                App.data.achievements[key] = { completed: false, claimed: false, progress: 0 };
+                App.data.achievements[key] = { completed: false, claimed: false, claimedRewardVersion: 0, progress: 0 };
                 changed = true;
             } else {
                 if (current.completed == null) { current.completed = false; changed = true; }
                 if (current.claimed == null) { current.claimed = false; changed = true; }
                 if (current.progress == null) { current.progress = 0; changed = true; }
+                if (current.claimedRewardVersion == null) {
+                    // rewardVersion導入前に受取済みなら旧版報酬まで受領済みとみなす。
+                    // 現行版が2以上の実績だけは1つ前の版として扱い、新報酬を一度だけ再受取可能にする。
+                    current.claimedRewardVersion = current.claimed
+                        ? Math.max(1, rewardVersion - 1)
+                        : 0;
+                    changed = true;
+                } else {
+                    const normalizedVersion = Math.max(0, Math.floor(Number(current.claimedRewardVersion) || 0));
+                    if (current.claimedRewardVersion !== normalizedVersion) {
+                        current.claimedRewardVersion = normalizedVersion;
+                        changed = true;
+                    }
+                }
+
+                const hasRewards = Array.isArray(ach.rewards) && ach.rewards.length > 0;
+                if (!hasRewards && current.completed && current.claimedRewardVersion < rewardVersion) {
+                    current.claimedRewardVersion = rewardVersion;
+                    changed = true;
+                }
+                const claimedCurrentReward = current.claimedRewardVersion >= rewardVersion;
+                if (current.claimed !== claimedCurrentReward) {
+                    current.claimed = claimedCurrentReward;
+                    changed = true;
+                }
             }
         });
         return changed;
@@ -362,11 +389,15 @@ const AchievementManager = {
             if (progress.completed && !state.completed) {
                 state.completed = true;
                 // 報酬なし実績は受取操作を要求せず、その場で記録完了にする。
-                if (!Array.isArray(ach.rewards) || ach.rewards.length === 0) state.claimed = true;
+                if (!Array.isArray(ach.rewards) || ach.rewards.length === 0) {
+                    state.claimedRewardVersion = AchievementManager.getRewardVersion(ach);
+                    state.claimed = true;
+                }
                 newlyCompleted += 1;
                 changed = true;
             } else if (state.completed && !state.claimed && (!Array.isArray(ach.rewards) || ach.rewards.length === 0)) {
                 // 旧セーブ上で報酬なし実績が未受取のまま残った場合も自動修復する。
+                state.claimedRewardVersion = AchievementManager.getRewardVersion(ach);
                 state.claimed = true;
                 changed = true;
             }
@@ -383,10 +414,12 @@ const AchievementManager = {
     },
 
     getState: (id) => {
-        if (typeof App === 'undefined' || !App.data) return { completed: false, claimed: false, progress: 0 };
+        if (typeof App === 'undefined' || !App.data) return { completed: false, claimed: false, claimedRewardVersion: 0, progress: 0 };
         AchievementManager.normalize();
-        return App.data.achievements[String(id)] || { completed: false, claimed: false, progress: 0 };
+        return App.data.achievements[String(id)] || { completed: false, claimed: false, claimedRewardVersion: 0, progress: 0 };
     },
+
+    isVisible: (ach) => ach?.secret !== true || AchievementManager.getState(ach.id).completed === true,
 
     getItemName: (id) => {
         const items = window.ITEMS_DATA || ((typeof DB !== 'undefined' && DB.ITEMS) ? DB.ITEMS : []);
@@ -465,9 +498,20 @@ const AchievementManager = {
         if (!state || !state.completed) return { ok: false, message: 'まだ達成していません。' };
         if (state.claimed) return { ok: false, message: 'すでに受け取り済みです。' };
 
-        const rewardText = AchievementManager.processRewards(ach.rewards || []);
-        state.claimed = true;
-        if (typeof App.save === 'function') App.save();
+        let rewardText = '';
+        const applyClaim = () => {
+            rewardText = AchievementManager.processRewards(ach.rewards || []);
+            state.claimedRewardVersion = AchievementManager.getRewardVersion(ach);
+            state.claimed = true;
+            return { ok: true };
+        };
+        if (typeof App.runAtomicSaveMutation === 'function') {
+            const committed = App.runAtomicSaveMutation(applyClaim);
+            if (!committed?.ok) return { ok: false, message: '報酬を保存できなかったため、受取を取り消しました。' };
+        } else {
+            applyClaim();
+            if (typeof App.save === 'function' && App.save() === false) return { ok: false, message: '報酬を保存できませんでした。' };
+        }
 
         return { ok: true, count: 1, rewardText };
     },
@@ -477,17 +521,27 @@ const AchievementManager = {
         let count = 0;
         const rewardTexts = [];
 
-        ACHIEVEMENTS_DATA.forEach((ach) => {
-            const state = App.data.achievements[String(ach.id)];
-            if (state && state.completed && !state.claimed) {
-                const text = AchievementManager.processRewards(ach.rewards || []);
-                if (text) rewardTexts.push(text);
-                state.claimed = true;
-                count += 1;
-            }
-        });
+        const applyClaims = () => {
+            ACHIEVEMENTS_DATA.forEach((ach) => {
+                const state = App.data.achievements[String(ach.id)];
+                if (state && state.completed && !state.claimed) {
+                    const text = AchievementManager.processRewards(ach.rewards || []);
+                    if (text) rewardTexts.push(text);
+                    state.claimedRewardVersion = AchievementManager.getRewardVersion(ach);
+                    state.claimed = true;
+                    count += 1;
+                }
+            });
+            return { ok: count > 0 };
+        };
 
-        if (count > 0 && typeof App.save === 'function') App.save();
+        if (typeof App.runAtomicSaveMutation === 'function') {
+            const committed = App.runAtomicSaveMutation(applyClaims);
+            if (!committed?.ok) return { ok: false, count: 0, rewardText: '' };
+        } else {
+            applyClaims();
+            if (count > 0 && typeof App.save === 'function' && App.save() === false) return { ok: false, count: 0, rewardText: '' };
+        }
         return { ok: count > 0, count, rewardText: rewardTexts.join('、') };
     }
 };

@@ -7253,6 +7253,51 @@ body.game-page .config-save-action-desc {
   background: rgba(0, 0, 0, 0.82);
 }
 
+.save-slot-prompt-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.76);
+}
+
+.save-slot-prompt {
+  width: min(100%, 330px);
+  overflow: hidden;
+  border: 2px solid #d6c36b;
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(180deg, #282828 0%, #111 100%);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75);
+}
+
+.save-slot-prompt-message {
+  padding: 20px 18px;
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.save-slot-prompt-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 10px 14px 14px;
+  border-top: 1px solid #444;
+  background: #1b1b1b;
+}
+
+.save-slot-prompt-actions .btn {
+  width: min(44%, 130px);
+  min-height: 42px;
+}
+
 .save-slot-overlay.is-title {
   position: fixed;
 }
@@ -7437,6 +7482,7 @@ body.game-page .config-save-action-desc {
 }
 
 .save-slot-area {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -7445,9 +7491,13 @@ body.game-page .config-save-action-desc {
 
 .save-slot-playtime {
   flex: 0 0 auto;
+  max-width: 10ch;
+  overflow: hidden;
   color: #d9d9d9;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 
 .save-slot-party-faces {

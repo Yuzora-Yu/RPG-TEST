@@ -501,23 +501,65 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;'),
 
-        showMessage: (message, callback) => {
-            const app = getApp();
-            if (app?.showMessage) app.showMessage(message, callback);
-            else if (typeof global.showPageMessage === 'function') global.showPageMessage(message, callback);
-            else { global.alert?.(message); callback?.(); }
+        clearPrompt: () => {
+            const prompt = SaveSlotUI.overlay?.querySelector('.save-slot-prompt-layer');
+            if (prompt) prompt.remove();
         },
 
-        showConfirm: async (message) => {
-            const app = getApp();
-            if (app?.showConfirm) return app.showConfirm(message);
-            if (typeof global.showPageConfirm === 'function') {
-                return new Promise(resolve => global.showPageConfirm(message, () => resolve(true), () => resolve(false)));
+        showPrompt: (message, options = {}) => new Promise(resolve => {
+            SaveSlotUI.clearPrompt();
+            if (!SaveSlotUI.overlay) {
+                const result = options.confirm === true ? !!global.confirm?.(message) : true;
+                if (options.confirm !== true) global.alert?.(message);
+                resolve(result);
+                return;
             }
-            return !!global.confirm?.(message);
+
+            const layer = document.createElement('div');
+            layer.className = 'save-slot-prompt-layer';
+            layer.setAttribute('role', 'presentation');
+            const isConfirm = options.confirm === true;
+            layer.innerHTML = `
+                <div class="save-slot-prompt" role="${isConfirm ? 'alertdialog' : 'dialog'}" aria-modal="true">
+                    <div class="save-slot-prompt-message"></div>
+                    <div class="save-slot-prompt-actions">
+                        ${isConfirm ? '<button type="button" class="btn save-slot-prompt-cancel">いいえ</button>' : ''}
+                        <button type="button" class="btn save-slot-prompt-accept">${isConfirm ? 'はい' : 'OK'}</button>
+                    </div>
+                </div>`;
+            layer.querySelector('.save-slot-prompt-message').textContent = String(message || '');
+            SaveSlotUI.overlay.appendChild(layer);
+
+            let settled = false;
+            const finish = value => {
+                if (settled) return;
+                settled = true;
+                layer.remove();
+                resolve(value);
+            };
+            layer.querySelector('.save-slot-prompt-accept')?.addEventListener('click', () => finish(true));
+            layer.querySelector('.save-slot-prompt-cancel')?.addEventListener('click', () => finish(false));
+            layer.addEventListener('click', event => {
+                if (event.target === layer && isConfirm) finish(false);
+            });
+            layer.addEventListener('keydown', event => {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    finish(isConfirm ? false : true);
+                }
+            });
+            requestAnimationFrame(() => layer.querySelector('.save-slot-prompt-accept')?.focus());
+        }),
+
+        showMessage: async (message, callback) => {
+            await SaveSlotUI.showPrompt(message, { confirm: false });
+            callback?.();
         },
+
+        showConfirm: (message) => SaveSlotUI.showPrompt(message, { confirm: true }),
 
         close: () => {
+            SaveSlotUI.clearPrompt();
             if (SaveSlotUI.overlay) SaveSlotUI.overlay.remove();
             SaveSlotUI.overlay = null;
             SaveSlotUI.mode = null;
@@ -681,10 +723,10 @@
                     const app = getApp();
                     if (!app?.data || !app?.save?.()) throw new Error('オートセーブを更新できなかったため、手動保存を中止しました。');
                     await SaveSlots.saveManualSlot(slotId, app.data);
-                    SaveSlotUI.showMessage(`セーブNo.${slotId}へ保存しました。`);
+                    await SaveSlotUI.showMessage(`セーブNo.${slotId}へ保存しました。`);
                 } catch (error) {
                     console.error(error);
-                    SaveSlotUI.showMessage(error?.message || '手動セーブに失敗しました。');
+                    await SaveSlotUI.showMessage(error?.message || '手動セーブに失敗しました。');
                 } finally {
                     SaveSlotUI.busy = false;
                     await SaveSlotUI.render();
@@ -714,7 +756,7 @@
             } catch (error) {
                 console.error(error);
                 SaveSlotUI.busy = false;
-                SaveSlotUI.showMessage(error?.message || 'セーブデータを読み込めませんでした。');
+                await SaveSlotUI.showMessage(error?.message || 'セーブデータを読み込めませんでした。');
                 await SaveSlotUI.render();
             }
         }
