@@ -148,8 +148,9 @@
         </section>
 
         <section class="title-actions">
+            <button class="btn btn-load" id="btn-auto-continue" onclick="App.continueGame()" disabled>オートセーブから</button>
+            <button class="btn btn-load" id="btn-slot-continue" onclick="openTitleSaveSlots()" disabled>つづきから</button>
             <button class="btn btn-new" onclick="openNewGameSetup()">はじめから</button>
-            <button class="btn btn-load" id="btn-continue" onclick="App.continueGame()" disabled>つづきから</button>
             <button class="btn btn-data" onclick="toggleModal(true)">データ管理</button>
         </section>
     </main>
@@ -178,12 +179,13 @@
     <div id="modal-overlay" class="title-modal-overlay" onclick="if(event.target === this) toggleModal(false)">
         <div id="modal-content" class="title-modal-content">
             <div class="modal-title">データ管理</div>
-            <button class="btn btn-modal" onclick="App.importSave()">バックアップから復元</button>
+            <button class="btn btn-modal" onclick="App.downloadSave()">バックアップ出力</button>
+            <button class="btn btn-modal" onclick="App.importSave()">バックアップ読込</button>
             <hr>
             <button id="installBtn" class="btn btn-modal" style="display:none;">アプリをインストール</button>
             <button id="updateBtn" class="btn btn-modal" onclick="updateApp()">アプリを更新</button>
             <hr>
-            <button id="deleteBtn" class="btn btn-modal btn-danger" onclick="deleteSaveData()">セーブデータを削除</button>
+            <button id="deleteBtn" class="btn btn-modal btn-danger" onclick="deleteSaveData()">オートセーブを削除</button>
             <button class="btn btn-close" onclick="toggleModal(false)">もどる</button>
         </div>
     </div>
@@ -191,6 +193,7 @@
     <script src="equips.js"></script>
     <script src="database.js"></script>
     <script src="save_crypto.js"></script>
+    <script src="save_slots.js"></script>
     <script src="map_render_shared.js"></script>
     <script src="main.js"></script>
     <script>
@@ -199,33 +202,33 @@
         window.onload = () => {
             if (typeof App !== 'undefined' && App.initTitleScreen) {
                 App.initTitleScreen();
-                refreshContinueButton();
+                refreshTitleSaveButtons();
             } else {
                 console.error('App module failed to load.');
             }
         };
 
-        function refreshContinueButton() {
-            const btn = document.getElementById('btn-continue');
-            if (!btn || typeof App === 'undefined') return;
+        async function refreshTitleSaveButtons() {
+            const autoButton = document.getElementById('btn-auto-continue');
+            const slotButton = document.getElementById('btn-slot-continue');
+            const hasAuto = !!App.data;
+            if (autoButton) autoButton.disabled = !hasAuto;
+            if (slotButton) {
+                slotButton.disabled = true;
+                let hasManual = false;
+                if (typeof SaveSlots !== 'undefined' && typeof SaveSlots.hasAnyManualSlot === 'function') {
+                    hasManual = await SaveSlots.hasAnyManualSlot();
+                }
+                slotButton.disabled = !(hasAuto || hasManual);
+            }
+        }
 
-            if (!App.data) {
-                btn.disabled = true;
-                btn.textContent = 'つづきから';
+        function openTitleSaveSlots() {
+            if (typeof SaveSlotUI === 'undefined' || typeof SaveSlotUI.open !== 'function') {
+                showPageMessage('セーブスロット機能を読み込めませんでした。');
                 return;
             }
-
-            btn.disabled = false;
-            let name = '冒険者';
-            let lv = 1;
-            if (App.data.party && App.data.party[0]) {
-                const char = App.data.characters.find(c => c.uid === App.data.party[0]);
-                if (char) {
-                    name = char.name;
-                    lv = char.level;
-                }
-            }
-            btn.innerHTML = `つづきから<br><span>(${name} Lv.${lv})</span>`;
+            SaveSlotUI.open('load', { context: 'title' });
         }
 
         function openNewGameSetup() {
@@ -277,7 +280,7 @@
             const start = () => App.startNewGame();
 
             if (App.data) {
-                showPageConfirm('プレイ済みのデータがある場合はデータが消えてしまいますが、よろしいですか？', start);
+                showPageConfirm('はじめから開始すると、現在のオートセーブは即時上書きされます。\n手動セーブNo.1～9は変更されません。\n\n新しい冒険を始めますか？', start);
                 return;
             }
 
@@ -294,7 +297,7 @@
                 showPageMessage('データベースエラー: CONSTが読み込まれていません');
                 return;
             }
-            showPageConfirm('本当にセーブデータを削除しますか？\n失われたデータは復元できません。', () => {
+            showPageConfirm('現在のオートセーブを削除しますか？\n手動セーブNo.1～9は削除されません。', () => {
                 localStorage.removeItem(CONST.SAVE_KEY);
                 location.reload();
             });

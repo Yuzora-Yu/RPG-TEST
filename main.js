@@ -278,6 +278,127 @@ const App = {
     data: null,
     pendingAction: null, 
 	encounterTransitioning: false,
+	playTimeRuntime: null,
+	playTimeTicker: null,
+	playTimeEventsBound: false,
+
+	ensurePlayTimeData: (data = App.data) => {
+		if (!data || typeof data !== 'object') return 0;
+		if (!data.stats || typeof data.stats !== 'object' || Array.isArray(data.stats)) data.stats = {};
+		const value = Math.max(0, Math.floor(Number(data.stats.playTimeMs || 0)));
+		data.stats.playTimeMs = value;
+		if (!data.system || typeof data.system !== 'object' || Array.isArray(data.system)) data.system = {};
+		if (Number(data.system.playTimeSchemaVersion || 0) < 1) data.system.playTimeSchemaVersion = 1;
+		return value;
+	},
+
+	getPlayTimeClock: () => {
+		if (typeof performance !== 'undefined' && typeof performance.now === 'function') return performance.now();
+		return Date.now();
+	},
+
+	startPlayTimeTracking: () => {
+		if (!App.data) return;
+		const savedMs = App.ensurePlayTimeData(App.data);
+		App.playTimeRuntime = {
+			accumulatedMs: savedMs,
+			activeSince: (typeof document === 'undefined' || !document.hidden) ? App.getPlayTimeClock() : null
+		};
+
+		if (!App.playTimeEventsBound && typeof document !== 'undefined') {
+			App.playTimeEventsBound = true;
+			document.addEventListener('visibilitychange', () => {
+				if (!App.playTimeRuntime || !App.data) return;
+				if (document.hidden) App.commitPlayTime({ keepRunning: false });
+				else App.resumePlayTime();
+				App.refreshPlayTimeDisplays();
+			});
+			if (typeof window !== 'undefined') {
+				window.addEventListener('pagehide', () => App.commitPlayTime({ keepRunning: false }));
+			}
+		}
+
+		if (App.playTimeTicker) clearInterval(App.playTimeTicker);
+		App.playTimeTicker = setInterval(() => App.refreshPlayTimeDisplays(), 1000);
+		App.refreshPlayTimeDisplays();
+	},
+
+	resumePlayTime: () => {
+		if (!App.data) return;
+		if (!App.playTimeRuntime) {
+			App.startPlayTimeTracking();
+			return;
+		}
+		if (App.playTimeRuntime.activeSince == null) App.playTimeRuntime.activeSince = App.getPlayTimeClock();
+	},
+
+	commitPlayTime: (options = {}) => {
+		if (!App.data) return 0;
+		App.ensurePlayTimeData(App.data);
+		if (!App.playTimeRuntime) {
+			App.playTimeRuntime = { accumulatedMs: App.data.stats.playTimeMs, activeSince: null };
+		}
+		const now = App.getPlayTimeClock();
+		if (App.playTimeRuntime.activeSince != null) {
+			const delta = Math.max(0, now - App.playTimeRuntime.activeSince);
+			App.playTimeRuntime.accumulatedMs = Math.max(
+				Number(App.data.stats.playTimeMs || 0),
+				Number(App.playTimeRuntime.accumulatedMs || 0) + delta
+			);
+		}
+		App.data.stats.playTimeMs = Math.max(0, Math.floor(Number(App.playTimeRuntime.accumulatedMs || 0)));
+		const shouldContinue = options.keepRunning !== false
+			&& (typeof document === 'undefined' || !document.hidden);
+		App.playTimeRuntime.activeSince = shouldContinue ? now : null;
+		return App.data.stats.playTimeMs;
+	},
+
+	getCurrentPlayTimeMs: (data = App.data) => {
+		if (!data) return 0;
+		const saved = Math.max(0, Math.floor(Number(data.stats?.playTimeMs || 0)));
+		if (data !== App.data || !App.playTimeRuntime || App.playTimeRuntime.activeSince == null) return saved;
+		const delta = Math.max(0, App.getPlayTimeClock() - App.playTimeRuntime.activeSince);
+		return Math.max(saved, Math.floor(Number(App.playTimeRuntime.accumulatedMs || saved) + delta));
+	},
+
+	formatPlayTime: (milliseconds) => {
+		if (typeof SaveSlots !== 'undefined' && typeof SaveSlots.formatPlayTime === 'function') {
+			return SaveSlots.formatPlayTime(milliseconds);
+		}
+		const maxSeconds = 9999 * 3600 + 59 * 60 + 59;
+		const totalSeconds = Math.min(maxSeconds, Math.max(0, Math.floor(Number(milliseconds) || 0) / 1000));
+		const hours = Math.floor(totalSeconds / 3600);
+		const minutes = Math.floor((totalSeconds % 3600) / 60);
+		const seconds = totalSeconds % 60;
+		return `${String(hours).padStart(4, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+	},
+
+	refreshPlayTimeDisplays: () => {
+		if (typeof document === 'undefined') return;
+		const text = App.formatPlayTime(App.getCurrentPlayTimeMs());
+		document.querySelectorAll('[data-play-time]').forEach(element => {
+			element.textContent = text;
+		});
+	},
+
+	updateSaveMetadata: (updatedAt = new Date().toISOString()) => {
+		if (!App.data) return null;
+		if (!App.data.system || typeof App.data.system !== 'object' || Array.isArray(App.data.system)) App.data.system = {};
+		App.data.system.lastSavedAt = updatedAt;
+		if (typeof SaveSlots !== 'undefined' && typeof SaveSlots.buildMetadata === 'function') {
+			App.data.system.saveMetadata = SaveSlots.buildMetadata(App.data, { updatedAt });
+		} else {
+			const hero = App.data.characters?.find(character => character?.uid === App.data.party?.[0]) || App.data.characters?.[0];
+			App.data.system.saveMetadata = {
+				heroName: hero?.name || '冒険者',
+				heroLevel: Math.max(1, Number(hero?.level || 1)),
+				playTimeMs: Math.max(0, Number(App.data.stats?.playTimeMs || 0)),
+				locationLabel: String(App.data.location?.area || '不明な場所'),
+				updatedAt
+			};
+		}
+		return App.data.system.saveMetadata;
+	},
 
     defaultBattleStrategy: 'balanced',
     battleStrategies: {
@@ -758,6 +879,7 @@ const App = {
                 totalBlacksmithActions: 0, blacksmithSynthesisCount: 0,
                 blacksmithRefineAttempts: 0, blacksmithRefineSuccesses: 0,
                 blacksmithEnhanceAttempts: 0, blacksmithEnhanceSuccesses: 0,
+                playTimeMs: 0,
                 maxGold: 0, 
                 maxGems: 0, 
                 maxDamage: { val: 0, actor: '未記録', skill: '-' } 
@@ -1614,6 +1736,8 @@ const App = {
             }
             return; 
         }
+
+		App.startPlayTimeTracking();
 		
 		// ★追加：累計獲得Gold/GEM フックを起動時に1回だけ有効化
 		if (typeof App.totalGoldGem === 'function') App.totalGoldGem();
@@ -4858,22 +4982,7 @@ const App = {
     },
 
     initTitleScreen: () => { 
-        App.load(); 
-        const btn = document.getElementById('btn-continue'); 
-        if(App.data && btn) { 
-            btn.disabled = false; 
-            let name = '勇者'; let lv = 1;
-            if(App.data.party && App.data.party[0]) {
-                const c = App.data.characters.find(ch => ch.uid === App.data.party[0]);
-                if(c) { name = c.name; lv = c.level; }
-            }
-            btn.textContent = '続きから';
-            const detail = document.createElement('span');
-            detail.style.fontSize = '12px';
-            detail.textContent = `(${name} Lv.${lv})`;
-            btn.appendChild(document.createElement('br'));
-            btn.appendChild(detail);
-        } 
+        App.load();
     },
 
     migrateAbyssRegionSave: () => {
@@ -5079,6 +5188,7 @@ load: () => {
                     startTime: Date.now()
                 };
             }
+            App.ensurePlayTimeData(App.data);
             if (typeof App.syncDerivedLimitBreaks === 'function') {
                 App.syncDerivedLimitBreaks();
             }
@@ -5162,6 +5272,7 @@ load: () => {
         }
         let saved = false;
         try {
+            App.commitPlayTime({ keepRunning: true });
             if (Field.ready) {
                 App.data.location.x = Field.x;
                 App.data.location.y = Field.y;
@@ -5170,6 +5281,8 @@ load: () => {
             if (!App.data.stats) App.data.stats = { maxGold: 0, maxGems: 0 };
             if (App.data.gold > (App.data.stats.maxGold || 0)) App.data.stats.maxGold = App.data.gold;
             if (App.data.gems > (App.data.stats.maxGems || 0)) App.data.stats.maxGems = App.data.gems;
+
+            App.updateSaveMetadata();
 
             localStorage.setItem(CONST.SAVE_KEY, App.serializeSaveData(App.data));
             App.saveFailureNotified = false;
@@ -5320,8 +5433,10 @@ load: () => {
 
 			// ★ここが重要：勝利後レジューム用ではなく、通常イベント予約として持つ
 			App.data.progress.pendingEventId = 'game_start';
+			App.ensurePlayTimeData(App.data);
+			App.updateSaveMetadata();
 
-			localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
+			localStorage.setItem(CONST.SAVE_KEY, App.serializeSaveData(App.data));
 			window.location.href = 'index.html';
 		} catch(e) {
 			App.showMessage("データ作成失敗");
@@ -7177,6 +7292,7 @@ load: () => {
         if (typeof data.stats.totalSteps !== 'number') data.stats.totalSteps = 0;
         if (typeof data.stats.totalBattles !== 'number') data.stats.totalBattles = 0;
         if (typeof data.stats.startTime !== 'number') data.stats.startTime = Date.now();
+        App.ensurePlayTimeData(data);
         App.ensureLifetimeStats(data);
         App.ensureCoinSpendingRewardProgress(data, { migrateLegacy: true });
         data.stats.totalQuestCompletions = Math.max(Number(data.stats.totalQuestCompletions || 0), Object.values(data.progress?.quests || {}).filter(entry => entry?.state === 'completed').length);
@@ -7215,6 +7331,11 @@ load: () => {
         if (!App.data) {
             if(typeof Menu !== 'undefined') Menu.msg("セーブデータがありません");
             else App.showMessage("セーブデータがありません");
+            return;
+        }
+        const isGamePage = typeof document !== 'undefined' && document.body?.classList?.contains('game-page');
+        if (isGamePage && typeof App.save === 'function' && !App.save()) {
+            App.showMessage("現在のオートセーブを更新できなかったため、データ出力を中止しました");
             return;
         }
         if (typeof SaveCrypto === 'undefined' || typeof SaveCrypto.encodeSaveData !== 'function') {
@@ -7270,9 +7391,16 @@ load: () => {
                     if (App.isImportableSaveData(loadedData)) {
                         const migratedData = App.migrateImportedSaveData(JSON.parse(JSON.stringify(loadedData)));
                         const suffix = isLegacy ? "\n\n旧形式のバックアップは、読み込み時に現在の形式へ補正されます。" : "";
-                        if (await App.showConfirm(`現在のデータを上書きして復元しますか？\n(ページがリロードされます)${suffix}`)) {
-                            localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(migratedData));
-                            location.reload();
+                        if (await App.showConfirm(`バックアップを読み込むと、現在のオートセーブは即時上書きされます。\n手動セーブNo.1～9は変更されません。\n\n読み込んで再開しますか？${suffix}`)) {
+                            if (typeof SaveSlots !== 'undefined' && typeof SaveSlots.writeDataToAutoSlot === 'function') {
+                                SaveSlots.writeDataToAutoSlot(migratedData);
+                            } else {
+                                App.data = migratedData;
+                                App.ensurePlayTimeData(App.data);
+                                App.updateSaveMetadata();
+                                localStorage.setItem(CONST.SAVE_KEY, App.serializeSaveData(App.data));
+                            }
+                            window.location.href = 'index.html';
                         }
                     } else {
                         App.showMessage("不正なセーブデータ形式です");

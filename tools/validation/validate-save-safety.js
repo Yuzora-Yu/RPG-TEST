@@ -4,6 +4,8 @@ const path = require('path');
 const root = path.resolve(__dirname, '..', '..');
 const main = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
 const allies = fs.readFileSync(path.join(root, 'menus_allies.js'), 'utf8');
+const title = fs.readFileSync(path.join(root, 'main.html'), 'utf8');
+const saveSlots = fs.readFileSync(path.join(root, 'save_slots.js'), 'utf8');
 
 const assert = (condition, message) => {
     if (!condition) throw new Error(message);
@@ -17,8 +19,10 @@ assert(main.includes('App.showMessage(') && main.includes('セーブデータを
     'Save failures are not propagated and shown to the player.');
 assert(!main.includes('btn.innerHTML = `続きから<br><span style="font-size:12px">(${name}'),
     'The title continue button still injects an imported player name through innerHTML.');
-assert(main.includes('detail.textContent = `(${name} Lv.${lv})`'),
-    'The title continue button does not use a text node for the imported player name.');
+assert(title.includes('id="btn-auto-continue"') && title.includes('id="btn-slot-continue"'),
+    'The static title routes for auto-save and slot selection are missing.');
+assert(saveSlots.includes('escapeHtml: (value)') && saveSlots.includes('SaveSlotUI.escapeHtml(heroLabel)'),
+    'Imported player names are not escaped before the save-slot list renders them.');
 assert(!allies.includes('header.innerHTML = `<div class="allies-tree-header-main"><span>${c.name}'),
     'The ally skill-tree header still injects an imported character name through innerHTML.');
 assert(allies.includes('headerLabel.textContent = `${c.name} (SP:${sp})`'),
@@ -33,4 +37,4 @@ const parsed = JSON.parse(serialized);
 assert(parsed.img === source.img && parsed.image === undefined && parsed.name === source.name,
     'Duplicate-safe serialization does not preserve the canonical img field.');
 
-console.log('PASS: save failures are visible, success is returned, duplicate Data URLs are omitted, and two imported-name HTML sinks use textContent.');
+console.log('PASS: save failures are visible, duplicate Data URLs are omitted, and imported names are safely rendered in current title/slot/allies UIs.');

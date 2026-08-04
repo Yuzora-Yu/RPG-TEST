@@ -126,6 +126,7 @@ const MenuStatus = {
                 <div style="font-size:10px; color:#ffd700; margin-bottom:8px; display:flex; align-items:center; gap:5px;">
                     <span style="background:#ffd700; width:3px; height:12px; display:inline-block;"></span> 冒険の足跡
                 </div>
+                ${row('プレイ時間', `<span data-play-time>${App.formatPlayTime?.(App.getCurrentPlayTimeMs?.() || 0) || '0000:00:00'}</span>`, '#fff', '16px')}
                 ${row('ストーリー進行度', storyProgress, '#fff', '16px')}
                 ${row('深淵世界の踏破', flags.abyssAzelgaragDefeated ? '達成' : '攻略中', '#d7b8ff', '16px')}
                 ${row('深淵の亀裂 最高到達', `${randomMaxFloor} 階`, '#ffd700', '16px')}

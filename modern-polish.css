@@ -7154,3 +7154,434 @@ body.game-page .menu-dialog-footer.is-list {
     padding: 7px 10px 8px;
   }
 }
+
+/* ========================================================================== */
+/* Phase2M: 設定2タブ / オート1枠＋手動9枠 / セーブ一覧                     */
+/* ========================================================================== */
+body.game-page .config-tab-bar {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0;
+  margin: 8px 12px 0;
+  overflow: hidden;
+  border: 1px solid #444;
+  border-radius: 7px;
+  background: #171717;
+}
+
+body.game-page .config-tab-button {
+  flex: 1 1 50%;
+  min-width: 0;
+  min-height: 40px;
+  border: 0;
+  border-right: 1px solid #444;
+  color: #aaa;
+  background: #171717;
+  font: inherit;
+  font-weight: 700;
+}
+
+body.game-page .config-tab-button:last-child {
+  border-right: 0;
+}
+
+body.game-page .config-tab-button.is-active {
+  color: #111;
+  background: #ffd700;
+}
+
+body.game-page .config-save-guide {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  color: #bbb;
+  background: #171717;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+body.game-page .config-save-guide-title {
+  color: #ffd700;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+body.game-page .config-save-actions {
+  display: grid;
+  gap: 9px;
+}
+
+body.game-page .config-save-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 54px;
+  padding: 9px 12px;
+  text-align: left;
+  background: #043f46;
+}
+
+body.game-page .config-save-action-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+body.game-page .config-save-action-desc {
+  margin-top: 3px;
+  color: #b8ced0;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.save-slot-overlay {
+  inset: 0;
+  z-index: 1000005;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding:
+    calc(8px + env(safe-area-inset-top, 0px))
+    calc(8px + env(safe-area-inset-right, 0px))
+    calc(8px + env(safe-area-inset-bottom, 0px))
+    calc(8px + env(safe-area-inset-left, 0px));
+  background: rgba(0, 0, 0, 0.82);
+}
+
+.save-slot-overlay.is-title {
+  position: fixed;
+}
+
+.save-slot-overlay.is-game {
+  position: absolute;
+}
+
+.save-slot-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 520px);
+  height: min(92svh, 690px);
+  max-height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 2px solid #d6c36b;
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(180deg, #242424 0%, #101010 100%);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.72);
+}
+
+.save-slot-overlay.is-game .save-slot-dialog {
+  width: min(100%, 420px);
+  height: 100%;
+}
+
+.save-slot-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 11px;
+  border-bottom: 1px solid #555;
+  background: #292929;
+}
+
+.save-slot-title {
+  color: #ffd700;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.save-slot-subtitle {
+  margin-top: 2px;
+  color: #999;
+  font-size: 10px;
+}
+
+.save-slot-close {
+  flex: 0 0 auto;
+}
+
+.save-slot-notice {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border-bottom: 1px solid #3f3f3f;
+  color: #d8ca9d;
+  background: #171717;
+  font-size: 10px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.save-slot-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  background: #0c0c0c;
+  -webkit-overflow-scrolling: touch;
+}
+
+.save-slot-loading {
+  padding: 28px 10px;
+  color: #aaa;
+  text-align: center;
+  font-size: 12px;
+}
+
+.save-slot-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  width: 100%;
+  min-height: 76px;
+  margin: 0 0 7px;
+  padding: 7px 8px;
+  overflow: hidden;
+  border: 1px solid #505050;
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(135deg, #262626 0%, #171717 100%);
+  font: inherit;
+  text-align: left;
+}
+
+.save-slot-card:last-child {
+  margin-bottom: 0;
+}
+
+.save-slot-card:not(:disabled):hover,
+.save-slot-card:not(:disabled):focus-visible {
+  border-color: #ffd700;
+  background: linear-gradient(135deg, #35301b 0%, #1d1b13 100%);
+  outline: none;
+}
+
+.save-slot-card.is-auto {
+  border-color: #4d7084;
+  background: linear-gradient(135deg, #18303a 0%, #111d22 100%);
+}
+
+.save-slot-card.is-empty {
+  color: #888;
+  background: #151515;
+}
+
+.save-slot-card.is-corrupt {
+  border-color: #9d3c3c;
+  color: #ffb2b2;
+  background: #2a1515;
+}
+
+.save-slot-card:disabled {
+  cursor: default;
+  opacity: 0.76;
+}
+
+.save-slot-info {
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  min-width: 0;
+  padding-right: 7px;
+}
+
+.save-slot-line {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.save-slot-line-primary {
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.save-slot-number {
+  flex: 0 0 auto;
+  color: #ffd700;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.save-slot-date {
+  min-width: 0;
+  overflow: hidden;
+  color: #aaa;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.save-slot-line-hero {
+  overflow: hidden;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.save-slot-line-location {
+  justify-content: space-between;
+  gap: 7px;
+  color: #bbb;
+  font-size: 9px;
+}
+
+.save-slot-area {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.save-slot-playtime {
+  flex: 0 0 auto;
+  color: #d9d9d9;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.save-slot-party-faces {
+  display: grid;
+  grid-template-columns: repeat(4, 38px);
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.save-slot-face {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 58px;
+  overflow: hidden;
+  border: 1px solid #555;
+  border-radius: 5px;
+  background: #090909;
+}
+
+.save-slot-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.save-slot-face.is-empty::after {
+  content: '―';
+  color: #555;
+  font-size: 13px;
+}
+
+.save-slot-footer {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid #444;
+  background: #202020;
+}
+
+.save-slot-footer .btn {
+  width: min(100%, 220px);
+}
+
+@media (max-width: 390px) {
+  .save-slot-overlay {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .save-slot-card {
+    min-height: 70px;
+    padding: 6px;
+  }
+
+  .save-slot-party-faces {
+    grid-template-columns: repeat(4, 32px);
+    gap: 2px;
+  }
+
+  .save-slot-face {
+    width: 32px;
+    height: 52px;
+  }
+
+  .save-slot-line-hero,
+  .save-slot-number {
+    font-size: 11px;
+  }
+
+  .save-slot-date,
+  .save-slot-line-location {
+    font-size: 8px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .save-slot-dialog,
+  .save-slot-overlay.is-game .save-slot-dialog {
+    width: min(100%, 680px);
+    height: 100%;
+  }
+
+  .save-slot-header {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .save-slot-notice {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .save-slot-card {
+    min-height: 64px;
+  }
+
+  .save-slot-face {
+    height: 48px;
+  }
+}
+
+/* 4項目になったタイトル操作を縦画面内へ安定して収める。 */
+body.title-page .title-hero {
+  margin-bottom: clamp(24px, 5vh, 54px);
+}
+
+body.title-page .title-actions {
+  gap: 8px;
+}
+
+body.title-page .title-actions .btn {
+  min-height: 43px;
+}
+
+@media (max-height: 700px) {
+  body.title-page .title-hero {
+    margin-top: clamp(18px, 5vh, 38px);
+    margin-bottom: 18px;
+  }
+
+  body.title-page .title-actions {
+    gap: 6px;
+  }
+
+  body.title-page .title-actions .btn {
+    min-height: 39px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+}

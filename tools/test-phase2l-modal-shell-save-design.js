@@ -41,10 +41,10 @@ assert(/\.menu-dialog-shell[\s\S]*?max-height:\s*100%;/.test(css), 'generic dial
 assert(design.includes('オートセーブ1枠'), 'save design does not define auto slot');
 assert(design.includes('手動セーブ9枠'), 'save design does not define nine manual slots');
 assert(design.includes('既存のデータ出力・データ読込'), 'existing backup/restore retention missing');
-assert(design.includes('ユーザー確認前のため未実装'), 'save design must state not implemented');
-assert(design.includes('App.save()` 呼出: 234箇所'), 'save call-site audit result missing');
+assert(design.includes('ユーザー承認済み'), 'save design approval status missing');
+assert(design.includes('App.save()` 呼出: 235箇所'), 'save call-site audit result missing');
 
 assert(news.includes('スキル・特性・確認画面の長文表示を修正しました'), 'same-day news entry missing');
-assert(sw.includes('const CACHE_NAME = "prisma-abyss-v42.20260804";'), 'service worker cache was not advanced');
+assert(/const CACHE_NAME = "prisma-abyss-v(?:4[2-9]|[5-9]\d|\d{3,})\.20260804";/.test(sw), 'service worker cache was not advanced');
 
 console.log('Phase2L modal shell and save design checks passed.');

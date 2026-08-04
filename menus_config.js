@@ -1,5 +1,7 @@
 /* menus_config.js - 設定メニュー */
 const MenuConfig = {
+    activeTab: 'settings',
+
     speedOptions: [
         { value: 'normal', label: '普通', desc: 'じっくり戦闘を見る' },
         { value: 'fast', label: '早い', desc: '戦闘中のウェイトを約50%に短縮' },
@@ -50,6 +52,10 @@ const MenuConfig = {
                 <span>⚙️ 設定</span>
                 <button class="btn" onclick="Menu.closeSubScreen('config')">もどる</button>
             </div>
+            <div class="config-tab-bar" role="tablist" aria-label="設定メニュー切替">
+                <button id="config-tab-settings" class="config-tab-button" type="button" role="tab" onclick="MenuConfig.setTab('settings')">設定</button>
+                <button id="config-tab-save" class="config-tab-button" type="button" role="tab" onclick="MenuConfig.setTab('save')">セーブ</button>
+            </div>
             <div id="config-content" class="scroll-area" style="flex:1; padding:14px; background:#111; overflow-y:auto;"></div>
             <div class="sub-screen-bottom-panel">
                 <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('config')">もどる</button>
@@ -63,6 +69,19 @@ const MenuConfig = {
         const screen = document.getElementById('sub-screen-config');
         if (screen) screen.style.display = 'flex';
         MenuConfig.render();
+    },
+
+    setTab: (tab) => {
+        MenuConfig.activeTab = tab === 'save' ? 'save' : 'settings';
+        MenuConfig.render();
+    },
+
+    openSaveSlots: (mode) => {
+        if (typeof SaveSlotUI === 'undefined' || typeof SaveSlotUI.open !== 'function') {
+            Menu.msg('セーブスロット機能を読み込めませんでした。');
+            return;
+        }
+        SaveSlotUI.open(mode === 'save' ? 'save' : 'load', { context: 'game' });
     },
 
     setBattleSpeed: (speed) => {
@@ -136,6 +155,50 @@ const MenuConfig = {
     render: () => {
         const content = document.getElementById('config-content');
         if (!content) return;
+        const settingsTab = document.getElementById('config-tab-settings');
+        const saveTab = document.getElementById('config-tab-save');
+        const applyTabState = (button, active) => {
+            if (!button) return;
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-selected', active ? 'true' : 'false');
+        };
+        applyTabState(settingsTab, MenuConfig.activeTab === 'settings');
+        applyTabState(saveTab, MenuConfig.activeTab === 'save');
+
+        if (MenuConfig.activeTab === 'save') {
+            content.innerHTML = `
+                <div class="config-save-guide">
+                    <div class="config-save-guide-title">セーブデータ管理</div>
+                    <div>オートセーブは既存の仕組みで自動更新されます。手動セーブはNo.1～9へ保存できます。</div>
+                    <div>手動セーブのロードやデータ読込を行うと、現在のオートセーブは即時上書きされます。</div>
+                </div>
+                <div class="config-save-actions">
+                    <button class="btn config-save-action" type="button" onclick="MenuConfig.openSaveSlots('save')">
+                        <span class="config-save-action-title">セーブ</span>
+                        <span class="config-save-action-desc">手動セーブNo.1～9へ保存</span>
+                    </button>
+                    <button class="btn config-save-action" type="button" onclick="MenuConfig.openSaveSlots('load')">
+                        <span class="config-save-action-title">ロード</span>
+                        <span class="config-save-action-desc">オート／手動セーブから再開</span>
+                    </button>
+                    <button class="btn config-save-action" type="button" onclick="App.downloadSave()">
+                        <span class="config-save-action-title">データ出力</span>
+                        <span class="config-save-action-desc">現在のオートセーブをバックアップ</span>
+                    </button>
+                    <button class="btn config-save-action" type="button" onclick="App.importSave()">
+                        <span class="config-save-action-title">データ読込</span>
+                        <span class="config-save-action-desc">バックアップをオートセーブへ復元</span>
+                    </button>
+                    <button class="btn config-save-action" type="button" onclick="MenuConfig.downloadAllData()">
+                        <span class="config-save-action-title">一括ダウンロード</span>
+                        <span class="config-save-action-desc">ゲーム画像などの全データを端末へ保存</span>
+                    </button>
+                </div>
+            `;
+            Menu.refreshKeyboardNavigation(content);
+            return;
+        }
+
         const settings = MenuConfig.ensureSettings();
         const speed = settings.battleSpeed || 'normal';
         const autoStart = settings.battleAutoStart === true;
@@ -172,12 +235,6 @@ const MenuConfig = {
                 <div style="font-size:10px; color:#777; line-height:1.5;">音源ファイルが無音プレースホルダーの項目は、処理だけ実行されます。</div>
             </div>
 
-            <div style="border:1px solid #333; border-radius:8px; padding:12px; background:#151515;">
-                <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">データ管理</div>
-                <button class="btn" style="width:100%; height:42px; margin-bottom:10px; background:#004444;" onclick="MenuConfig.downloadAllData()">全データダウンロード</button>
-                <button class="btn" style="width:100%; height:42px; margin-bottom:10px; background:#004444;" onclick="App.downloadSave()">データ出力</button>
-                <button class="btn" style="width:100%; height:42px; background:#004444;" onclick="App.importSave()">データ読込</button>
-            </div>
         `;
         Menu.refreshKeyboardNavigation(content);
     }

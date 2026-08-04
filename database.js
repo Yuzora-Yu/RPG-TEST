@@ -349,7 +349,7 @@ const INITIAL_DATA_TEMPLATE = {
     ],
     party: ['p1', null, null, null],
     book: { monsters: [], killCounts: {} },
-    stats: { totalSteps: 0, startTime: Date.now() }
+    stats: { totalSteps: 0, startTime: Date.now(), playTimeMs: 0 }
 };
 
 window.DB = DB;
