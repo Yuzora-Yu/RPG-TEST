@@ -1,7 +1,8 @@
-/* ========================================================================== 
+/* ==========================================================================
    +3装備取得カード
-   - 新規取得した+3装備だけを、既存ログ・会話・購入結果の後に表示する。
-   - 装備は先に所持品へ確定し、未処理UIDをセーブデータへ保存する。
+   - 戦闘報酬ではドロップログ直後に戦闘画面上へ表示し、ログ進行を待機する。
+   - カード表示中の入力は最前面で消費し、閉じたタップを戦闘結果へ伝播させない。
+   - 戦闘イベント終了後は勝敗判定を必ず再確認し、battle_event停止を復旧する。
    ========================================================================== */
 
 (() => {
@@ -10,18 +11,32 @@
     const STATE_KEY = 'equipAcquisitionCardsV1';
     const HANDLED_LIMIT = 300;
     const MIN_SHOW_DELAY_MS = 2050;
-    const STEP_DELAY_MS = 150;
-
+    const INPUT_RELEASE_DELAY_MS = 280;
+    const BATTLE_SOURCES = new Set(['battleDrop', 'specialBoss']);
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
     }[ch]));
+    const stripHtml = (value) => String(value ?? '')
+        .replace(/<br\s*\/?>/gi, ' ')
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
 
     const Manager = {
         active: null,
         timer: null,
-        revealTimers: [],
-        keyHandler: null,
         achievementHookInstalled: false,
+        battleHooksInstalled: false,
+        battleCandidates: [],
+        battleReadyCards: [],
+        battleInventorySnapshot: new Set(),
+        battleCaptureActive: false,
+        battleConversationPending: 0,
+        battleRecoveryTimer: null,
 
         ensureState() {
             if (typeof App === 'undefined' || !App.data) return null;
@@ -44,7 +59,10 @@
                 const found = masters.find(entry => Number(entry?.eid) === explicit);
                 if (found) return found;
             }
-            const cleanName = String(equip?.name || '').replace(/^真・/, '').replace(/・改(?=\+?\d*$)/, '').replace(/\+\d+$/, '');
+            const cleanName = String(equip?.name || '')
+                .replace(/^真・/, '')
+                .replace(/・改(?=\+?\d*$)/, '')
+                .replace(/\+\d+$/, '');
             return masters.find(entry => String(entry?.name || '') === cleanName && String(entry?.type || '') === String(equip?.type || ''))
                 || masters.find(entry => Number(entry?.rank) === Number(equip?.rank)
                     && String(entry?.type || '') === String(equip?.type || '')
@@ -68,10 +86,17 @@
         enqueue(equip, options = {}) {
             const source = String(options.source || equip?.source || 'reward');
             if (!equip || Number(equip.plus) !== 3 || options.skip === true || options.initial === true || source === 'shop') return false;
-            const state = Manager.ensureState();
-            if (!state) return false;
             const uid = Manager.ensureEquipIdentity(equip);
-            if (!uid || state.handled[uid] || state.pending.some(entry => String(entry.uid) === uid)) return false;
+            if (!uid) return false;
+
+            // battle.js からの登録はフィールド用待機列へ入れず、勝利ログと同期させる。
+            if (BATTLE_SOURCES.has(source)) {
+                Manager.registerBattleCandidate(equip, source);
+                return true;
+            }
+
+            const state = Manager.ensureState();
+            if (!state || state.handled[uid] || state.pending.some(entry => String(entry.uid) === uid)) return false;
             state.pending.push({
                 uid,
                 eid: Number(equip.eid ?? equip.masterEid) || 0,
@@ -120,10 +145,11 @@
 
         removePending(uid, status) {
             const state = Manager.ensureState();
-            if (!state) return;
+            if (!state || !uid) return;
             state.pending = state.pending.filter(entry => String(entry.uid) !== String(uid));
             state.handled[String(uid)] = { status:String(status || 'kept'), at:Date.now() };
-            const keys = Object.keys(state.handled).sort((a, b) => Number(state.handled[b]?.at || 0) - Number(state.handled[a]?.at || 0));
+            const keys = Object.keys(state.handled)
+                .sort((a, b) => Number(state.handled[b]?.at || 0) - Number(state.handled[a]?.at || 0));
             keys.slice(HANDLED_LIMIT).forEach(key => delete state.handled[key]);
         },
 
@@ -142,8 +168,7 @@
             if (Manager.isVisibleElement(dialog)) return false;
             const openFacilityModal = Array.from(document.querySelectorAll('[id$="-modal-layer"]'))
                 .some(layer => Manager.isVisibleElement(layer));
-            if (openFacilityModal) return false;
-            return true;
+            return !openFacilityModal;
         },
 
         schedule(delay = 350) {
@@ -154,29 +179,40 @@
             }, Math.max(0, Number(delay) || 0));
         },
 
+        discardLegacyBattlePending(entry) {
+            const commit = () => {
+                Manager.removePending(entry.uid, 'legacy-battle-deferred-skipped');
+                return { ok:true };
+            };
+            if (typeof App.runAtomicSaveMutation === 'function') App.runAtomicSaveMutation(commit);
+            else {
+                commit();
+                App.save?.();
+            }
+        },
+
         pump() {
             Manager.installAchievementHook();
+            Manager.installBattleHooks();
             const state = Manager.ensureState();
             if (!state || Manager.active || state.pending.length === 0) return;
             const entry = state.pending[0];
-            if (String(entry?.source || '') === 'shop') {
-                if (typeof App.runAtomicSaveMutation === 'function') {
-                    App.runAtomicSaveMutation(() => { Manager.removePending(entry.uid, 'shop-skipped'); return { ok:true }; });
-                } else {
-                    Manager.removePending(entry.uid, 'shop-skipped');
-                    App.save?.();
-                }
+            const source = String(entry?.source || '');
+            if (source === 'shop' || BATTLE_SOURCES.has(source)) {
+                Manager.discardLegacyBattlePending(entry);
                 Manager.schedule(100);
                 return;
             }
             const owned = Manager.findOwnedEquip(entry.uid);
             if (!owned) {
-                const committed = typeof App.runAtomicSaveMutation === 'function'
-                    ? App.runAtomicSaveMutation(() => { Manager.removePending(entry.uid, 'missing'); return { ok:true }; })
-                    : null;
-                if (!committed && typeof App.save === 'function') {
+                const commit = () => {
                     Manager.removePending(entry.uid, 'missing');
-                    App.save();
+                    return { ok:true };
+                };
+                if (typeof App.runAtomicSaveMutation === 'function') App.runAtomicSaveMutation(commit);
+                else {
+                    commit();
+                    App.save?.();
                 }
                 Manager.schedule(100);
                 return;
@@ -186,14 +222,7 @@
                 Manager.schedule(Math.max(250, Math.min(900, wait || 500)));
                 return;
             }
-            Manager.show(entry, owned.equip);
-        },
-
-        getSellPrice(equip) {
-            if (typeof Facilities !== 'undefined' && typeof Facilities.getEquipSellPrice === 'function') {
-                return Math.max(1, Math.floor(Number(Facilities.getEquipSellPrice(equip)) || 1));
-            }
-            return Math.max(1, Math.floor(Number(equip?.val || 0) / 2));
+            Manager.show(entry, owned.equip, { battleResult:false });
         },
 
         getBaseStats(equip) {
@@ -222,7 +251,8 @@
             if (typeof Menu !== 'undefined' && typeof Menu.getRarityColor === 'function') {
                 return Menu.getRarityColor(String(rarity || 'N').toUpperCase());
             }
-            return ({ N:'#a0a0a0', R:'#40e040', SR:'#40e0e0', SSR:'#ff4444', UR:'#e040e0', EX:'#ffff00' })[String(rarity || 'N').toUpperCase()] || '#fff';
+            return ({ N:'#a0a0a0', R:'#40e040', SR:'#40e0e0', SSR:'#ff4444', UR:'#e040e0', EX:'#ffff00' })
+                [String(rarity || 'N').toUpperCase()] || '#fff';
         },
 
         getOptionText(option) {
@@ -232,7 +262,9 @@
             const label = option?.label || rule?.name || option?.key || '追加効果';
             const element = option?.elm && !String(label).includes(String(option.elm)) ? `${option.elm} ` : '';
             const value = Number(option?.val);
-            const valueText = Number.isFinite(value) ? `${value >= 0 ? '+' : ''}${value}${option?.unit ?? rule?.unit ?? ''}` : '';
+            const valueText = Number.isFinite(value)
+                ? `${value >= 0 ? '+' : ''}${value}${option?.unit ?? rule?.unit ?? ''}`
+                : '';
             const rarity = String(option?.rarity || '').toUpperCase();
             return `${element}${label}${valueText ? ` ${valueText}` : ''}${rarity ? ` [${rarity}]` : ''}`;
         },
@@ -256,29 +288,63 @@
             return `${master?.name || `特性${trait?.id ?? ''}`} Lv${level}`;
         },
 
-        buildStages(equip) {
-            const stages = [];
-            (equip?.opts || []).forEach((option) => {
+        buildRows(equip) {
+            const rows = [];
+            (equip?.opts || []).forEach(option => {
                 const rarity = String(option?.rarity || 'N').toUpperCase();
-                stages.push({
+                rows.push({
                     kind:'option',
-                    label:'',
                     html:`<span style="color:${Manager.getRarityColor(rarity)}">${escapeHtml(Manager.getOptionText(option))}</span>`
                 });
             });
             const traits = Manager.splitTraits(equip).additionalTraits;
-            if (traits.length) stages.push({
-                kind:'trait', label:'',
-                html:`<span class="equip-acquisition-trait-text">特性: ${traits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・')}</span>`
-            });
+            if (traits.length) {
+                rows.push({
+                    kind:'trait',
+                    html:`<span class="equip-acquisition-trait-text">特性: ${traits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・')}</span>`
+                });
+            }
             const synergies = Array.isArray(equip?.synergies) && equip.synergies.length
                 ? equip.synergies
                 : (typeof App.checkSynergy === 'function' ? App.checkSynergy(equip) : []);
-            if (synergies.length) stages.push({
-                kind:'synergy', label:'',
-                html:synergies.map(syn => `<strong style="color:${escapeHtml(syn.color || '#fff3a5')}">${escapeHtml(syn.name || '共鳴')}</strong>${syn.desc ? `<span> ${escapeHtml(syn.desc)}</span>` : ''}`).join('　')
-            });
-            return stages;
+            if (synergies.length) {
+                rows.push({
+                    kind:'synergy',
+                    html:synergies.map(syn =>
+                        `<strong style="color:${escapeHtml(syn.color || '#fff3a5')}">${escapeHtml(syn.name || '共鳴')}</strong>` +
+                        `${syn.desc ? `<span> ${escapeHtml(syn.desc)}</span>` : ''}`
+                    ).join('　')
+                });
+            }
+            return rows;
+        },
+
+        injectStyle() {
+            if (document.getElementById('equip-acquisition-card-style')) return;
+            const style = document.createElement('style');
+            style.id = 'equip-acquisition-card-style';
+            style.textContent = `
+                #equip-acquisition-card-overlay{position:fixed;inset:0;z-index:2147483600;background:transparent;display:flex;align-items:center;justify-content:center;padding:max(6px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));box-sizing:border-box;font-family:'DotGothic16',sans-serif;color:#fff;touch-action:none;overscroll-behavior:contain;-webkit-tap-highlight-color:transparent}
+                .equip-acquisition-card{width:min(calc(100vw - 12px),320px);max-height:min(58svh,270px);overflow-y:auto;box-sizing:border-box;padding:8px 9px 8px;border:1px solid #d2b55f;border-radius:9px;background:rgba(7,7,9,.91);box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65);position:relative;transition:opacity .12s ease,transform .12s ease}
+                #equip-acquisition-card-overlay.is-closing .equip-acquisition-card{opacity:.01;transform:scale(.985)}
+                .equip-acquisition-main{display:grid;grid-template-columns:48px minmax(0,1fr);gap:7px;align-items:start}
+                .equip-acquisition-image{width:48px;height:48px;background:#050505;border:1px solid #666;border-radius:5px;overflow:hidden;position:relative;box-sizing:border-box}
+                .equip-acquisition-image img{display:none;width:100%;height:100%;object-fit:cover}
+                .equip-acquisition-image-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;color:#fff;font-weight:bold;font-size:9px;line-height:1.2;box-sizing:border-box}
+                .equip-acquisition-summary{min-width:0;padding-top:1px}
+                .equip-acquisition-name-line{display:flex;align-items:center;gap:5px;min-width:0}
+                .equip-acquisition-name{font-size:14px;line-height:1.25;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+                .equip-acquisition-rank{font-size:9px;line-height:1;color:#aaa;white-space:nowrap;margin-left:auto;flex-shrink:0}
+                .equip-acquisition-base-stats{margin-top:5px;font-size:9px;line-height:1.35;color:#ccc;white-space:normal;overflow-wrap:anywhere}
+                .equip-acquisition-reveal-list{display:flex;flex-wrap:wrap;gap:2px 7px;margin-top:5px;min-height:1px;line-height:1.3}
+                .equip-acquisition-reveal-row{font-size:9px;max-width:100%;overflow-wrap:anywhere}.equip-acquisition-reveal-row.synergy{width:100%}.equip-acquisition-reveal-row.synergy strong{margin-right:2px}.equip-acquisition-reveal-row.synergy span{color:#ddd}
+                .equip-acquisition-base-traits,.equip-acquisition-trait-text{font-size:9px;color:#ffd27a;line-height:1.35}.equip-acquisition-base-traits{margin-top:3px}
+                .equip-acquisition-tap-hint{margin-top:6px;padding-top:4px;border-top:1px solid rgba(210,181,95,.32);font-size:8px;line-height:1.25;color:#aaa;text-align:right}
+                .equip-acquisition-card.is-synergy{animation:equipAcquisitionGlow .85s ease-in-out infinite alternate}
+                @keyframes equipAcquisitionGlow{from{box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65),0 0 3px rgba(255,233,138,.18)}to{box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65),0 0 12px rgba(255,233,138,.68)}}
+                @media(max-width:340px){.equip-acquisition-card{width:calc(100vw - 10px);padding:7px}.equip-acquisition-main{grid-template-columns:44px minmax(0,1fr)}.equip-acquisition-image{width:44px;height:44px}.equip-acquisition-name{font-size:13px}}
+            `;
+            document.head.appendChild(style);
         },
 
         createOverlay(entry, equip) {
@@ -286,9 +352,12 @@
             overlay.id = 'equip-acquisition-card-overlay';
             overlay.setAttribute('role', 'dialog');
             overlay.setAttribute('aria-modal', 'true');
+            overlay.setAttribute('aria-label', '+3装備取得');
             const nameColor = Manager.getRarityColor(equip?.rarity || 'N');
+            const rows = Manager.buildRows(equip);
+            const split = Manager.splitTraits(equip);
             overlay.innerHTML = `
-                <div class="equip-acquisition-card" aria-label="+3装備取得">
+                <div class="equip-acquisition-card">
                     <div class="equip-acquisition-main">
                         <div class="equip-acquisition-image">
                             <div class="equip-acquisition-image-fallback">${escapeHtml(equip.baseName || equip.type || '装備')}</div>
@@ -300,205 +369,358 @@
                                 <div class="equip-acquisition-rank">Rank ${Math.max(1, Number(equip.rank) || 1)}</div>
                             </div>
                             <div class="equip-acquisition-base-stats">${Manager.getBaseStats(equip).map(text => `<span>${escapeHtml(text)}</span>`).join(' ')}</div>
+                            <div class="equip-acquisition-reveal-list">${rows.map(row => `<div class="equip-acquisition-reveal-row ${row.kind}"><div class="equip-acquisition-reveal-value">${row.html}</div></div>`).join('')}</div>
+                            <div class="equip-acquisition-base-traits">${split.baseTraits.length ? `特性: ${split.baseTraits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・')}` : ''}</div>
+                            <div class="equip-acquisition-tap-hint">画面タップで閉じる</div>
                         </div>
                     </div>
-                    <div class="equip-acquisition-reveal-list"></div>
-                    <div class="equip-acquisition-base-traits"></div>
-                    <div class="equip-acquisition-actions" hidden>
-                        <button type="button" data-action="keep">保管</button>
-                        <button type="button" data-action="sell">売却 ${Manager.getSellPrice(equip).toLocaleString()}</button>
-                    </div>
                 </div>`;
-
             const card = overlay.querySelector('.equip-acquisition-card');
+            if (rows.some(row => row.kind === 'synergy')) card?.classList.add('is-synergy');
             const image = overlay.querySelector('img');
             const fallback = overlay.querySelector('.equip-acquisition-image-fallback');
             const eid = Number(equip.eid ?? equip.masterEid ?? entry.eid) || 0;
-            if (eid > 0) {
-                image.onload = () => { image.style.display = 'block'; fallback.style.display = 'none'; };
-                image.onerror = () => { image.removeAttribute('src'); image.style.display = 'none'; fallback.style.display = 'flex'; };
+            if (image && fallback && eid > 0) {
+                image.onload = () => {
+                    image.style.display = 'block';
+                    fallback.style.display = 'none';
+                };
+                image.onerror = () => {
+                    image.removeAttribute('src');
+                    image.style.display = 'none';
+                    fallback.style.display = 'flex';
+                };
                 image.src = `assets/equips/${eid}.png`;
             }
-
-            const baseTraits = Manager.splitTraits(equip).baseTraits;
-            if (baseTraits.length) {
-                overlay.querySelector('.equip-acquisition-base-traits').innerHTML =
-                    `特性: ${baseTraits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・')}`;
-            }
-
-            overlay.addEventListener('click', event => {
-                const action = event.target.closest('[data-action]')?.dataset.action;
-                if (action === 'sell') { event.stopPropagation(); Manager.sellActive(); return; }
-                if (action === 'keep') { event.stopPropagation(); Manager.keepActive(); return; }
-                if (!Manager.active?.revealedAll) { Manager.revealAll(); return; }
-                if (event.target === overlay) Manager.keepActive();
-            });
-            card.addEventListener('click', event => {
-                if (!event.target.closest('button') && !Manager.active?.revealedAll) Manager.revealAll();
-            });
             return overlay;
         },
 
-        injectStyle() {
-            if (document.getElementById('equip-acquisition-card-style')) return;
-            const style = document.createElement('style');
-            style.id = 'equip-acquisition-card-style';
-            style.textContent = `
-                #equip-acquisition-card-overlay{position:fixed;inset:0;z-index:2147483600;background:transparent;display:flex;align-items:center;justify-content:center;padding:max(6px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));box-sizing:border-box;font-family:'DotGothic16',sans-serif;color:#fff;touch-action:manipulation}
-                .equip-acquisition-card{width:min(calc(100vw - 12px),320px);max-height:min(52svh,230px);overflow-y:auto;box-sizing:border-box;padding:8px 9px 9px;border:1px solid #d2b55f;border-radius:9px;background:rgba(7,7,9,.88);box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65);position:relative}
-                .equip-acquisition-main{display:grid;grid-template-columns:48px minmax(0,1fr);gap:7px;align-items:start}
-                .equip-acquisition-image{width:48px;height:48px;background:#050505;border:1px solid #666;border-radius:5px;overflow:hidden;position:relative;box-sizing:border-box}
-                .equip-acquisition-image img{display:none;width:100%;height:100%;object-fit:cover}
-                .equip-acquisition-image-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;color:#fff;font-weight:bold;font-size:9px;line-height:1.2;box-sizing:border-box}
-                .equip-acquisition-summary{min-width:0;padding-top:1px}
-                .equip-acquisition-name-line{display:flex;align-items:center;gap:5px;min-width:0}
-                .equip-acquisition-name{font-size:14px;line-height:1.25;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-                .equip-acquisition-rank{font-size:9px;line-height:1;color:#aaa;white-space:nowrap;margin-left:auto;flex-shrink:0}
-                .equip-acquisition-base-stats{margin-top:5px;font-size:9px;line-height:1.35;color:#ccc;white-space:normal;overflow-wrap:anywhere}
-                .equip-acquisition-reveal-list{display:flex;flex-wrap:wrap;gap:2px 7px;margin-top:5px;min-height:1px;line-height:1.3}
-                .equip-acquisition-reveal-row{opacity:0;transform:translateY(2px);font-size:9px;transition:opacity .09s ease,transform .09s ease;max-width:100%;overflow-wrap:anywhere}.equip-acquisition-reveal-row.is-visible{opacity:1;transform:none}
-                .equip-acquisition-reveal-label{display:none}.equip-acquisition-reveal-value{font-size:9px;line-height:1.35}.equip-acquisition-reveal-row.synergy{width:100%}.equip-acquisition-reveal-row.synergy strong{margin-right:2px}.equip-acquisition-reveal-row.synergy span{color:#ddd}
-                .equip-acquisition-base-traits,.equip-acquisition-trait-text{font-size:9px;color:#ffd27a;line-height:1.35}.equip-acquisition-base-traits{margin-top:3px}
-                .equip-acquisition-card.is-synergy{animation:equipAcquisitionGlow .85s ease-in-out infinite alternate}
-                @keyframes equipAcquisitionGlow{from{box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65),0 0 3px rgba(255,233,138,.18)}to{box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65),0 0 12px rgba(255,233,138,.68)}}
-                .equip-acquisition-actions[hidden]{display:none}.equip-acquisition-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px}.equip-acquisition-actions button{height:38px;border:1px solid #c9b271;border-radius:6px;background:rgba(9,9,10,.82);color:#fff;font-family:inherit;font-size:13px;font-weight:bold}.equip-acquisition-actions button[data-action="sell"]{color:#ffd889}
-                @media(max-width:340px){.equip-acquisition-card{width:calc(100vw - 10px);padding:7px}.equip-acquisition-main{grid-template-columns:44px minmax(0,1fr)}.equip-acquisition-image{width:44px;height:44px}.equip-acquisition-name{font-size:13px}.equip-acquisition-actions button{height:36px}}
-            `;
-            document.head.appendChild(style);
+        consumeInput(event) {
+            if (!Manager.active) return;
+            if (event?.cancelable) event.preventDefault();
+            event?.stopPropagation?.();
+            event?.stopImmediatePropagation?.();
         },
 
-        show(entry, equip) {
+        installInputGuard() {
+            const active = Manager.active;
+            if (!active || active.inputGuard) return;
+            active.inputGuard = event => {
+                if (!Manager.active) return;
+                Manager.consumeInput(event);
+                if (Manager.active.closing) return;
+                if (event.type === 'keydown') {
+                    if (!['Escape', 'Enter', ' '].includes(event.key)) return;
+                    Manager.closeActive();
+                    return;
+                }
+                if (['pointerup', 'touchend', 'mouseup', 'click'].includes(event.type)) Manager.closeActive();
+            };
+            const options = { capture:true, passive:false };
+            ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click','keydown']
+                .forEach(type => window.addEventListener(type, active.inputGuard, options));
+        },
+
+        removeInputGuard(active) {
+            if (!active?.inputGuard) return;
+            const options = { capture:true };
+            ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click','keydown']
+                .forEach(type => window.removeEventListener(type, active.inputGuard, options));
+            active.inputGuard = null;
+        },
+
+        show(entry, equip, options = {}) {
+            if (!entry || !equip || Manager.active) return false;
             Manager.injectStyle();
             if (typeof Field !== 'undefined' && typeof Field.stopMove === 'function') Field.stopMove();
             const overlay = Manager.createOverlay(entry, equip);
-            document.body.appendChild(overlay);
-            const stages = Manager.buildStages(equip);
-            Manager.active = { entry, equip, overlay, stages, nextIndex:0, revealedAll:false };
-            Manager.keyHandler = event => {
-                if (!Manager.active) return;
-                if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                    if (!Manager.active.revealedAll) Manager.revealAll();
-                    else if (event.key === 'Escape') Manager.keepActive();
-                } else if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key)) {
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                }
+            const battleResult = options.battleResult === true;
+            const previousResultInputLocked = battleResult && typeof Battle !== 'undefined'
+                ? Battle.resultInputLocked === true
+                : false;
+            if (battleResult && typeof Battle !== 'undefined') Battle.resultInputLocked = true;
+            Manager.active = {
+                entry,
+                equip,
+                overlay,
+                battleResult,
+                previousResultInputLocked,
+                closing:false,
+                resolve:typeof options.resolve === 'function' ? options.resolve : null,
+                inputGuard:null
             };
-            window.addEventListener('keydown', Manager.keyHandler, true);
-            if (!stages.length) {
-                Manager.revealAll();
-            } else {
-                Manager.revealTimers.push(setTimeout(() => Manager.revealNext(), 180));
-            }
-        },
-
-        revealNext() {
-            const active = Manager.active;
-            if (!active || active.nextIndex >= active.stages.length) {
-                Manager.finishReveal();
-                return;
-            }
-            const stage = active.stages[active.nextIndex++];
-            const row = document.createElement('div');
-            row.className = `equip-acquisition-reveal-row ${stage.kind}`;
-            row.innerHTML = `<span class="equip-acquisition-reveal-label">${escapeHtml(stage.label)}</span><div class="equip-acquisition-reveal-value">${stage.html}</div>`;
-            active.overlay.querySelector('.equip-acquisition-reveal-list').appendChild(row);
-            requestAnimationFrame(() => row.classList.add('is-visible'));
-            if (stage.kind === 'synergy') active.overlay.querySelector('.equip-acquisition-card').classList.add('is-synergy');
-            if (active.nextIndex >= active.stages.length) {
-                Manager.revealTimers.push(setTimeout(() => Manager.finishReveal(), STEP_DELAY_MS));
-            } else {
-                Manager.revealTimers.push(setTimeout(() => Manager.revealNext(), STEP_DELAY_MS));
-            }
-        },
-
-        revealAll() {
-            const active = Manager.active;
-            if (!active) return;
-            Manager.revealTimers.forEach(clearTimeout);
-            Manager.revealTimers = [];
-            while (active.nextIndex < active.stages.length) {
-                const stage = active.stages[active.nextIndex++];
-                const row = document.createElement('div');
-                row.className = `equip-acquisition-reveal-row ${stage.kind} is-visible`;
-                row.innerHTML = `<span class="equip-acquisition-reveal-label">${escapeHtml(stage.label)}</span><div class="equip-acquisition-reveal-value">${stage.html}</div>`;
-                active.overlay.querySelector('.equip-acquisition-reveal-list').appendChild(row);
-                if (stage.kind === 'synergy') active.overlay.querySelector('.equip-acquisition-card').classList.add('is-synergy');
-            }
-            Manager.finishReveal();
-        },
-
-        finishReveal() {
-            const active = Manager.active;
-            if (!active || active.revealedAll) return;
-            active.revealedAll = true;
-            const actions = active.overlay.querySelector('.equip-acquisition-actions');
-            if (actions) actions.hidden = false;
-        },
-
-        commitActive(status, mutation) {
-            const active = Manager.active;
-            if (!active) return false;
-            let committed = null;
-            if (typeof App.runAtomicSaveMutation === 'function') {
-                committed = App.runAtomicSaveMutation(() => {
-                    const result = mutation ? mutation() : { ok:true };
-                    if (result && result.ok === false) return result;
-                    Manager.removePending(active.entry.uid, status);
-                    return { ok:true, result };
-                });
-                if (!committed?.ok) {
-                    App.showMessage?.('保存できなかったため、処理を取り消しました。');
-                    return false;
-                }
-            } else {
-                const result = mutation ? mutation() : { ok:true };
-                if (result && result.ok === false) return false;
-                Manager.removePending(active.entry.uid, status);
-                if (typeof App.save === 'function' && App.save() === false) return false;
-            }
-            Manager.closeActive();
+            document.body.appendChild(overlay);
+            Manager.installInputGuard();
             return true;
         },
 
-        keepActive() {
-            return Manager.commitActive('kept');
+        showAndWait(equip, options = {}) {
+            if (!equip || Number(equip.plus) !== 3) return Promise.resolve(false);
+            const uid = Manager.ensureEquipIdentity(equip);
+            if (!uid) return Promise.resolve(false);
+            const entry = {
+                uid,
+                eid:Number(equip.eid ?? equip.masterEid) || 0,
+                source:String(options.source || 'battleDrop'),
+                queuedAt:Date.now(),
+                earliestAt:Date.now()
+            };
+            return new Promise(resolve => {
+                const shown = Manager.show(entry, equip, { ...options, battleResult:true, resolve });
+                if (!shown) resolve(false);
+            });
         },
 
-        sellActive() {
-            const active = Manager.active;
-            if (!active) return false;
-            const price = Manager.getSellPrice(active.equip);
-            return Manager.commitActive('sold', () => {
-                const owned = Manager.findOwnedEquip(active.entry.uid);
-                if (!owned) return { ok:true, missing:true };
-                if (owned.inventoryIndex >= 0) App.data.inventory.splice(owned.inventoryIndex, 1);
-                else if (owned.owner && owned.part) owned.owner.equips[owned.part] = null;
-                App.data.gold = Math.max(0, Number(App.data.gold) || 0) + price;
-                return { ok:true, price };
-            });
+        commitKeep(active) {
+            const mutation = () => {
+                Manager.removePending(active.entry.uid, 'kept');
+                return { ok:true };
+            };
+            // 戦闘結果トランザクション中は追加saveを行わず、直後の勝利結果saveへ含める。
+            if (active.battleResult) {
+                mutation();
+                return true;
+            }
+            if (typeof App.runAtomicSaveMutation === 'function') {
+                const committed = App.runAtomicSaveMutation(mutation);
+                if (!committed?.ok) {
+                    App.showMessage?.('保存できなかったため、カードを閉じられませんでした。');
+                    return false;
+                }
+                return true;
+            }
+            mutation();
+            if (typeof App.save === 'function' && App.save() === false) return false;
+            return true;
         },
 
         closeActive() {
             const active = Manager.active;
-            if (!active) return;
-            Manager.revealTimers.forEach(clearTimeout);
-            Manager.revealTimers = [];
-            if (Manager.keyHandler) window.removeEventListener('keydown', Manager.keyHandler, true);
-            Manager.keyHandler = null;
-            active.overlay?.remove();
-            Manager.active = null;
-            App.updateHUD?.();
-            Manager.schedule(220);
+            if (!active || active.closing) return false;
+            if (!Manager.commitKeep(active)) return false;
+            active.closing = true;
+            active.overlay?.classList.add('is-closing');
+
+            // pointerup/touchendの後に生成されるclickまで同じガードで吸収してから再開する。
+            setTimeout(() => {
+                if (Manager.active !== active) return;
+                Manager.removeInputGuard(active);
+                active.overlay?.remove();
+                if (active.battleResult && typeof Battle !== 'undefined') {
+                    Battle.resultInputLocked = active.previousResultInputLocked;
+                }
+                Manager.active = null;
+                App.updateHUD?.();
+                const resolve = active.resolve;
+                if (resolve) resolve(true);
+                Manager.schedule(220);
+            }, INPUT_RELEASE_DELAY_MS);
+            return true;
+        },
+
+        registerBattleCandidate(equip, source = 'battleDrop') {
+            if (!equip || Number(equip.plus) !== 3) return false;
+            const uid = Manager.ensureEquipIdentity(equip);
+            if (!uid) return false;
+            if (Manager.battleCandidates.some(entry => entry.uid === uid) ||
+                Manager.battleReadyCards.some(entry => entry.uid === uid) ||
+                String(Manager.active?.entry?.uid || '') === uid) return false;
+            Manager.battleCandidates.push({ uid, equip, source:String(source || 'battleDrop') });
+            return true;
+        },
+
+        beginBattleCapture() {
+            Manager.battleCaptureActive = true;
+            Manager.battleCandidates = [];
+            Manager.battleReadyCards = [];
+            Manager.battleInventorySnapshot = new Set((App.data?.inventory || []).map(equip => String(equip?.id || '')));
+        },
+
+        refreshBattleCandidatesFromInventory() {
+            if (!Manager.battleCaptureActive) return;
+            (App.data?.inventory || []).forEach(equip => {
+                const uid = String(equip?.id || '');
+                if (!uid || Manager.battleInventorySnapshot.has(uid) || Number(equip?.plus) !== 3) return;
+                Manager.registerBattleCandidate(equip, 'battleDrop');
+            });
+        },
+
+        observeBattleLog(message) {
+            if (typeof Battle === 'undefined' || Battle.phase !== 'result') return;
+            const plain = stripHtml(message);
+            if (!plain.includes('手に入れた')) return;
+            Manager.refreshBattleCandidatesFromInventory();
+            const index = Manager.battleCandidates.findIndex(entry => {
+                const name = String(entry.equip?.name || '');
+                return name && plain.includes(name);
+            });
+            if (index < 0) return;
+            const [entry] = Manager.battleCandidates.splice(index, 1);
+            entry.previousResultInputLocked = Battle.resultInputLocked === true;
+            Manager.battleReadyCards.push(entry);
+            // ログを描画した同じフレームから結果送りを止める。
+            Battle.resultInputLocked = true;
+        },
+
+        takeReadyBattleCard() {
+            if (typeof Battle === 'undefined' || Battle.phase !== 'result') return null;
+            return Manager.battleReadyCards.shift() || null;
+        },
+
+        async showReadyBattleCardAfter(waitPromise, entry) {
+            try {
+                await waitPromise;
+                if (!entry || typeof Battle === 'undefined' || Battle.phase !== 'result' || Battle.resultProcessing === false) return false;
+                return await Manager.showAndWait(entry.equip, { source:entry.source, battleResult:true });
+            } finally {
+                if (typeof Battle !== 'undefined' && !Manager.active) {
+                    Battle.resultInputLocked = entry?.previousResultInputLocked === true;
+                }
+            }
+        },
+
+        finishBattleCapture() {
+            Manager.battleCaptureActive = false;
+            Manager.battleCandidates = [];
+            Manager.battleReadyCards = [];
+            Manager.battleInventorySnapshot = new Set();
+            if (typeof Battle !== 'undefined' && !Manager.active) Battle.resultInputLocked = false;
+        },
+
+        scheduleBattleEventRecovery() {
+            if (Manager.battleRecoveryTimer) clearTimeout(Manager.battleRecoveryTimer);
+            Manager.battleRecoveryTimer = setTimeout(() => {
+                Manager.battleRecoveryTimer = null;
+                Manager.recoverBattleAfterEvent();
+            }, 0);
+        },
+
+        recoverBattleAfterEvent() {
+            if (typeof Battle === 'undefined' || Manager.battleConversationPending > 0) return false;
+            if (!Battle.active || Battle.phase === 'result' || Battle.phase !== 'battle_event') return false;
+            if (Battle.hasPendingPhaseTransition?.() || Battle.phaseTransitionRunnerActive) return false;
+
+            Battle.updateDeadState?.();
+            // 会話の最後で敵が全滅していた場合、元のターン継続可否に依存せず勝利へ進める。
+            if (Battle.checkFinish?.()) return true;
+
+            if (Battle.turnExecutionActive) {
+                Battle.phase = 'execution';
+                return true;
+            }
+
+            // 呼出元がstartInputPhase()を続ける場合は、そのmicrotaskを先に通す。
+            Battle.phase = 'input_recovery';
+            setTimeout(() => {
+                if (!Battle.active || Battle.phase !== 'input_recovery' || Battle.phase === 'result') return;
+                if (Battle.hasPendingPhaseTransition?.() || Battle.phaseTransitionRunnerActive || Battle.turnExecutionActive) return;
+                Battle.updateDeadState?.();
+                if (!Battle.checkFinish?.()) Battle.scheduleInputRecovery?.('戦闘イベント終了後の入力復帰');
+            }, 0);
+            return true;
+        },
+
+        installBattleHooks() {
+            if (typeof Battle === 'undefined') return false;
+
+            if (typeof Battle.win === 'function' && !Battle.win.__equipAcquisitionCardWrapped) {
+                const originalWin = Battle.win;
+                const wrappedWin = async function() {
+                    Manager.beginBattleCapture();
+                    try {
+                        return await originalWin.apply(this, arguments);
+                    } finally {
+                        Manager.finishBattleCapture();
+                    }
+                };
+                wrappedWin.__equipAcquisitionCardWrapped = true;
+                wrappedWin.__original = originalWin;
+                Battle.win = wrappedWin;
+            }
+
+            if (typeof Battle.log === 'function' && !Battle.log.__equipAcquisitionCardWrapped) {
+                const originalLog = Battle.log;
+                const wrappedLog = function(message) {
+                    const result = originalLog.apply(this, arguments);
+                    try { Manager.observeBattleLog(message); } catch (error) {
+                        console.error('[EquipAcquisitionCard] battle drop log hook failed:', error);
+                    }
+                    return result;
+                };
+                wrappedLog.__equipAcquisitionCardWrapped = true;
+                wrappedLog.__original = originalLog;
+                Battle.log = wrappedLog;
+            }
+
+            if (typeof Battle.resultWait === 'function' && !Battle.resultWait.__equipAcquisitionCardWrapped) {
+                const originalResultWait = Battle.resultWait;
+                const wrappedResultWait = function() {
+                    const waitPromise = originalResultWait.apply(this, arguments);
+                    const entry = Manager.takeReadyBattleCard();
+                    return entry ? Manager.showReadyBattleCardAfter(waitPromise, entry) : waitPromise;
+                };
+                wrappedResultWait.__equipAcquisitionCardWrapped = true;
+                wrappedResultWait.__original = originalResultWait;
+                Battle.resultWait = wrappedResultWait;
+            }
+
+            if (typeof Battle.queueBattleConversation === 'function' && !Battle.queueBattleConversation.__equipAcquisitionCardWrapped) {
+                const originalQueue = Battle.queueBattleConversation;
+                const wrappedQueue = function() {
+                    const promise = originalQueue.apply(this, arguments);
+                    Manager.battleConversationPending += 1;
+                    let settled = false;
+                    const complete = () => {
+                        if (settled) return;
+                        settled = true;
+                        Manager.battleConversationPending = Math.max(0, Manager.battleConversationPending - 1);
+                        if (Manager.battleConversationPending === 0) Manager.scheduleBattleEventRecovery();
+                    };
+                    Promise.resolve(promise).then(complete, complete);
+                    return promise;
+                };
+                wrappedQueue.__equipAcquisitionCardWrapped = true;
+                wrappedQueue.__original = originalQueue;
+                Battle.queueBattleConversation = wrappedQueue;
+            }
+
+            if (typeof Battle.awaitPendingBattleEvent === 'function' && !Battle.awaitPendingBattleEvent.__equipAcquisitionCardWrapped) {
+                const originalAwait = Battle.awaitPendingBattleEvent;
+                const wrappedAwait = async function() {
+                    const result = await originalAwait.apply(this, arguments);
+                    // 実行中ターンからawaitされた会話は、この場でphaseを戻して呼出元の残処理を継続する。
+                    // ターン外（開始会話など）は既存の.then(startInputPhase)を先に通せるよう遅延復旧する。
+                    if (Manager.battleConversationPending === 0 && Battle.active && Battle.phase === 'battle_event' &&
+                        !Battle.hasPendingPhaseTransition?.() && !Battle.phaseTransitionRunnerActive) {
+                        if (Manager.battleRecoveryTimer) {
+                            clearTimeout(Manager.battleRecoveryTimer);
+                            Manager.battleRecoveryTimer = null;
+                        }
+                        Battle.updateDeadState?.();
+                        const finished = Battle.checkFinish?.() === true;
+                        if (!finished && Battle.turnExecutionActive) Battle.phase = 'execution';
+                        else if (!finished && Battle.phase === 'battle_event') Manager.scheduleBattleEventRecovery();
+                    } else {
+                        Manager.scheduleBattleEventRecovery();
+                    }
+                    return result;
+                };
+                wrappedAwait.__equipAcquisitionCardWrapped = true;
+                wrappedAwait.__original = originalAwait;
+                Battle.awaitPendingBattleEvent = wrappedAwait;
+            }
+
+            Manager.battleHooksInstalled = true;
+            return true;
         },
 
         init() {
             Manager.installAchievementHook();
+            Manager.installBattleHooks();
             Manager.schedule(900);
             setInterval(() => {
                 Manager.installAchievementHook();
+                Manager.installBattleHooks();
                 if (!Manager.active) Manager.pump();
             }, 900);
         }

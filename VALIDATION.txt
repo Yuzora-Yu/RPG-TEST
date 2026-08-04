@@ -1,0 +1,25 @@
+PRISMA ABYSS battle card / event battle fix validation
+Date: 2026-08-04
+
+[PASS] node --check equip_acquisition_card.js
+[PASS] node --check news.js
+[PASS] node --check tests/validate_fix.js
+[PASS] node tests/validate_fix.js
+       PASS: +3装備カード / 戦闘結果入力ロック / イベント戦闘復旧
+[PASS] node tools/validation/validate-news-data.js
+       PASS: news data policy (6 dates)
+
+Automated test coverage:
+- battle drop log -> popup -> dismiss -> log resume
+- multiple +3 drops shown one-by-one in log order; +2 ignored
+- result input lock while popup is active
+- battle result remains displayable while Battle.active is false
+- event conversation finish check recovery
+- event conversation synchronous turn continuation
+- event conversation input recovery
+- removal of keep/sell buttons
+- aligned detail block structure
+- one NEWS record per date
+
+Not performed:
+- full browser/device playthrough
