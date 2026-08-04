@@ -21,9 +21,9 @@ try {
   console.warn("[SW] モンスター定義を含む画像一覧の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-// 戦闘結果ホットフィックスではApp Shellだけ更新し、画像の全量キャッシュは再取得しない。
+// 表示用語・お知らせUI更新ではApp Shellだけ更新し、画像の全量キャッシュは再取得しない。
 // RUNTIME_CACHE_NAMEはmain.jsのfullDataCacheNameと同じv39を維持する。
-const CACHE_NAME = "prisma-abyss-v40.20260804";
+const CACHE_NAME = "prisma-abyss-v41.20260804";
 const RUNTIME_CACHE_NAME = "prisma-abyss-v39.20260804-runtime";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 

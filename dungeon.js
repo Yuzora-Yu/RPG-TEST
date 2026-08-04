@@ -1,4 +1,4 @@
-/* dungeon.js (完全統合版: 物語深淵 / ランダム深淵の階層分離) */
+/* dungeon.js (完全統合版: 物語深淵 / 深淵の亀裂の階層分離) */
 
 // 深淵の表示階層と、旧来のバランス階層を分離する唯一の正本。
 // story : 従来の物語深淵 1～100階（表示階層＝バランス階層）
@@ -108,8 +108,8 @@ const Dungeon = {
             active:true,
             floor:Number(Dungeon.floor || 0),
             modifierId:selected.id,
-            title:selected.title || '特殊階層',
-            message:selected.message || ''
+            title:selected.title || '異変の階層',
+            message:selected.message || 'この階層を、ただならぬ気配が満たしている……'
         } : null;
         return App.data.dungeon.floorModifier;
     },
@@ -127,8 +127,8 @@ const Dungeon = {
         pending.status = 'running';
         pending.startedAt = pending.startedAt || Date.now();
         App.save();
-        const title = String(pending.title || '特殊階層');
-        const message = String(pending.message || 'この階には特殊な気配が漂っている。');
+        const title = String(pending.title || '異変の階層');
+        const message = String(pending.message || 'この階層を、ただならぬ気配が満たしている……');
         const key = '__DUNGEON_FLOOR_MODIFIER_ANNOUNCEMENT__';
         try {
             if (typeof StoryManager !== 'undefined' && StoryManager.scripts && typeof StoryManager.showConversation === 'function') {
@@ -138,7 +138,7 @@ const Dungeon = {
                 ];
                 StoryManager.active = true;
                 const result = await Dungeon.showConversationReliably(key, 0);
-                if (result?.status !== 'completed') throw new Error(`特殊階層説明を完了できませんでした: ${result?.status || 'unknown'}`);
+                if (result?.status !== 'completed') throw new Error(`異変の階層説明を完了できませんでした: ${result?.status || 'unknown'}`);
                 StoryManager.endConversation?.();
             } else {
                 App.log(`<span style="color:#ffd78a;">【${title}】${message}</span>`);
@@ -516,7 +516,7 @@ const Dungeon = {
                     ? 'ギルド依頼迷宮'
                     : (Field.currentMapData?.isFixed && areaKey !== 'ABYSS'
                         ? (Field.currentMapData.displayName || Field.currentMapData.name || '深淵の迷宮')
-                        : 'ランダム深淵'));
+                        : '深淵の亀裂'));
             content.innerHTML = `
                 <div style="max-width:420px; margin:0 auto; display:flex; flex-direction:column; gap:14px;">
                     <div style="font-size:22px; color:#ffd700; text-align:center; margin-bottom:4px;">${modeLabel}</div>
@@ -552,7 +552,7 @@ const Dungeon = {
         };
 
         const randomHtml = Dungeon.isRandomAbyssUnlocked()
-            ? renderMode('random', 'ランダム深淵', 'さらに深く続く亀裂を探索します。入るたびに構造と宝箱の位置が変化します。')
+            ? renderMode('random', '深淵の亀裂', '亀裂の奥では景色が揺らぎ、足を踏み入れるたびに道筋が姿を変えます。')
             : '<div style="border:1px solid rgba(244,201,93,.28);border-radius:9px;padding:16px;color:#aaa;line-height:1.7;">終焉の祭壇に生じた亀裂を見つけると解放されます。</div>';
         content.innerHTML = `<div style="max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:13px;"><div style="font-size:22px;color:#ffd700;text-align:center;">深淵へ挑む</div>${randomHtml}</div>`;
     },
@@ -601,7 +601,7 @@ const Dungeon = {
         App.data.dungeon.abyssMode = mode;
         if (mode !== 'memory') {
 		    App.data.progress.flags.abyssFirstEntered = true;
-		    // 転送の扉はランダム深淵の解放状態だけに同期する。
+		    // 転送の扉は深淵の亀裂の解放状態だけに同期する。
 		    // ギルド依頼迷宮や初回進入だけで先行表示しない。
 		    App.data.progress.unlocked.teleport = !!App.data.progress.flags.abyssRandomUnlocked;
         }
@@ -1766,7 +1766,7 @@ const Dungeon = {
             return;
         }
         if (Dungeon.isStoryAbyss() && Number(App.data?.progress?.floor || Dungeon.floor || 1) >= 100) {
-            App.log('物語深淵は100階で踏破済みです。メニューから帰還し、ランダム深淵へ挑戦してください。');
+            App.log('物語深淵は100階で踏破済みです。メニューから帰還し、深淵の亀裂へ挑戦してください。');
             App.clearAction?.();
             return;
         }
@@ -4472,7 +4472,7 @@ const Dungeon = {
     getForcedVisualThemeIdForFloorPlan: (planType = App.data?.dungeon?.floorPlanType) => {
         const guildRun = Dungeon.getGuildQuestRun();
         if (guildRun?.visualThemeId) return String(guildRun.visualThemeId);
-        // 特殊フロアは地形の意味を優先し、外観抽選で別施設の壁・床へ変えない。
+        // 異変の階層は地形の意味を優先し、外観抽選で別施設の壁・床へ変えない。
         return ['flooded', 'treasure', 'boss'].includes(String(planType || '')) ? 'abyss' : null;
     },
 
@@ -4922,7 +4922,7 @@ const Dungeon = {
         Dungeon.map = Array.from({ length:Dungeon.height }, (_, y) => Array.from({ length:Dungeon.width }, (_, x) => {
             const raw = String(def.tiles?.[y]?.[x] || 'W').toUpperCase();
             // 既存マップの外形・通路を流用しつつ、固定イベント・宝箱・ボス・出入口は
-            // ランダム深淵へ持ち込まず通常床へ正規化する。固定マップの境界出口は
+            // 深淵の亀裂へ持ち込まず通常床へ正規化する。固定マップの境界出口は
             // ランダム階では行き止まり外周になるため、境界そのものを壁へ閉じる。
             if (x === 0 || y === 0 || x === Dungeon.width - 1 || y === Dungeon.height - 1) return 'W';
             return raw === 'W' || raw === 'F' ? 'W' : 'T';
@@ -5331,7 +5331,7 @@ const Dungeon = {
                 let fallbackValidation = Dungeon.validateGeneratedFloor();
 
                 if (!fallbackValidation.ok) {
-                    // 任意ギミックの配置だけが原因なら除去し、地形と特殊フロア種別は維持する。
+                    // 任意ギミックの配置だけが原因なら除去し、地形と異変の階層種別は維持する。
                     Dungeon.clearRandomFloorGateFeatures();
                     Dungeon.clearRandomFloorSpecialObjects();
                     fallbackValidation = Dungeon.validateGeneratedFloor();
@@ -6494,7 +6494,7 @@ const Dungeon = {
             }
 
             if (isStoryTerminalFloor) {
-                App.log('<span style="color:#80ffb0;">物語深淵を踏破した！ ランダム深淵が解放されます。</span>');
+                App.log('<span style="color:#80ffb0;">物語深淵を踏破した！ 深淵の亀裂が解放されます。</span>');
             } else {
                 App.log('<span style="color:#80ffb0;">階段が現れた！</span>');
             }

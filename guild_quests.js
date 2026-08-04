@@ -674,10 +674,10 @@
             "areaKeys": [
                 "ABYSS"
             ],
-            "label": "ランダム深淵",
+            "label": "深淵の亀裂",
             "abyssMode": "random"
         },
-        "spawnAreaLabel": "ランダム深淵 地下71～75階",
+        "spawnAreaLabel": "深淵の亀裂 地下71～75階",
         "requiredMaxAbyssFloor": 71
     },
     "guild_abyss_patrol_051_060": {
@@ -739,16 +739,16 @@
         }
     },
     "guild_abyss_patrol_111_120": {
-        "name": "ランダム深淵巡回・第十一～二十階",
-        "area": "ランダム深淵 地下11～20階",
+        "name": "深淵の亀裂巡回・第十一～二十階",
+        "area": "深淵の亀裂 地下11～20階",
         "kind": "hunt",
         "unlockFlags": [
             "abyssRandomUnlocked"
         ],
         "requiredMaxAbyssFloor": 20,
-        "objective": "ランダム深淵 地下11～20階で、通常戦闘の魔物を合計10体討伐する。",
-        "startText": "ランダム深淵、第十一階から二十階の観測路を守る掃討依頼が発行された。",
-        "progressText": "ランダム深淵 地下11～20階で通常戦闘の魔物を10体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "objective": "深淵の亀裂 地下11～20階で、通常戦闘の魔物を合計10体討伐する。",
+        "startText": "深淵の亀裂、第十一階から二十階の観測路を守る掃討依頼が発行された。",
+        "progressText": "深淵の亀裂 地下11～20階で通常戦闘の魔物を10体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
         "targetCount": 10,
         "completeText": "観測器の搬入路が開かれ、深層由来の素材を受け取った。",
         "rewardItems": [
@@ -777,7 +777,7 @@
             "areaKeys": [
                 "ABYSS"
             ],
-            "label": "ランダム深淵",
+            "label": "深淵の亀裂",
             "floorMin": 11,
             "floorMax": 20,
             "abyssMode": "random",
@@ -785,16 +785,16 @@
         }
     },
     "guild_abyss_patrol_151_160": {
-        "name": "ランダム深淵巡回・第五十一～六十階",
-        "area": "ランダム深淵 地下51～60階",
+        "name": "深淵の亀裂巡回・第五十一～六十階",
+        "area": "深淵の亀裂 地下51～60階",
         "kind": "hunt",
         "unlockFlags": [
             "abyssRandomUnlocked"
         ],
         "requiredMaxAbyssFloor": 60,
-        "objective": "ランダム深淵 地下51～60階で、通常戦闘の魔物を合計12体討伐する。",
-        "startText": "ランダム深淵の第五十一階以降について、精鋭向けの掃討依頼が届いた。",
-        "progressText": "ランダム深淵 地下51～60階で通常戦闘の魔物を12体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "objective": "深淵の亀裂 地下51～60階で、通常戦闘の魔物を合計12体討伐する。",
+        "startText": "深淵の亀裂の第五十一階以降について、精鋭向けの掃討依頼が届いた。",
+        "progressText": "深淵の亀裂 地下51～60階で通常戦闘の魔物を12体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
         "targetCount": 12,
         "completeText": "深層の魔物が減り、観測隊から最上級の育成資源を受け取った。",
         "rewardItems": [
@@ -823,7 +823,7 @@
             "areaKeys": [
                 "ABYSS"
             ],
-            "label": "ランダム深淵",
+            "label": "深淵の亀裂",
             "floorMin": 51,
             "floorMax": 60,
             "abyssMode": "random",
@@ -831,16 +831,16 @@
         }
     },
     "guild_abyss_patrol_191_200": {
-        "name": "ランダム深淵巡回・第九十一～百階",
-        "area": "ランダム深淵 地下91～100階",
+        "name": "深淵の亀裂巡回・第九十一～百階",
+        "area": "深淵の亀裂 地下91～100階",
         "kind": "hunt",
         "unlockFlags": [
             "abyssRandomUnlocked"
         ],
         "requiredMaxAbyssFloor": 100,
-        "objective": "ランダム深淵 地下91～100階で、通常戦闘の魔物を合計15体討伐する。",
-        "startText": "ランダム深淵の第九十一階から百階について、最高位冒険者向けの掃討依頼が発行された。",
-        "progressText": "ランダム深淵 地下91～100階で通常戦闘の魔物を15体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "objective": "深淵の亀裂 地下91～100階で、通常戦闘の魔物を合計15体討伐する。",
+        "startText": "深淵の亀裂の第九十一階から百階について、最高位冒険者向けの掃討依頼が発行された。",
+        "progressText": "深淵の亀裂 地下91～100階で通常戦闘の魔物を15体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
         "targetCount": 15,
         "completeText": "最深層の観測路が確保され、ギルド最高位の報奨を受け取った。",
         "rewardItems": [
@@ -869,7 +869,7 @@
             "areaKeys": [
                 "ABYSS"
             ],
-            "label": "ランダム深淵",
+            "label": "深淵の亀裂",
             "floorMin": 91,
             "floorMax": 100,
             "abyssMode": "random",

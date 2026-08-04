@@ -56,11 +56,11 @@ const ACHIEVEMENTS_DATA = [
     { id: 301, type: "FLAG", flag: "abyssCarmenaGateCleared", goal: 1, category: "探索", title: "最果ての門", desc: "カルメナの北門を解放", rewards: [{ type: 'GEM', val: 100 }] },
     { id: 302, type: "FLAG", flag: "abyssFirstBarrierCleared", goal: 1, category: "探索", title: "第一層の解放者", desc: "深淵都市ビスタを覆う結界を解除", rewards: [{ type: 'GEM', val: 500 }] },
     { id: 303, type: "FLAG", flag: "abyssSecondBarrierCleared", goal: 1, category: "探索", title: "第二層の解放者", desc: "混沌魔城レガシオンを覆う結界を解除", rewards: [{ type: 'GEM', val: 1000 }] },
-    { id: 304, type: "RANDOM_FLOOR", goal: 1, category: "探索", title: "深淵を越えし者", desc: "ランダム深淵 1階に到達", rewards: [
+    { id: 304, type: "RANDOM_FLOOR", goal: 1, category: "探索", title: "深淵を越えし者", desc: "深淵の亀裂 1階に到達", rewards: [
         { type: 'GEM', val: 3000 },
         { type: 'ITEM', id: 107, val: 1 }
     ] },
-    { id: 305, type: "RANDOM_FLOOR", goal: 101, category: "探索", title: "真装備の探索者", desc: "ランダム深淵 101階に到達", rewards: [
+    { id: 305, type: "RANDOM_FLOOR", goal: 101, category: "探索", title: "真装備の探索者", desc: "深淵の亀裂 101階に到達", rewards: [
         { type: 'GEM', val: 5000 },
         { type: 'ITEM', id: 106, val: 10 }
     ] },
@@ -185,11 +185,11 @@ const ACHIEVEMENTS_DATA = [
     { id: 2201, type: "FLAG", flag: "abyssAzelgaragDefeated", goal: 1, category: "物語", title: "深淵王の終焉", desc: "深淵王アゼルガラグを撃破", rewards: [{ type:'GEM', val:3000 }] },
     { id: 2401, type: "FLAG", flag: "memoryRealmCleared", goal: 1, category: "探索", title: "追憶を越えし者", desc: "追憶の魔境30階を踏破", rewards: [] },
 
-    // --- 17. 再編後ランダム深淵の追加到達目標 ---
-    { id: 2301, type: "RANDOM_FLOOR", goal: 25, category: "探索", title: "深層への歩み", desc: "ランダム深淵25階に到達", rewards: [{ type:'GEM', val:500 }] },
-    { id: 2302, type: "RANDOM_FLOOR", goal: 50, category: "探索", title: "深層観測者", desc: "ランダム深淵50階に到達", rewards: [{ type:'GEM', val:1000 }] },
-    { id: 2303, type: "RANDOM_FLOOR", goal: 100, category: "探索", title: "百層の到達者", desc: "ランダム深淵100階に到達", rewards: [{ type:'GEM', val:2500 }] },
-    { id: 2304, type: "RANDOM_FLOOR", goal: 200, category: "探索", title: "無限深層の探索者", desc: "ランダム深淵200階に到達", rewards: [{ type:'ITEM', id:106, val:10 }] }
+    // --- 17. 再編後深淵の亀裂の追加到達目標 ---
+    { id: 2301, type: "RANDOM_FLOOR", goal: 25, category: "探索", title: "深層への歩み", desc: "深淵の亀裂25階に到達", rewards: [{ type:'GEM', val:500 }] },
+    { id: 2302, type: "RANDOM_FLOOR", goal: 50, category: "探索", title: "深層観測者", desc: "深淵の亀裂50階に到達", rewards: [{ type:'GEM', val:1000 }] },
+    { id: 2303, type: "RANDOM_FLOOR", goal: 100, category: "探索", title: "百層の到達者", desc: "深淵の亀裂100階に到達", rewards: [{ type:'GEM', val:2500 }] },
+    { id: 2304, type: "RANDOM_FLOOR", goal: 200, category: "探索", title: "無限深層の探索者", desc: "深淵の亀裂200階に到達", rewards: [{ type:'ITEM', id:106, val:10 }] }
 
 ];
 

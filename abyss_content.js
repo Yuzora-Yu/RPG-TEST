@@ -140,7 +140,7 @@
         光: Object.freeze({ key:'light', bossId:502005, rewardItemId:701005 }),
         闇: Object.freeze({ key:'dark', bossId:502006, rewardItemId:701006 })
     });
-    // ランダム深淵 Phase2I の正式バランスマスター。生成・戦闘・報酬の各処理は
+    // 深淵の亀裂 Phase2I の正式バランスマスター。生成・戦闘・報酬の各処理は
     // このレコードを参照し、画面ごとの確率・倍率の重複定義を避ける。
     const RANDOM_DUNGEON_PHASE2I_MASTER = Object.freeze({
         spiritFragmentResistance: 20,
@@ -196,11 +196,11 @@
         }),
         floorModifiers: Object.freeze([
             Object.freeze({ id:'dangerTreasure', rate:0.05, enemyStatMultiplier:1.35, rareDropMultiplier:2.0, plus3BonusPct:20,
-                title:'強敵の財宝階', message:'この階は魔物が強い代わりに、+3装備と希少品を得やすい。' }),
+                title:'強敵の財宝階', message:'強大な気配と、宝の輝きが入り混じっている……' }),
             Object.freeze({ id:'rareSurge', rate:0.04, rareEncounterMultiplier:2.0,
-                title:'希少種の気配', message:'この階ではレアモンスターの出現率が2倍になっている。' }),
+                title:'希少種の気配', message:'希少な魔物の気配が濃い……' }),
             Object.freeze({ id:'storyBossEcho', rate:0.03, encounterRateMultiplier:0.45, normalStatMultiplier:1.15, hpNormalMultiplier:2.0,
-                title:'物語の残響', message:'敵の気配は少ない。しかし、強化された物語のボスだけが徘徊している。' })
+                title:'物語の残響', message:'過去の戦いの残響が、この階層を満たしている……' })
         ]),
         storyBossEchoIds: Object.freeze([301010,301020,301030,301040,301050,301061,301070,301080,301081,301082,303201,303202,303203,303204,303205,303206,303207,303208]),
         endlessBossWedge: Object.freeze({ itemId:98, rate:0.10, minimumDisplayFloor:101 }),

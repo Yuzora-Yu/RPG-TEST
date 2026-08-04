@@ -195,7 +195,7 @@ const Facilities = {
 
         Facilities.showModal('inn-scene', "行き先を選択", `
             <div style="text-align:center;">
-                <div style="font-size:13px;color:#fff;margin-bottom:8px;">ランダム深淵</div>
+                <div style="font-size:13px;color:#fff;margin-bottom:8px;">深淵の亀裂</div>
                 <div id="inn-tele-cost" style="font-size:12px;color:#ffd700;margin-bottom:15px;">必要額: ${Facilities.getAbyssTeleportCost(Facilities.teleportFloor).toLocaleString()} Gold</div>
                 <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:20px;">
                     <button class="btn" style="width:40px;height:35px;" onclick="Facilities.updateTele(-10)">-10</button>
@@ -224,7 +224,7 @@ const Facilities = {
         Facilities.teleportFloor = Math.max(1, Math.min(Facilities.getAbyssTeleportMaxFloor(), Number(Facilities.teleportFloor || 1)));
         const cost = Facilities.getAbyssTeleportCost(Facilities.teleportFloor);
         if (App.data.gold < cost) return Menu.msg("ゴールドが 足りません。");
-        Menu.confirm(`ランダム深淵 ${Facilities.teleportFloor}階への転送には ${cost.toLocaleString()} Gold 必要です。よろしいですか？`, () => {
+        Menu.confirm(`深淵の亀裂 ${Facilities.teleportFloor}階への転送には ${cost.toLocaleString()} Gold 必要です。よろしいですか？`, () => {
             App.data.gold -= cost;
             App.save();
             Facilities.closeModal('inn-scene');

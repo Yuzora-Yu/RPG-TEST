@@ -128,9 +128,9 @@ const MenuStatus = {
                 </div>
                 ${row('ストーリー進行度', storyProgress, '#fff', '16px')}
                 ${row('深淵世界の踏破', flags.abyssAzelgaragDefeated ? '達成' : '攻略中', '#d7b8ff', '16px')}
-                ${row('ランダム深淵 最高到達', `${randomMaxFloor} 階`, '#ffd700', '16px')}
+                ${row('深淵の亀裂 最高到達', `${randomMaxFloor} 階`, '#ffd700', '16px')}
                 ${row('深淵挑戦回数（合計）', `${dungeon.tryCount || 0} 回`)}
-                ${row('ランダム深淵の挑戦', `${dungeon.randomTryCount || 0} 回`)}
+                ${row('深淵の亀裂の挑戦', `${dungeon.randomTryCount || 0} 回`)}
                 ${row('冒険者ランク', `${guildRank}ランク`, '#ffd56b')}
                 ${row('通常クエストクリア', `${normalQuestClears} 件`, '#9fd8ff')}
                 ${row('ギルド依頼クリア', `${guildQuestClears} 件`, '#8cff9d')}

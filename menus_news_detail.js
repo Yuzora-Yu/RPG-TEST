@@ -3,42 +3,78 @@ const MenuNewsDetail = {
     list: [],
     currentIndex: -1,
 
+    escapeHtml: (value) => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;'),
+
+    getHost: () => document.getElementById('game-container') || document.body,
+
+    ensureModal: () => {
+        let modal = document.getElementById('news-detail-modal');
+        const host = MenuNewsDetail.getHost();
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'news-detail-modal';
+            modal.className = 'news-detail-modal';
+            modal.setAttribute('aria-hidden', 'false');
+        }
+        if (modal.parentNode !== host) host.appendChild(modal);
+        return modal;
+    },
+
     open: (id, list) => {
-        MenuNewsDetail.list = list;
-        MenuNewsDetail.currentIndex = list.findIndex(n => n.id === id);
+        MenuNewsDetail.list = Array.isArray(list) ? list.filter(Boolean) : [];
+        if (!MenuNewsDetail.list.length) return;
+        const requestedIndex = MenuNewsDetail.list.findIndex(item => item.id === id);
+        MenuNewsDetail.currentIndex = requestedIndex >= 0 ? requestedIndex : 0;
         MenuNewsDetail.render();
     },
 
     move: (dir) => {
         const len = MenuNewsDetail.list.length;
-        MenuNewsDetail.currentIndex = (MenuNewsDetail.currentIndex + dir + len) % len;
+        if (!len) return;
+        MenuNewsDetail.currentIndex = (MenuNewsDetail.currentIndex + Number(dir || 0) + len) % len;
         MenuNewsDetail.render();
+    },
+
+    close: () => {
+        document.getElementById('news-detail-modal')?.remove();
     },
 
     render: () => {
         const item = MenuNewsDetail.list[MenuNewsDetail.currentIndex];
         if (!item) return;
 
-        let modal = document.getElementById('news-detail-modal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'news-detail-modal';
-            document.body.appendChild(modal);
-        }
-        modal.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; display:flex; align-items:center; justify-content:center;`;
-        
+        const modal = MenuNewsDetail.ensureModal();
+        const escape = MenuNewsDetail.escapeHtml;
+        const navigationDisabled = MenuNewsDetail.list.length <= 1 ? 'disabled aria-disabled="true"' : '';
+
         modal.innerHTML = `
-            <div style="width:310px; background:#111; border:2px solid #ffd700; border-radius:10px; padding:20px; color:#eee;">
-                <div style="font-size:10px; color:#888; margin-bottom:5px;">${item.date}</div>
-                <div style="font-size:16px; font-weight:bold; color:#ffd700; border-bottom:1px solid #444; padding-bottom:10px; margin-bottom:15px;">${item.title}</div>
-                <div style="font-size:13px; line-height:1.6; min-height:150px; white-space:pre-wrap; color:#ccc;">${item.body}</div>
-                <div style="display:flex; gap:10px; margin-top:20px;">
-                    <button class="btn" style="flex:1;" onclick="MenuNewsDetail.move(-1)">◀ 前</button>
-                    <button class="btn" style="flex:1;" onclick="MenuNewsDetail.move(1)">次 ▶</button>
-                </div>
-                <button class="btn" style="width:100%; margin-top:10px; background:#444;" onclick="document.getElementById('news-detail-modal').remove()">閉じる</button>
-            </div>
+            <section class="news-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="news-detail-title">
+                <header class="news-detail-header">
+                    <div class="news-detail-heading">
+                        <div class="news-detail-date">${escape(item.date)}</div>
+                        <div id="news-detail-title" class="news-detail-title">${escape(item.title)}</div>
+                    </div>
+                    <button class="btn news-detail-header-close" type="button" onclick="MenuNewsDetail.close()" aria-label="お知らせ詳細を閉じる">×</button>
+                </header>
+                <div class="news-detail-body" tabindex="0">${escape(item.body)}</div>
+                <footer class="news-detail-footer">
+                    <div class="news-detail-navigation">
+                        <button class="btn" type="button" ${navigationDisabled} onclick="MenuNewsDetail.move(-1)">◀ 前</button>
+                        <button class="btn" type="button" ${navigationDisabled} onclick="MenuNewsDetail.move(1)">次 ▶</button>
+                    </div>
+                    <button class="btn news-detail-close" type="button" onclick="MenuNewsDetail.close()">閉じる</button>
+                </footer>
+            </section>
         `;
+
+        modal.setAttribute('aria-hidden', 'false');
+        const body = modal.querySelector?.('.news-detail-body');
+        if (body && typeof body.scrollTop === 'number') body.scrollTop = 0;
     }
 };
 

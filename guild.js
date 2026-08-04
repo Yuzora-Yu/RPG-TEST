@@ -664,15 +664,15 @@
                 def = {
                     id,
                     name: `${namePrefix}・${rangeLabel}`,
-                    area: `ランダム深淵 ${rangeLabel}`,
+                    area: `深淵の亀裂 ${rangeLabel}`,
                     kind: 'hunt',
                     unlockFlags: ['abyssRandomUnlocked'],
                     requiredMaxAbyssFloor: spec.floorMax,
-                    objective: `ランダム深淵 ${rangeLabel}で、通常戦闘の魔物を合計${count}体討伐する。`,
-                    startText: `到達済みのランダム深淵 ${rangeLabel}について、魔物の間引き依頼が発行された。種類は問わない。`,
-                    progressText: `ランダム深淵 ${rangeLabel}で通常戦闘の魔物を${count}体討伐し、ライザーク要塞のギルド受付へ報告しよう。`,
+                    objective: `深淵の亀裂 ${rangeLabel}で、通常戦闘の魔物を合計${count}体討伐する。`,
+                    startText: `到達済みの深淵の亀裂 ${rangeLabel}について、魔物の間引き依頼が発行された。種類は問わない。`,
+                    progressText: `深淵の亀裂 ${rangeLabel}で通常戦闘の魔物を${count}体討伐し、ライザーク要塞のギルド受付へ報告しよう。`,
                     targetCount: count,
-                    completeText: `ランダム深淵 ${rangeLabel}の観測路が安定し、巡回依頼を完了した。`,
+                    completeText: `深淵の亀裂 ${rangeLabel}の観測路が安定し、巡回依頼を完了した。`,
                     rewardItems: Guild.getRarityBonusRewards(rarityDef),
                     requiredRank: generatedRequiredRank,
                     guildExp,
@@ -689,13 +689,13 @@
                     huntScope: {
                         mode: 'floorRange',
                         areaKeys: ['ABYSS'],
-                        label: 'ランダム深淵',
+                        label: '深淵の亀裂',
                         floorMin: spec.floorMin,
                         floorMax: spec.floorMax,
                         abyssMode: 'random',
                         normalBattlesOnly: true
                     },
-                    spawnAreaLabel: `ランダム深淵 ${rangeLabel}`,
+                    spawnAreaLabel: `深淵の亀裂 ${rangeLabel}`,
                     generatedQuest: true,
                     generatorKind: 'abyss',
                     generatorKey: `${spec.floorMin}-${spec.floorMax}`,
@@ -736,7 +736,7 @@
             const floorMin = wasLegacyRandom ? Math.max(1, oldFloorMin - 100) : oldFloorMin;
             const floorMax = wasLegacyRandom ? Math.max(floorMin, oldFloorMax - 100) : oldFloorMax;
             const abyssMode = 'random';
-            const areaLabel = 'ランダム深淵';
+            const areaLabel = '深淵の亀裂';
             const rangeLabel = `地下${floorMin}～${floorMax}階`;
             const count = Math.max(1, Math.floor(Number(def.targetCount || 1)));
             const namePrefix = String(def.name || '深淵巡回').replace(/・地下\d+～\d+階.*$/, '') || '深淵巡回';
