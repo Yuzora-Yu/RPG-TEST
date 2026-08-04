@@ -190,6 +190,31 @@ const Battle = {
         };
     },
 
+    // 亀裂戦の報酬識別子は、勝利中にDungeon.onBossDefeated()が戦闘データを初期化する前に退避する。
+    // 未設定値同士の比較（null === null / undefined === undefined）を成立条件にしない。
+    captureAbyssRiftResultContext: (battleData = App.data?.battle, dungeonData = App.data?.dungeon) => {
+        const battleRewardId = String(battleData?.riftRewardId || '').trim();
+        const dungeonRewardId = String(dungeonData?.abyssRift?.rewardId || '').trim();
+        const riftEventId = (typeof Dungeon !== 'undefined') ? Dungeon.riftBattleEventId : null;
+        const isRiftBattle = battleData?.isRiftBattle === true
+            || !!battleRewardId
+            || (riftEventId != null && battleData?.eventId === riftEventId);
+        const rewardId = battleRewardId || dungeonRewardId;
+        if (!isRiftBattle || !rewardId) return null;
+        return { rewardId };
+    },
+
+    buildAbyssRiftResultOutcome: (context, dungeonData = App.data?.dungeon) => {
+        const expectedRewardId = String(context?.rewardId || '').trim();
+        if (!expectedRewardId) return null;
+        const pending = dungeonData?.pendingRiftReward;
+        if (!pending || pending.active !== true) return null;
+        const pendingRewardId = String(pending.rewardId || '').trim();
+        if (!pendingRewardId || pendingRewardId !== expectedRewardId) return null;
+        const itemName = String(pending.itemName || '').trim() || '輝く装備+3';
+        return { rewardId: expectedRewardId, itemName };
+    },
+
     getEndlessBossWedgeDropRule: (data = App.data) => {
         const master = globalThis.ABYSS_REGION_CONTENT?.randomDungeonPhase2IMaster?.endlessBossWedge || {};
         const battle = data?.battle || {};
@@ -7919,6 +7944,7 @@ findNextActor: () => {
         const guildPromotionTarget = App.data.battle?.guildPromotionTarget || null;
         const isTrainingBattle = Battle.isStoryBossTrainingBattle();
         const trainingJournalContext = Battle.getStoryBossTrainingJournalContext();
+        const abyssRiftResultContext = Battle.captureAbyssRiftResultContext(App.data?.battle, App.data?.dungeon);
         let guildPromotionMessage = null;
 		
 		// 戦闘データはフィールド復帰時に初期化されるため、勝利後会話で使う
@@ -8376,6 +8402,7 @@ findNextActor: () => {
             });
         }
         const pendingMonsterSkillEvolution = isTrainingBattle ? null : Battle.prepareMonsterSkillEvolutionAfterBattle();
+        const abyssRiftOutcome = Battle.buildAbyssRiftResultOutcome(abyssRiftResultContext, App.data?.dungeon);
         const battleId = App.data.battle.battleId;
         App.data.battle.resultJournal = {
             version: 2,
@@ -8396,9 +8423,7 @@ findNextActor: () => {
                 : null,
             randomHunterOutcome,
             endlessBossWedgeOutcome,
-            abyssRiftOutcome: App.data?.dungeon?.pendingRiftReward?.rewardId === App.data?.battle?.riftRewardId
-                ? { rewardId:App.data.battle.riftRewardId, itemName:App.data.dungeon.pendingRiftReward.itemName }
-                : null,
+            abyssRiftOutcome,
             angelTrialOutcome: App.data?.battle?.angelTrialOutcome
                 ? JSON.parse(JSON.stringify(App.data.battle.angelTrialOutcome))
                 : null,

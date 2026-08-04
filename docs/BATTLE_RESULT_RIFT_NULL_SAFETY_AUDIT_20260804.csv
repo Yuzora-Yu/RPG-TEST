@@ -1,0 +1,9 @@
+確認ケース,旧処理,旧結果,新処理,期待結果
+通常雑魚戦・亀裂IDなし,"undefined === undefined が成立後に itemName を直接参照",例外・ロールバック・敵復活,"亀裂戦コンテキストなしとして終了",勝利commit・亀裂結果null
+通常ボス戦・亀裂IDなし,"undefined === undefined が成立後に itemName を直接参照",例外・ロールバック,"亀裂戦コンテキストなしとして終了",勝利commit・亀裂結果null
+通常戦・古いpendingRiftRewardあり,現在戦闘との対応確認が不十分,誤接続の可能性,退避IDとpending IDの一致を必須化,古い報酬を結果へ混入しない
+亀裂戦・onBossDefeated前,戦闘側riftRewardIdあり,後続初期化で消失,勝利前にID退避,後続処理へ保持
+亀裂戦・onBossDefeated後,戦闘側riftRewardIdがnull,結果ジャーナルに残せない,退避IDと新規pending報酬を照合,報酬ID・装備名を結果へ保存
+亀裂報酬名欠落,pending.itemNameを直接使用,nullまたは例外要因,空文字を検査し代替名を使用,輝く装備+3
+異なる報酬ID,単純比較依存,状態次第で誤判定,空でないIDの完全一致を必須化,結果null
+結果エラー時ロールバック,保存済み戦闘を再構築,安全機構,変更なし,真の処理例外時だけ作動

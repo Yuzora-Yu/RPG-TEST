@@ -163,7 +163,7 @@ assert(/\.save-slot-party-faces\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,/
 assert(/\.save-slot-list\s*\{[\s\S]*?min-height:\s*0;[\s\S]*?overflow-y:\s*auto;/.test(css), 'slot list scroll contract missing');
 assert(css.includes('env(safe-area-inset-top'), 'slot UI safe-area support missing');
 
-assert(sw.includes('const CACHE_NAME = "prisma-abyss-v43.20260804";'), 'service worker cache version missing');
+assert(/const CACHE_NAME = \"prisma-abyss-v(?:4[3-9]|[5-9]\d|\d{3,})\.20260804\";/.test(sw), 'service worker cache version is older than Phase2M');
 assert(sw.includes('"save_slots.js"'), 'save_slots.js is not app-shell cached');
 assert(news.includes('オート1枠と手動9枠のセーブ機能を追加しました'), 'same-day ten-slot news entry missing');
 assert(news.includes('プレイ時間表示とデータ管理画面を整理しました'), 'same-day play-time news entry missing');

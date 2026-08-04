@@ -1,0 +1,34 @@
+PRISMA ABYSS Phase2N引継ぎ
+
+基準:
+- Phase2M適用済みソース
+- Phase2N戦闘勝利結果・亀裂報酬null安全化を適用
+
+今回の根本修正:
+- 通常戦で pendingRiftReward?.rewardId と battle?.riftRewardId が双方undefinedのため比較が真になり、null.itemNameを読んでいた。
+- Battle.captureAbyssRiftResultContext()で亀裂報酬IDをonBossDefeated前に退避。
+- Battle.buildAbyssRiftResultOutcome()で実在・active・非空ID・ID一致を確認。
+- 通常戦・通常ボス・古いpending報酬ではabyssRiftOutcomeをnullにする。
+- 正規亀裂戦ではonBossDefeated後も報酬IDと装備名を結果ジャーナルへ残す。
+- 結果失敗時の安全ロールバックは削除していない。
+
+専用試験:
+node tools/test-phase2n-battle-result-rift-null-safety.js
+
+最優先実機回帰:
+1. 通常雑魚3体の手動勝利
+2. 通常雑魚3体のオート勝利
+3. 通常ボス
+4. 形態移行ボス最終勝利
+5. 深淵の亀裂戦と+3装備会話
+6. 結果表示中リロード
+7. コンソールにwin transaction failed / itemName例外がないこと
+
+将来アイデア:
+- docs/FUTURE_IDEA_TIME_REWIND_TRAIT_20260804.md
+- 時属性魔族、特性「死に戻り」
+- 今回は記録のみ。技術的ロールバックを直接ゲーム仕様へ転用しない。
+
+次の作業:
+- 実機結果に問題がなければ、Phase2Mの10枠セーブをPC/Android/iPhoneで回帰。
+- 問題が再発した場合は、コンソール行番号・戦闘種別・敵・マップ・オート状態・結果表示前後の操作を記録する。
