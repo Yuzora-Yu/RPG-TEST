@@ -613,7 +613,7 @@ const MenuAllies = {
                 .map(element => [element, Number(environmentalElmRes[element] || 0)])
                 .filter(([, value]) => value !== 0);
             const environmentSummary = environmentEntries.length
-                ? `<div style="margin-bottom:7px; padding:6px; border:1px solid #8a5a79; border-radius:4px; background:#2a1825; font-size:10px; color:#f0c7e5;">環境による属性耐性補正：${environmentEntries.map(([element,value]) => `${element}${value > 0 ? '+' : ''}${value}%`).join(' / ')}</div>`
+                ? `<div style="margin-bottom:7px; padding:6px; border:1px solid #8a5a79; border-radius:4px; background:#2a1825; font-size:10px; color:#f0c7e5;">環境補正：${environmentEntries.map(([element,value]) => `${element}${value > 0 ? '+' : ''}${value}%`).join(' / ')}</div>`
                 : '';
             const resistanceDisplay = element => {
                 const total = Number(s.elmRes?.[element] || 0);

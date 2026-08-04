@@ -309,7 +309,6 @@ const MenuStatus = {
             <div style="font-size:10px; color:#ffd56b; margin:0 0 7px 2px;">受注中のギルド依頼 (${acceptedIds.length}/5)</div>
             <div style="border:1px solid #3d3425; border-radius:7px; padding:8px; background:rgba(0,0,0,.18);">${rows || '<div style="color:#888; font-size:12px; padding:12px;">受注中のギルド依頼はありません。</div>'}</div>
             <button class="menu-btn" ${canGuildTravel ? '' : 'disabled'} style="width:100%; min-height:42px; margin-top:10px; border-color:${canGuildTravel ? '#8bbcff' : '#444'}; color:${canGuildTravel ? '#dcecff' : '#666'}; background:${canGuildTravel ? '#183445' : '#171717'};" onclick="MenuStatus.travelToGuildReception()">ギルドへ移動</button>
-            <div style="font-size:10px; color:#777; margin-top:8px;">依頼は魔道通信またはライザーク要塞1階の掲示板から受注でき、達成報告はギルド受付で行います。</div>
         `;
     },
 
