@@ -1663,7 +1663,6 @@ const Facilities = {
         if (!App.data.inventory) App.data.inventory = [];
         App.data.gold -= price;
         App.data.inventory.push(purchased);
-        window.EquipAcquisitionCard?.enqueue(purchased, { source:'shop' });
         App.save();
         Facilities.updateShopGoldDisplay();
         Facilities.renderShopEquip();

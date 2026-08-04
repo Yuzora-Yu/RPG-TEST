@@ -66,7 +66,8 @@
         },
 
         enqueue(equip, options = {}) {
-            if (!equip || Number(equip.plus) !== 3 || options.skip === true || options.initial === true) return false;
+            const source = String(options.source || equip?.source || 'reward');
+            if (!equip || Number(equip.plus) !== 3 || options.skip === true || options.initial === true || source === 'shop') return false;
             const state = Manager.ensureState();
             if (!state) return false;
             const uid = Manager.ensureEquipIdentity(equip);
@@ -74,7 +75,7 @@
             state.pending.push({
                 uid,
                 eid: Number(equip.eid ?? equip.masterEid) || 0,
-                source: String(options.source || equip.source || 'reward'),
+                source,
                 queuedAt: Date.now(),
                 earliestAt: Date.now() + Math.max(0, Number(options.delayMs ?? MIN_SHOW_DELAY_MS) || 0)
             });
@@ -158,6 +159,16 @@
             const state = Manager.ensureState();
             if (!state || Manager.active || state.pending.length === 0) return;
             const entry = state.pending[0];
+            if (String(entry?.source || '') === 'shop') {
+                if (typeof App.runAtomicSaveMutation === 'function') {
+                    App.runAtomicSaveMutation(() => { Manager.removePending(entry.uid, 'shop-skipped'); return { ok:true }; });
+                } else {
+                    Manager.removePending(entry.uid, 'shop-skipped');
+                    App.save?.();
+                }
+                Manager.schedule(100);
+                return;
+            }
             const owned = Manager.findOwnedEquip(entry.uid);
             if (!owned) {
                 const committed = typeof App.runAtomicSaveMutation === 'function'
@@ -207,6 +218,13 @@
             return entries.length ? entries : ['基礎能力なし'];
         },
 
+        getRarityColor(rarity) {
+            if (typeof Menu !== 'undefined' && typeof Menu.getRarityColor === 'function') {
+                return Menu.getRarityColor(String(rarity || 'N').toUpperCase());
+            }
+            return ({ N:'#a0a0a0', R:'#40e040', SR:'#40e0e0', SSR:'#ff4444', UR:'#e040e0', EX:'#ffff00' })[String(rarity || 'N').toUpperCase()] || '#fff';
+        },
+
         getOptionText(option) {
             const rule = (typeof DB !== 'undefined' && Array.isArray(DB.OPT_RULES))
                 ? DB.OPT_RULES.find(entry => entry.key === option?.key && (!option?.elm || entry.elm === option.elm))
@@ -216,7 +234,7 @@
             const value = Number(option?.val);
             const valueText = Number.isFinite(value) ? `${value >= 0 ? '+' : ''}${value}${option?.unit ?? rule?.unit ?? ''}` : '';
             const rarity = String(option?.rarity || '').toUpperCase();
-            return `${rarity ? `[${rarity}] ` : ''}${element}${label}${valueText ? ` ${valueText}` : ''}`;
+            return `${element}${label}${valueText ? ` ${valueText}` : ''}${rarity ? ` [${rarity}]` : ''}`;
         },
 
         splitTraits(equip) {
@@ -240,22 +258,25 @@
 
         buildStages(equip) {
             const stages = [];
-            (equip?.opts || []).forEach((option, index) => stages.push({
-                kind:'option',
-                label:`追加効果 ${index + 1}`,
-                html:escapeHtml(Manager.getOptionText(option))
-            }));
+            (equip?.opts || []).forEach((option) => {
+                const rarity = String(option?.rarity || 'N').toUpperCase();
+                stages.push({
+                    kind:'option',
+                    label:'',
+                    html:`<span style="color:${Manager.getRarityColor(rarity)}">${escapeHtml(Manager.getOptionText(option))}</span>`
+                });
+            });
             const traits = Manager.splitTraits(equip).additionalTraits;
             if (traits.length) stages.push({
-                kind:'trait', label:'追加特性',
-                html:traits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('　')
+                kind:'trait', label:'',
+                html:`<span class="equip-acquisition-trait-text">特性: ${traits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・')}</span>`
             });
             const synergies = Array.isArray(equip?.synergies) && equip.synergies.length
                 ? equip.synergies
                 : (typeof App.checkSynergy === 'function' ? App.checkSynergy(equip) : []);
             if (synergies.length) stages.push({
-                kind:'synergy', label:'シナジー',
-                html:synergies.map(syn => `<strong>${escapeHtml(syn.name || '共鳴')}</strong><span>${escapeHtml(syn.desc || '')}</span>`).join('<br>')
+                kind:'synergy', label:'',
+                html:synergies.map(syn => `<strong style="color:${escapeHtml(syn.color || '#fff3a5')}">${escapeHtml(syn.name || '共鳴')}</strong>${syn.desc ? `<span> ${escapeHtml(syn.desc)}</span>` : ''}`).join('　')
             });
             return stages;
         },
@@ -265,26 +286,27 @@
             overlay.id = 'equip-acquisition-card-overlay';
             overlay.setAttribute('role', 'dialog');
             overlay.setAttribute('aria-modal', 'true');
+            const nameColor = Manager.getRarityColor(equip?.rarity || 'N');
             overlay.innerHTML = `
                 <div class="equip-acquisition-card" aria-label="+3装備取得">
-                    <div class="equip-acquisition-kicker">RARE EQUIPMENT</div>
                     <div class="equip-acquisition-main">
                         <div class="equip-acquisition-image">
                             <div class="equip-acquisition-image-fallback">${escapeHtml(equip.baseName || equip.type || '装備')}</div>
                             <img alt="" draggable="false">
                         </div>
                         <div class="equip-acquisition-summary">
-                            <div class="equip-acquisition-name">${escapeHtml(equip.name || '装備+3')}</div>
-                            <div class="equip-acquisition-rank">+3 <span>Rank ${Math.max(1, Number(equip.rank) || 1)}</span></div>
-                            <div class="equip-acquisition-base-stats">${Manager.getBaseStats(equip).map(text => `<span>${escapeHtml(text)}</span>`).join('')}</div>
-                            <div class="equip-acquisition-base-traits"></div>
+                            <div class="equip-acquisition-name-line">
+                                <div class="equip-acquisition-name" style="color:${nameColor}">${escapeHtml(equip.name || '装備+3')}</div>
+                                <div class="equip-acquisition-rank">Rank ${Math.max(1, Number(equip.rank) || 1)}</div>
+                            </div>
+                            <div class="equip-acquisition-base-stats">${Manager.getBaseStats(equip).map(text => `<span>${escapeHtml(text)}</span>`).join(' ')}</div>
                         </div>
                     </div>
                     <div class="equip-acquisition-reveal-list"></div>
-                    <div class="equip-acquisition-tap-hint">画面タップで演出をスキップ</div>
+                    <div class="equip-acquisition-base-traits"></div>
                     <div class="equip-acquisition-actions" hidden>
                         <button type="button" data-action="keep">保管</button>
-                        <button type="button" data-action="sell">売却 ${Manager.getSellPrice(equip).toLocaleString()}G</button>
+                        <button type="button" data-action="sell">売却 ${Manager.getSellPrice(equip).toLocaleString()}</button>
                     </div>
                 </div>`;
 
@@ -301,7 +323,7 @@
             const baseTraits = Manager.splitTraits(equip).baseTraits;
             if (baseTraits.length) {
                 overlay.querySelector('.equip-acquisition-base-traits').innerHTML =
-                    `固有特性：${baseTraits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('　')}`;
+                    `特性: ${baseTraits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・')}`;
             }
 
             overlay.addEventListener('click', event => {
@@ -322,27 +344,25 @@
             const style = document.createElement('style');
             style.id = 'equip-acquisition-card-style';
             style.textContent = `
-                #equip-acquisition-card-overlay{position:fixed;inset:0;z-index:2147483600;background:rgba(0,0,0,.76);display:flex;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));box-sizing:border-box;font-family:'DotGothic16',sans-serif;color:#fff;touch-action:manipulation}
-                .equip-acquisition-card{width:min(92vw,410px);max-height:min(88svh,660px);overflow-y:auto;box-sizing:border-box;padding:16px;border:2px solid #d9bd75;border-radius:12px;background:linear-gradient(160deg,rgba(32,32,34,.98),rgba(4,4,5,.98));box-shadow:0 0 0 2px #16110a,0 14px 50px #000;position:relative}
-                .equip-acquisition-kicker{text-align:center;font-size:10px;letter-spacing:.18em;color:#d9bd75;margin-bottom:10px}
-                .equip-acquisition-main{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;align-items:stretch}
-                .equip-acquisition-image{aspect-ratio:1/1;background:#000;border:1px solid #777;border-radius:8px;overflow:hidden;position:relative}
+                #equip-acquisition-card-overlay{position:fixed;inset:0;z-index:2147483600;background:transparent;display:flex;align-items:center;justify-content:center;padding:max(6px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));box-sizing:border-box;font-family:'DotGothic16',sans-serif;color:#fff;touch-action:manipulation}
+                .equip-acquisition-card{width:min(calc(100vw - 12px),320px);max-height:min(52svh,230px);overflow-y:auto;box-sizing:border-box;padding:8px 9px 9px;border:1px solid #d2b55f;border-radius:9px;background:rgba(7,7,9,.88);box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65);position:relative}
+                .equip-acquisition-main{display:grid;grid-template-columns:48px minmax(0,1fr);gap:7px;align-items:start}
+                .equip-acquisition-image{width:48px;height:48px;background:#050505;border:1px solid #666;border-radius:5px;overflow:hidden;position:relative;box-sizing:border-box}
                 .equip-acquisition-image img{display:none;width:100%;height:100%;object-fit:cover}
-                .equip-acquisition-image-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;color:#fff;font-weight:bold;font-size:15px;box-sizing:border-box}
-                .equip-acquisition-summary{min-width:0}
-                .equip-acquisition-name{font-size:18px;line-height:1.25;color:#fff;font-weight:bold;overflow-wrap:anywhere}
-                .equip-acquisition-rank{margin-top:5px;color:#ffd84d;font-size:20px;font-weight:bold}.equip-acquisition-rank span{font-size:12px;color:#ddd;margin-left:8px}
-                .equip-acquisition-base-stats{display:flex;flex-wrap:wrap;gap:4px 7px;margin-top:9px;font-size:11px;color:#d8e7ff}.equip-acquisition-base-stats span{white-space:nowrap}
-                .equip-acquisition-base-traits{font-size:10px;color:#ffd89a;margin-top:7px;line-height:1.45}
-                .equip-acquisition-reveal-list{display:grid;gap:7px;margin-top:13px;min-height:6px}
-                .equip-acquisition-reveal-row{opacity:0;transform:translateY(5px);border-left:3px solid #888;background:rgba(255,255,255,.06);padding:7px 9px;transition:opacity .12s ease,transform .12s ease}.equip-acquisition-reveal-row.is-visible{opacity:1;transform:none}
-                .equip-acquisition-reveal-row.option{border-color:#7bb5ff}.equip-acquisition-reveal-row.trait{border-color:#ffb45e}.equip-acquisition-reveal-row.synergy{border-color:#fff1a8;background:rgba(255,235,142,.12)}
-                .equip-acquisition-reveal-label{display:block;font-size:9px;color:#aaa;margin-bottom:2px}.equip-acquisition-reveal-value{font-size:12px;color:#fff;line-height:1.45}.equip-acquisition-reveal-row.synergy strong{color:#fff3a5;margin-right:7px}.equip-acquisition-reveal-row.synergy span{color:#eee}
-                .equip-acquisition-card.is-synergy{animation:equipAcquisitionGlow 1.05s ease-in-out infinite alternate}
-                @keyframes equipAcquisitionGlow{from{box-shadow:0 0 0 2px #16110a,0 14px 50px #000,0 0 7px rgba(255,233,138,.25)}to{box-shadow:0 0 0 2px #16110a,0 14px 50px #000,0 0 24px rgba(255,233,138,.78)}}
-                .equip-acquisition-tap-hint{text-align:center;color:#888;font-size:9px;margin-top:10px}
-                .equip-acquisition-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}.equip-acquisition-actions button{height:42px;border:1px solid #c9b271;border-radius:7px;background:#111;color:#fff;font-family:inherit;font-size:14px;font-weight:bold}.equip-acquisition-actions button[data-action="sell"]{color:#ffd889}
-                @media(max-width:360px){.equip-acquisition-main{grid-template-columns:84px minmax(0,1fr)}.equip-acquisition-name{font-size:15px}.equip-acquisition-rank{font-size:17px}.equip-acquisition-card{padding:12px}}
+                .equip-acquisition-image-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;color:#fff;font-weight:bold;font-size:9px;line-height:1.2;box-sizing:border-box}
+                .equip-acquisition-summary{min-width:0;padding-top:1px}
+                .equip-acquisition-name-line{display:flex;align-items:center;gap:5px;min-width:0}
+                .equip-acquisition-name{font-size:14px;line-height:1.25;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+                .equip-acquisition-rank{font-size:9px;line-height:1;color:#aaa;white-space:nowrap;margin-left:auto;flex-shrink:0}
+                .equip-acquisition-base-stats{margin-top:5px;font-size:9px;line-height:1.35;color:#ccc;white-space:normal;overflow-wrap:anywhere}
+                .equip-acquisition-reveal-list{display:flex;flex-wrap:wrap;gap:2px 7px;margin-top:5px;min-height:1px;line-height:1.3}
+                .equip-acquisition-reveal-row{opacity:0;transform:translateY(2px);font-size:9px;transition:opacity .09s ease,transform .09s ease;max-width:100%;overflow-wrap:anywhere}.equip-acquisition-reveal-row.is-visible{opacity:1;transform:none}
+                .equip-acquisition-reveal-label{display:none}.equip-acquisition-reveal-value{font-size:9px;line-height:1.35}.equip-acquisition-reveal-row.synergy{width:100%}.equip-acquisition-reveal-row.synergy strong{margin-right:2px}.equip-acquisition-reveal-row.synergy span{color:#ddd}
+                .equip-acquisition-base-traits,.equip-acquisition-trait-text{font-size:9px;color:#ffd27a;line-height:1.35}.equip-acquisition-base-traits{margin-top:3px}
+                .equip-acquisition-card.is-synergy{animation:equipAcquisitionGlow .85s ease-in-out infinite alternate}
+                @keyframes equipAcquisitionGlow{from{box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65),0 0 3px rgba(255,233,138,.18)}to{box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65),0 0 12px rgba(255,233,138,.68)}}
+                .equip-acquisition-actions[hidden]{display:none}.equip-acquisition-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px}.equip-acquisition-actions button{height:38px;border:1px solid #c9b271;border-radius:6px;background:rgba(9,9,10,.82);color:#fff;font-family:inherit;font-size:13px;font-weight:bold}.equip-acquisition-actions button[data-action="sell"]{color:#ffd889}
+                @media(max-width:340px){.equip-acquisition-card{width:calc(100vw - 10px);padding:7px}.equip-acquisition-main{grid-template-columns:44px minmax(0,1fr)}.equip-acquisition-image{width:44px;height:44px}.equip-acquisition-name{font-size:13px}.equip-acquisition-actions button{height:36px}}
             `;
             document.head.appendChild(style);
         },
@@ -414,9 +434,7 @@
             const active = Manager.active;
             if (!active || active.revealedAll) return;
             active.revealedAll = true;
-            const hint = active.overlay.querySelector('.equip-acquisition-tap-hint');
             const actions = active.overlay.querySelector('.equip-acquisition-actions');
-            if (hint) hint.style.display = 'none';
             if (actions) actions.hidden = false;
         },
 
