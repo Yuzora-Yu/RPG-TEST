@@ -225,42 +225,41 @@ const MenuBook = {
         const t = list[MenuBook.currentTraitIndex];
         if (!t) return;
 
-        let modal = document.getElementById('book-trait-detail-modal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'book-trait-detail-modal';
-            document.body.appendChild(modal);
-        }
+        const escape = (typeof Menu !== 'undefined' && typeof Menu.escapeHtml === 'function')
+            ? Menu.escapeHtml
+            : value => String(value ?? '');
+        const modal = (typeof Menu !== 'undefined' && typeof Menu.ensureModalOverlay === 'function')
+            ? Menu.ensureModalOverlay('book-trait-detail-modal', 'book-trait-detail-modal')
+            : document.getElementById('book-trait-detail-modal');
+        if (!modal) return;
 
-        modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:5000; display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box;';
         modal.innerHTML = `
-            <div onclick="event.stopPropagation()" style="width:310px; max-width:calc(100vw - 24px); background:#111; border:1px solid #00ffff; border-radius:8px; padding:20px; color:#eee; box-shadow:0 10px 40px #000; font-family:sans-serif;">
-                <div style="border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <span style="color:#00ffff; font-size:18px; font-weight:bold; line-height:1.2;">${t.name}</span>
-                    <span style="font-size:10px; background:#333; padding:2px 8px; border-radius:4px; color:#aaa; flex-shrink:0;">${t.sourceLabel || '魔物特性'}</span>
-                </div>
-
-                <div style="background:#222; padding:10px; border-radius:4px; font-size:12px; margin-bottom:15px; display:flex; justify-content:space-between; gap:8px;">
-                    <span>Lv: <b style="color:#fff;">${t.lv}</b></span>
-                    <span style="color:#888;">分類: ${t.type || '不明'}</span>
-                </div>
-
-                ${t.effect ? `<div style="font-size:12px; color:#00ffff; line-height:1.5; background:rgba(0,255,255,0.06); border:1px solid rgba(0,255,255,0.2); border-radius:4px; padding:8px; margin-bottom:10px;">${t.effect}</div>` : ''}
-
-                <div style="font-size:13px; line-height:1.6; color:#ccc; min-height:60px; margin-bottom:20px; padding:0 5px;">
-                    ${t.desc || '効果なし'}
-                </div>
-
-                <div style="display:flex; justify-content:space-between; gap:10px;">
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn" style="width:45px; height:35px; background:#333; color:white; border:1px solid #555; cursor:pointer;" onclick="MenuBook.moveTraitDetail(-1)">▲</button>
-                        <button class="btn" style="width:45px; height:35px; background:#333; color:white; border:1px solid #555; cursor:pointer;" onclick="MenuBook.moveTraitDetail(1)">▼</button>
+            <section class="game-modal-dialog game-modal-dialog--book-trait" role="dialog" aria-modal="true" aria-labelledby="book-trait-detail-title" style="--modal-accent:#00ffff;" onclick="event.stopPropagation()">
+                <header class="game-modal-header">
+                    <div class="game-modal-heading">
+                        <div id="book-trait-detail-title" class="game-modal-title">${escape(t.name)}</div>
                     </div>
-                    <button class="btn" style="flex:1; background:#444; color:white; border:1px solid #555; cursor:pointer;" onclick="MenuBook.closeTraitDetail()">閉じる</button>
+                    <span class="game-modal-badge">${escape(t.sourceLabel || '魔物特性')}</span>
+                </header>
+                <div class="game-modal-body" tabindex="0">
+                    <div class="game-modal-meta-grid">
+                        <div><span>Lv</span><b>${escape(t.lv)}</b></div>
+                        <div><span>分類</span><b>${escape(t.type || '不明')}</b></div>
+                    </div>
+                    ${t.effect ? `<div class="game-modal-effect">${escape(t.effect)}</div>` : ''}
+                    <div class="game-modal-description">${escape(t.desc || '効果なし')}</div>
                 </div>
-            </div>
+                <footer class="game-modal-footer">
+                    <div class="game-modal-nav">
+                        <button class="btn" type="button" onclick="MenuBook.moveTraitDetail(-1)" aria-label="前の特性">▲</button>
+                        <button class="btn" type="button" onclick="MenuBook.moveTraitDetail(1)" aria-label="次の特性">▼</button>
+                    </div>
+                    <button class="btn game-modal-close" type="button" onclick="MenuBook.closeTraitDetail()">閉じる</button>
+                </footer>
+            </section>
         `;
         modal.onclick = () => MenuBook.closeTraitDetail();
+        modal.querySelector('.game-modal-body')?.scrollTo?.(0, 0);
     },
 
     // --- 詳細画面 ---

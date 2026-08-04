@@ -58,7 +58,7 @@ assert(/\.news-detail-body\s*\{[\s\S]*?min-height:\s*0;[\s\S]*?overflow-y:\s*aut
 assert(/\.news-detail-footer\s*\{[\s\S]*?flex:\s*0 0 auto;/m.test(css), 'お知らせ操作部が固定領域になっていません。');
 assert(css.includes('env(safe-area-inset-top'), 'セーフエリア上端への配慮がありません。');
 assert(css.includes('overflow-wrap: anywhere'), '長い英数字の折返し設定がありません。');
-assert(sw.includes('const CACHE_NAME = "prisma-abyss-v41.20260804";'), 'App Shellキャッシュが更新されていません。');
+assert(/const CACHE_NAME = "prisma-abyss-v(?:4[1-9]|[5-9]\d|\d{3,})\.20260804";/.test(sw), 'App ShellキャッシュがPhase2K以降へ更新されていません。');
 
 function createElement(tagName, registry) {
   return {

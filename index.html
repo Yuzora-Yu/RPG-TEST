@@ -499,11 +499,11 @@ if ('serviceWorker' in navigator) {
     <div id="assign-modal" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
          </div>
 
-    <div id="menu-dialog-area" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:2000;">
-        <div style="background:var(--win-bg); border:2px solid var(--win-border); padding:20px; border-radius:4px; max-width:90%; width:300px; text-align:center; display:flex; flex-direction:column; gap:15px;">
-            <div id="menu-dialog-text" style="font-size:14px; min-height:20px;"></div>
-            <div id="menu-dialog-buttons" style="display:flex; justify-content:space-around; gap:10px;"></div>
-        </div>
+    <div id="menu-dialog-area" class="menu-dialog-overlay" style="display:none;">
+        <section class="menu-dialog-shell" role="dialog" aria-modal="true" aria-labelledby="menu-dialog-text">
+            <div id="menu-dialog-text" class="menu-dialog-body" tabindex="0"></div>
+            <div id="menu-dialog-buttons" class="menu-dialog-footer"></div>
+        </section>
     </div>
 
 </div>

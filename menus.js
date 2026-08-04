@@ -82,6 +82,49 @@ const AdManager = {
 };
 
 const Menu = {
+    escapeHtml: (value) => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;'),
+
+    getModalHost: () => document.getElementById('game-container') || document.body,
+
+    ensureModalOverlay: (id, extraClass = '') => {
+        let modal = document.getElementById(id);
+        const host = Menu.getModalHost();
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = id;
+        }
+        modal.className = ['game-modal-overlay', extraClass].filter(Boolean).join(' ');
+        modal.setAttribute('aria-hidden', 'false');
+        if (modal.parentNode !== host) host.appendChild(modal);
+        return modal;
+    },
+
+    resetDialogLayout: () => {
+        const area = document.getElementById('menu-dialog-area');
+        const textEl = Menu.getDialogEl?.('menu-dialog-text') || document.getElementById('menu-dialog-text');
+        const btnEl = Menu.getDialogEl?.('menu-dialog-buttons') || document.getElementById('menu-dialog-buttons');
+        if (area) {
+            area.style.position = '';
+            area.style.zIndex = '';
+            area.style.inset = '';
+        }
+        if (textEl) {
+            textEl.scrollTop = 0;
+            textEl.style.textAlign = '';
+        }
+        if (btnEl) {
+            btnEl.classList.remove('is-list');
+            btnEl.style.flexDirection = '';
+            btnEl.style.gap = '';
+            btnEl.style.width = '';
+        }
+    },
+
     // ネイティブ<select>のタップを親要素のクリック処理に奪われないようにする共通処理
     stopEventBubble: (e) => {
         if (e && e.stopPropagation) e.stopPropagation();
@@ -830,7 +873,8 @@ const Menu = {
             return;
         }
         
-        textEl.innerHTML = text.replace(/\n/g, '<br>');
+        Menu.resetDialogLayout();
+        textEl.innerHTML = String(text).replace(/\n/g, '<br>');
         btnEl.innerHTML = '';
         const okBtn = document.createElement('button');
         okBtn.className = 'btn';
@@ -862,10 +906,7 @@ const Menu = {
     return;
   }
 
-  // listChoice の影響が残っても崩れないように念のため戻す（副作用の除去）
-  btnEl.style.flexDirection = 'row';
-  btnEl.style.gap = '10px';
-
+  Menu.resetDialogLayout();
   textEl.innerHTML = String(text).replace(/\n/g, '<br>');
   btnEl.innerHTML = '';
 
@@ -884,9 +925,9 @@ const Menu = {
 
   btnEl.appendChild(yesBtn);
   btnEl.appendChild(noBtn);
-  area.style.position = 'fixed';
-  area.style.zIndex = '1000000';
-  area.style.inset = '0';      // top/left/right/bottom を一括で 0 に
+  area.style.position = '';
+  area.style.zIndex = '';
+  area.style.inset = '';
   area.style.display = 'flex';
 },
 
@@ -905,7 +946,8 @@ const Menu = {
             return; 
         }
 
-        textEl.innerHTML = text.replace(/\n/g, '<br>');
+        Menu.resetDialogLayout();
+        textEl.innerHTML = String(text).replace(/\n/g, '<br>');
         btnEl.innerHTML = '';
         
         // ボタン1 (例: 1階から)
@@ -950,21 +992,15 @@ const Menu = {
         
         if (!area) return;
 
-        textEl.innerHTML = text.replace(/\n/g, '<br>');
-        // 縦並びに変更
-        btnEl.style.flexDirection = 'column'; 
-        btnEl.style.gap = '8px';
-        btnEl.style.width = '100%';
+        Menu.resetDialogLayout();
+        textEl.innerHTML = String(text).replace(/\n/g, '<br>');
+        btnEl.classList.add('is-list');
 
         const pageSize = 6;
         const totalPages = Math.max(1, Math.ceil(choices.length / pageSize));
         let page = 0;
 
-        const resetDialogButtons = () => {
-            btnEl.style.flexDirection = 'row';
-            btnEl.style.gap = '10px';
-            btnEl.style.width = '';
-        };
+        const resetDialogButtons = () => Menu.resetDialogLayout();
 
         const makeButton = (label, onClick, options = {}) => {
             const btn = document.createElement('button');
@@ -1040,6 +1076,7 @@ const Menu = {
     closeDialog: () => {
         const area = document.getElementById('menu-dialog-area');
         if (area) area.style.display = 'none';
+        Menu.resetDialogLayout();
     }
 };
 
