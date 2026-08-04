@@ -11,6 +11,8 @@ const StoryManager = {
     index: 0,
     onComplete: null,
     mapTransferRecheckTokens: new Set(),
+    resumeRunnerActive: false,
+    resumeRunnerToken: null,
 
     // ==========================================
     // 目的表示の正本
@@ -1477,17 +1479,37 @@ const StoryManager = {
         return null;
     },
 
+    beginResumeRunner: function(token = null) {
+        if (this.resumeRunnerActive) return false;
+        this.resumeRunnerActive = true;
+        this.resumeRunnerToken = token || this.createEventToken('resume');
+        return this.resumeRunnerToken;
+    },
+
+    endResumeRunner: function(token = null) {
+        if (token && this.resumeRunnerToken && token !== this.resumeRunnerToken) return false;
+        this.resumeRunnerActive = false;
+        this.resumeRunnerToken = null;
+        return true;
+    },
+
     /**
      * 中断されたイベントまたは会話があれば再開する
      */
     resumeActiveConversation: function() {
         const data = App.data ? App.data.progress : null;
         if (!data) return false;
+        // field初期化や多重入力から同じ再開処理が重なっても、既存ランナーを優先する。
+        if (this.resumeRunnerActive) return true;
         if (this.recoverPendingMapTransfer()) return true;
         const journal = this.ensureEventJournal();
         const active = journal?.active;
         if (!active && !data.activeConversation) return false;
 
+        const runnerToken = this.beginResumeRunner(
+            active?.token || `conversation:${String(data.activeConversation?.key || 'unknown')}`
+        );
+        if (!runnerToken) return true;
         this.active = false;
         this.isTyping = false;
         (async () => {
@@ -1515,12 +1537,15 @@ const StoryManager = {
                 this.active = false;
                 console.error('[StoryManager] active conversation resume failed:', error);
                 App.log('<span style="color:#ff8b8b;">会話の再開に失敗しました。再読込すると同じ位置から再試行します。</span>');
+            } finally {
+                this.endResumeRunner(runnerToken);
             }
         })();
         return true;
     },
 
     resumeQueuedEventByPhase: function(phase = null) {
+        if (this.resumeRunnerActive) return true;
         const journal = this.ensureEventJournal();
         if (!journal || journal.active) return false;
         const entry = journal.queue
@@ -1529,17 +1554,25 @@ const StoryManager = {
         if (!entry) return false;
         const active = this.activateQueuedEvent(entry);
         if (!active) return false;
+        const actualPhase = entry.phase === 'win' ? 'win' : 'actions';
+        const runnerToken = this.beginResumeRunner(entry.token);
+        if (!runnerToken) return true;
         this.active = false;
         this.isTyping = false;
         (async () => {
-            // phase引数は検索フィルタにすぎない。nullで全種別を再開する場合も、
-            // 実際に取り出して有効化した予約のphaseに従って実行先を決める。
-            // ここでphase引数を見ると、win予約までactionsとして再実行され、
-            // 元イベント内のBOSS命令へ戻ってイベント戦闘がループする。
-            if (active.phase === 'win') {
-                await this.onBattleWin(entry.eventId, 0, 0, { token: entry.token, resume: true, meta: entry.meta });
-            } else {
-                await this.executeEvent(entry.eventId, false, 0, 0, { token: entry.token, resume: true, meta: entry.meta });
+            try {
+                // 絞り込み引数phaseではなく、実際に取り出したentry.phaseで配送する。
+                // resumePendingStoryEvent(null)経由のwin予約をactionsへ誤配送すると、
+                // 元イベントのBOSS命令が再実行され、イベント戦闘が永久ループする。
+                if (actualPhase === 'win') {
+                    await this.onBattleWin(entry.eventId, 0, 0, { token: entry.token, resume: true, meta: entry.meta });
+                } else {
+                    await this.executeEvent(entry.eventId, false, 0, 0, { token: entry.token, resume: true, meta: entry.meta });
+                }
+            } catch (error) {
+                console.error('[StoryManager] queued event resume failed:', error);
+            } finally {
+                this.endResumeRunner(runnerToken);
             }
         })();
         return true;

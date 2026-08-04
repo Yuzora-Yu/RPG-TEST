@@ -301,7 +301,7 @@
             if (traits.length) {
                 rows.push({
                     kind:'trait',
-                    html:`<span class="equip-acquisition-trait-text">特性: ${traits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・')}</span>`
+                    html:`<span class="equip-acquisition-trait-text">${traits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・')}</span>`
                 });
             }
             const synergies = Array.isArray(equip?.synergies) && equip.synergies.length
@@ -325,24 +325,24 @@
             style.id = 'equip-acquisition-card-style';
             style.textContent = `
                 #equip-acquisition-card-overlay{position:fixed;inset:0;z-index:2147483600;background:transparent;display:flex;align-items:center;justify-content:center;padding:max(6px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));box-sizing:border-box;font-family:'DotGothic16',sans-serif;color:#fff;touch-action:none;overscroll-behavior:contain;-webkit-tap-highlight-color:transparent}
-                .equip-acquisition-card{width:min(calc(100vw - 12px),320px);max-height:min(58svh,270px);overflow-y:auto;box-sizing:border-box;padding:8px 9px 8px;border:1px solid #d2b55f;border-radius:9px;background:rgba(7,7,9,.91);box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65);position:relative;transition:opacity .12s ease,transform .12s ease}
+                .equip-acquisition-card{width:min(calc(100vw - 12px),550px);max-height:min(70svh,338px);overflow-y:auto;box-sizing:border-box;padding:10px 11px 10px;border:1px solid #d2b55f;border-radius:11px;background:rgba(7,7,9,.91);box-shadow:0 0 0 2px rgba(0,0,0,.88),0 6px 18px rgba(0,0,0,.65);position:relative;transition:opacity .12s ease,transform .12s ease}
                 #equip-acquisition-card-overlay.is-closing .equip-acquisition-card{opacity:.01;transform:scale(.985)}
-                .equip-acquisition-main{display:grid;grid-template-columns:48px minmax(0,1fr);gap:7px;align-items:start}
-                .equip-acquisition-image{width:48px;height:48px;background:#050505;border:1px solid #666;border-radius:5px;overflow:hidden;position:relative;box-sizing:border-box}
+                .equip-acquisition-main{display:grid;grid-template-columns:60px minmax(0,1fr);gap:9px;align-items:start}
+                .equip-acquisition-image{width:60px;height:60px;background:#050505;border:none;border-radius:6px;overflow:hidden;position:relative;box-sizing:border-box;align-self:center}
                 .equip-acquisition-image img{display:none;width:100%;height:100%;object-fit:cover}
-                .equip-acquisition-image-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;color:#fff;font-weight:bold;font-size:9px;line-height:1.2;box-sizing:border-box}
+                .equip-acquisition-image-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;color:#fff;font-weight:bold;font-size:11px;line-height:1.2;box-sizing:border-box}
                 .equip-acquisition-summary{min-width:0;padding-top:1px}
-                .equip-acquisition-name-line{display:flex;align-items:center;gap:5px;min-width:0}
-                .equip-acquisition-name{font-size:14px;line-height:1.25;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-                .equip-acquisition-rank{font-size:9px;line-height:1;color:#aaa;white-space:nowrap;margin-left:auto;flex-shrink:0}
-                .equip-acquisition-base-stats{margin-top:5px;font-size:9px;line-height:1.35;color:#ccc;white-space:normal;overflow-wrap:anywhere}
-                .equip-acquisition-reveal-list{display:flex;flex-wrap:wrap;gap:2px 7px;margin-top:5px;min-height:1px;line-height:1.3}
-                .equip-acquisition-reveal-row{font-size:9px;max-width:100%;overflow-wrap:anywhere}.equip-acquisition-reveal-row.synergy{width:100%}.equip-acquisition-reveal-row.synergy strong{margin-right:2px}.equip-acquisition-reveal-row.synergy span{color:#ddd}
-                .equip-acquisition-base-traits,.equip-acquisition-trait-text{font-size:9px;color:#ffd27a;line-height:1.35}.equip-acquisition-base-traits{margin-top:3px}
-                .equip-acquisition-tap-hint{margin-top:6px;padding-top:4px;border-top:1px solid rgba(210,181,95,.32);font-size:8px;line-height:1.25;color:#aaa;text-align:right}
+                .equip-acquisition-name-line{display:flex;align-items:center;gap:6px;min-width:0}
+                .equip-acquisition-name{font-size:18px;line-height:1.25;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+                .equip-acquisition-rank{font-size:11px;line-height:1;color:#aaa;white-space:nowrap;margin-left:auto;flex-shrink:0}
+                .equip-acquisition-base-stats{margin-top:6px;font-size:11px;line-height:1.35;color:#ccc;white-space:normal;overflow-wrap:anywhere}
+                .equip-acquisition-reveal-list{display:flex;flex-wrap:wrap;gap:3px 9px;margin-top:6px;min-height:1px;line-height:1.3}
+                .equip-acquisition-reveal-row{font-size:11px;max-width:100%;overflow-wrap:anywhere}.equip-acquisition-reveal-row.synergy{width:100%}.equip-acquisition-reveal-row.synergy strong{margin-right:3px}.equip-acquisition-reveal-row.synergy span{color:#ddd}
+                .equip-acquisition-base-traits,.equip-acquisition-trait-text{font-size:11px;color:#ffd27a;line-height:1.35}.equip-acquisition-base-traits{margin-top:4px}
+                .equip-acquisition-tap-hint{margin-top:8px;padding-top:5px;border-top:1px solid rgba(210,181,95,.32);font-size:10px;line-height:1.25;color:#aaa;text-align:right}
                 .equip-acquisition-card.is-synergy{animation:equipAcquisitionGlow .85s ease-in-out infinite alternate}
                 @keyframes equipAcquisitionGlow{from{box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65),0 0 3px rgba(255,233,138,.18)}to{box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65),0 0 12px rgba(255,233,138,.68)}}
-                @media(max-width:340px){.equip-acquisition-card{width:calc(100vw - 10px);padding:7px}.equip-acquisition-main{grid-template-columns:44px minmax(0,1fr)}.equip-acquisition-image{width:44px;height:44px}.equip-acquisition-name{font-size:13px}}
+                @media(max-width:340px){.equip-acquisition-card{width:calc(100vw - 10px);padding:8px}.equip-acquisition-main{grid-template-columns:55px minmax(0,1fr);gap:7px}.equip-acquisition-image{width:55px;height:55px}.equip-acquisition-name{font-size:16px}.equip-acquisition-rank,.equip-acquisition-base-stats,.equip-acquisition-reveal-row,.equip-acquisition-base-traits,.equip-acquisition-trait-text{font-size:10px}}
             `;
             document.head.appendChild(style);
         },
@@ -370,7 +370,7 @@
                             </div>
                             <div class="equip-acquisition-base-stats">${Manager.getBaseStats(equip).map(text => `<span>${escapeHtml(text)}</span>`).join(' ')}</div>
                             <div class="equip-acquisition-reveal-list">${rows.map(row => `<div class="equip-acquisition-reveal-row ${row.kind}"><div class="equip-acquisition-reveal-value">${row.html}</div></div>`).join('')}</div>
-                            <div class="equip-acquisition-base-traits">${split.baseTraits.length ? `特性: ${split.baseTraits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・')}` : ''}</div>
+                            <div class="equip-acquisition-base-traits">${split.baseTraits.length ? split.baseTraits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・') : ''}</div>
                             <div class="equip-acquisition-tap-hint">画面タップで閉じる</div>
                         </div>
                     </div>
