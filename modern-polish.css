@@ -7364,6 +7364,10 @@ body.game-page .config-save-action-desc {
   white-space: pre-wrap;
 }
 
+.save-slot-notice:empty {
+  display: none;
+}
+
 .save-slot-list {
   flex: 1 1 auto;
   min-height: 0;
@@ -7491,12 +7495,12 @@ body.game-page .config-save-action-desc {
 
 .save-slot-playtime {
   flex: 0 0 auto;
-  max-width: 10ch;
-  overflow: hidden;
+  min-width: 10ch;
   color: #d9d9d9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-  text-overflow: clip;
+  letter-spacing: 0;
+  text-align: right;
   white-space: nowrap;
 }
 

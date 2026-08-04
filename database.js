@@ -313,7 +313,7 @@ window.generateEnemy = function(floor) {
 const INITIAL_DATA_TEMPLATE = {
     gold: 0, gems: 9000,
     settings: { battleSpeed: 'normal', battleAutoStart: false },
-    items: { 1: 5 }, 
+    items: { 1: 5, 701009: 1 },
     inventory: [], 
     location: { 
         area: 'START_VILLAGE', 

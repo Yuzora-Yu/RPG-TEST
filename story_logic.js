@@ -2191,12 +2191,12 @@ const StoryManager = {
         }
 
         if (action.type === 'ABYSS_SPIRIT_TRIAL_GRANT_OCTAPRISM') {
-            const progress = App.ensureAbyssSpiritTrialEvents?.() || App.ensureAbyssRegionProgress?.() || data;
-            progress.flags = progress.flags || {};
-            progress.flags.abyssOctaprismGrantPending = false;
-            progress.flags.abyssOctaprismGrantEventSeen = true;
-            progress.flags.abyssAllSpiritTrialsCleared = true;
-            progress.abyssOctaprismGrantedAt = progress.abyssOctaprismGrantedAt || Date.now();
+            const committed = (typeof App.grantOctaprismFromPendant === 'function')
+                ? App.grantOctaprismFromPendant()
+                : { ok:false, reason:'missing-api' };
+            if (!committed?.ok) {
+                throw new Error('ペンダントの変化とオクタプリズマ授与を保存できませんでした。');
+            }
         }
 
         if (action.type === 'BOSS') {

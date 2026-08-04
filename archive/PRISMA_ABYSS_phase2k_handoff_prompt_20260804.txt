@@ -1,165 +1,76 @@
-あなたは、個人開発中の日本語RPG「PRISMA ABYSS」の実装を引き継ぎます。
+あなたは、個人開発中の日本語スマートフォン向けハクスラRPG「PRISMA ABYSS」の実装を継続します。
 
-## 基準ソース
+正本の優先順位:
+1. このチャットでのユーザー最新指示
+2. 最新のassets除外ソースZIP
+3. GitHub main
+4. 実装報告・引継ぎ資料
+5. 古い資料
 
-- Phase2Fまで適用済みの基準ソースへ、次の順で上書きする。
-  1. `PRISMA_ABYSS_phase2g_complete_20260803.zip`
-  2. `PRISMA_ABYSS_phase2g_rank_gilgamesh_hotfix_20260803.zip`
-  3. `PRISMA_ABYSS_phase2h_spirit_octaprism_20260803.zip`
-  4. `PRISMA_ABYSS_phase2i_random_dungeon_balance_20260804.zip`
-- または、上記を反映済みの現在の作業ツリーを正本とする。
-- `AGENTS.md`、`docs/development-policy.md`、関連する `docs/IMPLEMENTATION_*.md` を必ず読む。
-- Phase2Gは `docs/IMPLEMENTATION_PHASE2G_20260803.md`、Phase2Hは `docs/IMPLEMENTATION_PHASE2H_20260803.md`、Phase2Iは `docs/IMPLEMENTATION_PHASE2I_20260804.md` を正本とする。
-- セーブ互換処理の分類と削除候補は `docs/COMPATIBILITY_MIGRATION_LEDGER_20260803.md` を確認する。
-- 添付ドキュメントより、会話中の最新ユーザー指示を優先する。
+最初に次を読むこと:
+- AGENTS.md
+- docs/development-policy.md
+- docs/IMPLEMENTATION_PHASE2I_20260804.md
+- docs/IMPLEMENTATION_PHASE2J_BATTLE_RESULT_HOTFIX_20260804.md
+- docs/IMPLEMENTATION_PHASE2K_UI_TERMINOLOGY_NEWS_MODAL_20260804.md
+- PRISMA_ABYSS_MASTER_HANDOFF_20260804.md
+- PRISMA_ABYSS_PRODUCT_VISION_20260804.md
 
-## 絶対条件
+Phase2Kで完了したこと:
+- 添付ZIPを正本として公開GitHubとの差を監査。
+- battle.jsのPhase2Jホットフィックス実装・報酬接続を確認。
+- 欠落していた2026/08/04のnews.js追記を修正。
+- プレイヤー向け「ランダム深淵」「ランダムアビス」を「深淵の亀裂」へ統一。
+- 「特殊階層」「特殊フロア」を「異変の階層」へ変更。
+- 異変の階層の突入文を世界観表現へ変更。
+- お知らせ詳細をゲーム表示領域内の固定外枠にし、本文だけスクロール、ヘッダーと閉じるボタンを固定。
+- safe-area、横画面、長い英数字の折返し、HTMLエスケープへ対応。
+- Service Workerシェルキャッシュを v41.20260804 へ更新。
+- 専用試験を追加。
+- 既存24件＋新規1件、合計25件の自動試験が全合格。
+- 変更JSのnode --checkとCRLF考慮git diff --checkが合格。
 
-- その場しのぎの継ぎはぎ実装を避ける。
-- 起動時にマスターデータを一括上書きする処理は禁止。
-- 正式レコード・正式マスターを正本にする。
-- セーブ互換、戦闘結果ジャーナル、固定ボス状態、イベント再開処理、ボス形態移行を壊さない。
-- シナリオや台詞を新規作成・最終確定する場合はAGENTS.mdの承認手順を守る。
-- 六属性プリズムイベントは、ユーザー許可により進行枠と仮会話を先行実装済み。最終承認までは本文を仮稿として扱う。
-- `news.js`は日付ごとに1レコード。同日の変更は2026/08/04の既存レコードへ超簡潔に追記する。
-- 変更・新規作成ファイルだけをZIP化する。
-- 段階納品時は次段階の引継ぎプロンプトを作成する。
+重要な未確認:
+- 自動試験は合格したが、実スマートフォン・実ブラウザの表示と実戦は未確認。
+- Chromium headlessは実行環境側で停止し、スクリーンショット確認できなかった。
+- 「実装済み」と「実機動作確認済み」を分けること。
 
-## Phase2G実装済み
+次の最優先作業:
 
-詳細は `docs/IMPLEMENTATION_PHASE2G_20260803.md` を参照する。
+P0 実操作回帰
+- 通常戦、オート戦、レアドロップ倍率戦、+3装備補正戦、ボス、形態移行、途中再読込。
+- 敵復活なし、オート意図外解除なし、報酬一回、結果ジャーナル二重処理なしを確認。
+- 深淵の亀裂Phase2Iについて、開始→保存→勝利→報酬→再開を一連で確認。
 
-- 素材鍛造40正式レコード、+1→+2、+2→+3。
-- 神鉄の鍛冶台item ID599998による正式上位装備変換。
-- 鍛冶・神鉄・既存鍛冶系の保存失敗ロールバック。
-- 装備Rank共通表示・比較。所持装備画面のRankとロック間は専用4px余白。
-- レベルアップログだけを対象にしたリザルトスキップ。
-- 回復の泉は同じタイル上だけアクション表示。隣接は不可。
-- ギルガメッシュは新規・既存とも同レベルのゼノン全7能力の110%以上。旧形式個体は `20260803_gilgameshAllyDominanceV2` で一度だけ補正。
-- 302101討伐済み時の関連3ボス討伐数補正、転生成長再構築、ルーナ／ゼノン残留ボス掃除を一度限り移行として実装。
+P1 共通可変長モーダル
+Phase2K横断監査で次を要修正と判定した。
+- menus_skill_detail.js: 高リスク。高さ上限・本文スクロールなし。
+- menus_trait_detail.js: 高リスク。詳細と再抽選結果に高さ上限なし。
+- menus_book.jsの図鑑特性詳細: 高リスク。
+- index.html / menus.js の汎用メッセージ・確認: 高リスク。本文上限なし。
+- main.jsのクエスト詳細: 中リスク。詳細カードと外側ボタン合算で低画面超過の可能性。
+- battle.jsの作戦選択: 中リスク。閉じるボタンも全体スクロールに含まれる。
+- story_logic.jsの二択: 中リスク。長文・小画面を実機確認。
 
-## Phase2H実装済み
+個別インラインCSSの継ぎ足しではなく、ゲームコンテナ基準の共通モーダルシェルを設計する。
+基本構造は固定ヘッダー・本文flex/min-height:0/overflow-y:auto・固定フッター。
+既存の呼出API、キーボード操作、戻る操作、再抽選状態を壊さないこと。
 
-詳細は `docs/IMPLEMENTATION_PHASE2H_20260803.md` を参照する。
+P2 10枠セーブ
+- すぐ実装せず、設計書・呼出監査・移行試験を先に完成させる。
+- IndexedDB第一候補。
+- オート1枠＋手動9枠。
+- 旧CONST.SAVE_KEYは新DBが空の場合だけ手動1へコピー。
+- コピー直後に旧キーを削除しない。
+- 戦闘結果ジャーナル、イベント再開、選択中スロットを同一枠内に保持。
+- File System Access API依存にしない。
 
-### 六属性プリズム・大精霊イベント
-
-- 六属性は火、水、風、雷、光、闇。
-- 正式試練マスターは `ABYSS_REGION_CONTENT.spiritTrials`。
-- ボスID502001〜502006、結晶片item ID701001〜701006。
-- 初回、敗北後、勝利後の仮会話と、戦う／退く選択肢を実装。
-- 状態は属性ごとに `untouched / challenged / lost / victory / completed`。
-- 勝利結果で加護と結晶片を一度だけ確定し、フィールド復帰後に会話を再開する。
-- 六個目は光の神イベントからitem ID701008「オクタプリズマ」を一度だけ授与。
-- 旧セーブ補完と戦闘結果ジャーナル二重防止を実装。
-
-### オクタプリズマ × アゼルガラグ
-
-- 正式名称は既存の「オクタプリズマ」。名称変更しない。
-- 所持発動型。対象は本編第一形態302100、第二形態302101。訓練所は対象外。
-- 主人公の戦闘中混沌耐性を最低90%。
-- 毎ターン開始時50%で六精霊から一体が支援。同一精霊の連続発動を回避。
-- 会話停止なし。ログと属性別画面エフェクトだけを表示。
-- 第一・第二形態で支援状態を継承し、同一ターン二重適用を防ぐ。
-
-## Phase2I実装済み
-
-詳細は `docs/IMPLEMENTATION_PHASE2I_20260804.md`、正式値は `docs/RANDOM_DUNGEON_PHASE2I_MASTER_20260804.csv` と `docs/EX_EQUIPMENT_ADJUSTMENT_20260804.csv` を参照する。
-
-### 属性結晶片
-
-- 各属性結晶片を一個以上所持している間、現在・将来加入を問わず仲間全員へ対応属性耐性+20%。
-- 能力計算時の結晶片所持判定を正本とし、旧加護フラグはイベント進行記録としてのみ保持。
-- 旧加護フラグだけを持つセーブには `20260804_spiritFragmentResistanceSourceV1` で結晶片を一度だけ補填。
-
-### ランダムダンジョン
-
-- 天使の試練: 現在階層+15、通常敵3体、能力1.35倍、勝利時永続能力上昇3回。
-- 深淵の亀裂: 現在階層+10、通常敵3体、能力1.25倍、勝利時+3装備。
-- 冒険者の結果は、装備30%、腕試し30%、道具屋20%、ハンター10%、レア奇襲10%。話しかけた時点で一度だけ結果確定。
-- 腕試しは正式monster ID302001「深淵門将ガレオン」を現在階層+10相当へ強化。既存名称を維持する。
-- 道具屋は重複なし5商品、価格50%～300%、各商品枠5%で特性書候補。
-- ハンターは5体、速度1.5倍、一体ごとに現在階層+20相当の通常敵3体。
-- レア奇襲はレア5体、プレイヤー先制、オート戦闘強制解除。
-- 新規通常階の10%で既存マップ地形を流用。イベントは持ち込まず、開始位置・階段を到達可能領域へランダム配置。
-- 特殊階層:
-  - 強敵の財宝階5%: 敵1.35倍、レアドロップ2倍、+3抽選+20ポイント。
-  - 希少種の気配4%: レア遭遇2倍。
-  - 物語の残響3%: 遭遇率0.45倍、物語ボス外見の通常敵、能力1.15倍、HPは同階通常敵基準約2倍。
-- ランダム深淵表示101階以降の通常ボスは10%でitem ID98「災厄の楔」を追加。イベント戦・訓練所等は対象外。
-- 通常レア生成の逆条件、未接続だった楔抽選、ハンター結果ジャーナル未定義値等も修正済み。
-
-### 【EX】装備
-
-- ギルガメッシュ【EX】装備の基礎7能力を従来値の55%へ調整。
-- 報酬生成階層は250+完了討伐数×5、上限400。
-- 付与オプション、固定特性は維持。
-- 既存個体は `20260804_specialBossEquipmentBalanceV1` で一度だけ基礎7能力を55%へ縮尺。UID、名称、部位、強化値、オプション、特性、ロック、装備者は変更しない。
-
-### Service Worker
-
-- `v39.20260804`。
-
-
-## Phase2J緊急ホットフィックス実装済み
-
-詳細は `docs/IMPLEMENTATION_PHASE2J_BATTLE_RESULT_HOTFIX_20260804.md` を参照する。
-
-- Phase2Iで導入された `rareDropMultiplier` が `Battle.win()` 内で未定義のまま参照され、勝利結果処理が例外終了していた。
-- 例外時の安全復旧が保存済み戦闘を手動モードで再構築するため、「敵全復活＋オート解除」を繰り返す症状になっていた。
-- `Battle.getBattleRewardRateModifiers()` を追加し、レアドロップ倍率と+3装備抽選加算を戦闘データから正式取得する。
-- 通常戦闘・旧セーブではレア倍率1、+3加算0へフォールバックする。
-- Phase2Iの `equipPlus3BonusPct` も勝利報酬へ接続した。
-- 戦闘結果ジャーナル、ロールバック、固定ボス、形態移行の仕組みは変更していない。
-- `news.js` の2026/08/04レコードへ簡潔に追記した。
-- Service Workerは `v40.20260804`。
-
-## 現在の未確定・後続優先候補
-
-1. 六属性大精霊イベントの実機確認と台詞最終承認。
-2. 精霊支援、天使の試練、亀裂、冒険者分岐、特殊階層、【EX】装備の実戦バランス確認。
-3. 各属性Rank120特殊装備と専用クエスト。
-4. 特性書50クエストの企画・実装。
-5. 2026-08-15以降、配布到達と代表セーブの移行確認後に短期互換処理を整理・削除。
-
-シナリオを含む新規クエストは、Markdown企画を先に作成してユーザー確認を得てから本文実装する。
-
-## 必須回帰テスト
-
-```bash
-node tools/test-phase1-growth-fusion.js
-node tools/test-phase2d-compatibility.js
-node tools/test-phase2d-deep-boss.js
-node tools/test-phase2e-carmena-training.js
-node tools/test-phase2f-gilgamesh.js
-node tools/test-phase2g-save-compatibility.js
-node tools/test-phase2g-blacksmith.js
-node tools/test-phase2g-result-ui.js
-node tools/test-phase2h-spirit-octaprism.js
-node tools/test-phase2i-random-dungeon.js
-node tools/test-phase2j-battle-result-hotfix.js
-node tools/validation/validate-passive-skills.js
-node tools/validation/validate-save-safety.js
-node tools/validation/validate-service-worker-shell.js
-node tools/validation/validate-story-dialogue-data.js
-node tools/validation/validate-main-story-routing.js
-node tools/test-equipment-trait-policy.js
-node tools/test-phase2-facilities-coin.js
-node tools/test-phase2b-rank120-balance.js
-node tools/test-phase2c-guild-balance.js
-RANDOM_DUNGEON_STRESS_SAMPLES=250 RANDOM_DUNGEON_STRESS_SEED=6001 node tools/test-phase2c-random-dungeon.js
-node tools/validation/validate-news-data.js
-node tools/validation/validate-balance-master-adjustments.js
-node tools/validation/validate-monster-habitat-master.js
-```
-
-全変更・新規JavaScriptへ `node --check`、最後に `git diff --check` を実行する。
-
-戦闘勝利の実機回帰では、通常戦・レアドロップ敵・ボス形態移行・ランダム迷宮特殊階層を最低1回ずつ確認する。
-
-## 最終検証時の留意点
-
-- Phase2I専用テストで、結晶片耐性、旧セーブ補填、冒険者確率境界、既存マップ到達可能性、特殊階層、専用敵生成、レア遭遇倍率、楔抽選境界、【EX】装備移行を検証する。
-- シナリオ検証には従来から未参照スクリプト28件の警告がある。自動削除しない。
-- 神鉄の鍛冶台ID599998は正式アイテムと使用処理のみで、入手経路は未設定。
-- 短期互換処理は日付だけで機械的に削除せず、`docs/COMPATIBILITY_MIGRATION_LEDGER_20260803.md` の手順に従う。
+品質ルール:
+- 起動時のマスター一括上書き禁止。
+- 正式マスター・正式レコードを正本とする。
+- random等の内部識別子は互換のため残してよいが、ゲーム表示に内部語を出さない。
+- news.jsは同日一件、超簡潔。
+- 変更・新規ファイルだけを相対パス付きZIPで納品。
+- 実装報告MDと次の引継ぎTXTを更新。
+- node --check、git diff --check、関連回帰試験を実行。
+- 実機未確認を明記する。

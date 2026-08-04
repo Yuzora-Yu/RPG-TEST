@@ -111,7 +111,7 @@
 
         formatPlayTime: (milliseconds) => {
             const maxSeconds = 9999 * 3600 + 59 * 60 + 59;
-            const totalSeconds = Math.min(maxSeconds, Math.max(0, Math.floor(Number(milliseconds) || 0) / 1000));
+            const totalSeconds = Math.min(maxSeconds, Math.max(0, Math.floor((Number(milliseconds) || 0) / 1000)));
             const hours = Math.floor(totalSeconds / 3600);
             const minutes = Math.floor((totalSeconds % 3600) / 60);
             const seconds = totalSeconds % 60;
@@ -583,7 +583,6 @@
                     <div class="save-slot-header">
                         <div>
                             <div id="save-slot-title" class="save-slot-title">${SaveSlotUI.mode === 'save' ? 'セーブ' : 'ロード'}</div>
-                            <div class="save-slot-subtitle">オートセーブ 1枠 / 手動セーブ 9枠</div>
                         </div>
                         <button type="button" class="btn save-slot-close" onclick="SaveSlotUI.close()">もどる</button>
                     </div>
@@ -609,9 +608,8 @@
             if (!list || !notice) return;
 
             list.innerHTML = '<div class="save-slot-loading">セーブデータを確認しています……</div>';
-            notice.textContent = SaveSlotUI.mode === 'save'
-                ? 'オートセーブは既存機能で自動更新されます。手動セーブはNo.1～9から選択してください。'
-                : '手動セーブを読み込むと、現在のオートセーブは選択した内容で即時上書きされます。手動セーブ自体は残ります。';
+            // 通常時は説明文を出さず、利用不可・破損等の必要な通知だけを表示する。
+            notice.textContent = '';
 
             let slots;
             try {

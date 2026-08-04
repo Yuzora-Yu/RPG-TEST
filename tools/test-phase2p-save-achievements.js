@@ -34,7 +34,9 @@ assert(!saveSlotsSource.includes('if (app?.showConfirm) return app.showConfirm(m
 assert(saveSlotsSource.includes('await SaveSlotUI.showMessage(`セーブNo.${slotId}へ保存しました。`)'), 'save completion message is not awaited');
 assert(/\.save-slot-prompt-layer\s*\{[\s\S]*?z-index:\s*2;/.test(css), 'save prompt z-index contract missing');
 assert(/\.save-slot-area\s*\{[\s\S]*?flex:\s*1 1 auto;/.test(css), 'area label does not retain available width');
-assert(/\.save-slot-playtime\s*\{[\s\S]*?max-width:\s*10ch;/.test(css), 'play time width is not bounded to hhhh:mm:ss');
+const playTimeCss = (css.match(/\.save-slot-playtime\s*\{[^}]*\}/) || [''])[0];
+assert(/min-width:\s*10ch;/.test(playTimeCss) && /white-space:\s*nowrap;/.test(playTimeCss), 'play time field does not reserve the full hhhh:mm:ss width');
+assert(!/overflow:\s*hidden;/.test(playTimeCss), 'play time can still be clipped at the right edge');
 
 // Phase2Q: master data and reward migration.
 const context = {

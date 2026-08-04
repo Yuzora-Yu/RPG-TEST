@@ -143,7 +143,9 @@ assert(saveSlotsSource.includes('previousRecord'), 'manual-slot rollback snapsho
 assert(saveSlotsSource.includes('rollbackTx'), 'manual-slot rollback transaction missing');
 assert(saveSlotsSource.includes('inspectManualRecord'), 'slot-list integrity inspection missing');
 assert(saveSlotsSource.includes('verifyChecksum'), 'manual save checksum verification missing');
-assert(saveSlotsSource.includes('手動セーブを読み込むと、現在のオートセーブは'), 'slot load warning missing');
+assert(!saveSlotsSource.includes('オートセーブ 1枠 / 手動セーブ 9枠'), 'redundant slot-count subtitle remains');
+assert(!saveSlotsSource.includes('オートセーブは既存機能で自動更新されます'), 'redundant auto-save guidance remains');
+assert(!saveSlotsSource.includes('手動セーブを読み込むと、現在のオートセーブは選択した内容で即時上書きされます'), 'redundant load guidance remains');
 assert(saveSlotsSource.includes('save-slot-party-faces'), 'four-party face layout missing');
 assert(saveSlotsSource.includes('save-slot-playtime'), 'slot play-time field missing');
 
@@ -216,6 +218,7 @@ ${saveSlotsSource}
 const SaveSlots = context.SaveSlots;
 assert.strictEqual(SaveSlots.formatPlayTime(0), '0000:00:00');
 assert.strictEqual(SaveSlots.formatPlayTime(3723000), '0001:02:03');
+assert.strictEqual(SaveSlots.formatPlayTime(3723470), '0001:02:03', 'milliseconds must be truncated from display');
 assert.strictEqual(SaveSlots.formatPlayTime(Number.MAX_SAFE_INTEGER), '9999:59:59');
 
 const sample = {

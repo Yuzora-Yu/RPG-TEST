@@ -6997,6 +6997,40 @@ window.ITEMS_DATA.push(
     "consumable": false,
     "abyssDrop": false,
     "icon": "assets/ui/menu-icons/item-key.png"
+},
+{
+    "id": 701009,
+    "rank": 1,
+    "name": "焼け焦げたペンダント",
+    "type": "貴重品",
+    "val": 0,
+    "desc": "主人公がいつも身に着けている、思い出のペンダント。火に焼かれ、元の姿は分からない。",
+    "target": "なし",
+    "price": 0,
+    "sellPrice": 0,
+    "shopAvailable": false,
+    "consumable": false,
+    "battleUsable": false,
+    "fieldUsable": false,
+    "abyssDrop": false,
+    "icon": "assets/ui/menu-icons/item-key.png"
+},
+{
+    "id": 701010,
+    "rank": 120,
+    "name": "光結晶のペンダント",
+    "type": "貴重品",
+    "val": 0,
+    "desc": "六つの結晶片と共鳴し、混沌の汚染が解けたペンダント。澄んだ光の神気を宿している。",
+    "target": "なし",
+    "price": 0,
+    "sellPrice": 0,
+    "shopAvailable": false,
+    "consumable": false,
+    "battleUsable": false,
+    "fieldUsable": false,
+    "abyssDrop": false,
+    "icon": "assets/ui/menu-icons/item-key.png"
 }
 );
 

@@ -5565,10 +5565,12 @@ const STORY_MANAGER_DATA = {
         data.scripts[`${prefix}_VICTORY`] = spiritTrialDialogueDrafts[element].victory;
     });
     data.scripts.ABYSS_SPIRIT_TRIAL_ALL_COMPLETE = [
-        {name:'システム',text:'六つの加護が呼応し、色の異なる光が一つの輪を描いた。'},
-        {name:'光の神',text:'火、水、風、雷、光、闇。\n異なる力を従えるのではなく、共に歩む者よ。'},
-        {name:'光の神',text:'深淵の混沌へ抗う時、この結晶が六精霊の道を繋ぐでしょう。\nオクタプリズマを受け取りなさい。'},
-        {name:'システム',text:'六色の光が結晶となり、静かに手の中へ降りた。'}
+        {name:'システム',text:'六つの結晶片が一斉に震え、胸元の焼け焦げたペンダントが熱を帯びた。'},
+        {name:'システム',text:'黒く焼けた表面から、細かな煤がほどけていく。\nその奥で、懐かしい温もりに似た光が脈打った。'},
+        {name:'リュシオン',text:'……ようやく、届きました。'},
+        {name:'リュシオン',text:'六つの加護が、その小さな光を呼び覚ましたのです。\nあなたが失わずにいたものへ、私の声もまた届く。'},
+        {name:'リュシオン',text:'深淵の混沌へ抗う時、その光は六精霊の道を結びます。\n受け取りなさい――オクタプリズマを。'},
+        {name:'システム',text:'焼け焦げたペンダントは、澄んだ光を宿す結晶へと姿を変えた。\n光結晶のペンダントと、オクタプリズマを手に入れた！'}
     ];
 
     data.abyssSpiritTrials = Object.freeze(Object.fromEntries(
@@ -5713,7 +5715,6 @@ const STORY_MANAGER_DATA = {
             type:'IF_FLAG',key:'abyssOctaprismGrantPending',
             then:[
                 {type:'CONV',value:'ABYSS_SPIRIT_TRIAL_ALL_COMPLETE'},
-                {type:'IF_ITEM',id:701008,count:1,then:[],else:[{type:'ITEM',id:701008,count:1}]},
                 {type:'ABYSS_SPIRIT_TRIAL_GRANT_OCTAPRISM'}
             ],
             else:[]

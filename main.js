@@ -366,7 +366,7 @@ const App = {
 			return SaveSlots.formatPlayTime(milliseconds);
 		}
 		const maxSeconds = 9999 * 3600 + 59 * 60 + 59;
-		const totalSeconds = Math.min(maxSeconds, Math.max(0, Math.floor(Number(milliseconds) || 0) / 1000));
+		const totalSeconds = Math.min(maxSeconds, Math.max(0, Math.floor((Number(milliseconds) || 0) / 1000)));
 		const hours = Math.floor(totalSeconds / 3600);
 		const minutes = Math.floor((totalSeconds % 3600) / 60);
 		const seconds = totalSeconds % 60;
@@ -847,7 +847,7 @@ const App = {
                 coinSpendingRewards: { claimedMilestones: [] }
             },
             inventory: [],
-            items: { "1": 3 }, 
+            items: { "1": 3, "701009": 1 },
             characters: [
                 { uid: 'p1', charId: 301, name: 'アルス', job: '勇者', level: 1, exp: 0, hp: 50, mp: 20, atk: 15, def: 10, mag: 10, spd: 10, equips: { '武器':null, '盾':null, '頭':null, '体':null, '足':null }, sp: 0, tree: {}, skillBookSkills: [], config: { fullAuto: false, hiddenSkills: [], autoDisabledSkills: [], skillUsageConfigVersion: 2, strategy: 'balanced' } }
             ],
@@ -2888,6 +2888,31 @@ const App = {
                 data.items[itemId] = 1;
                 count++;
             });
+            return { changed:count > 0, count };
+        }
+    ),
+
+    // ペンダント導入前のセーブへ、一度だけ現在の物語状態に合う貴重品を補填する。
+    // オクタプリズマ所持済みなら変化後、未所持なら変化前を正本とし、二種の同時所持を防ぐ。
+    migratePendantOctaprismV1: (data = App.data) => App.runOneTimeCompatibilityMigration(
+        data,
+        '20260804_pendantOctaprismV1',
+        () => {
+            if (!data.items || typeof data.items !== 'object' || Array.isArray(data.items)) data.items = {};
+            const content = globalThis.ABYSS_REGION_CONTENT || {};
+            const octaprismId = Number(content.octaprismItemId || 701008);
+            const charredId = Number(content.charredPendantItemId || 701009);
+            const crystalId = Number(content.lightCrystalPendantItemId || 701010);
+            const countOf = id => Math.max(0, Math.floor(Number(data.items[id] ?? data.items[String(id)] ?? 0) || 0));
+            const ownsOctaprism = countOf(octaprismId) > 0;
+            let count = 0;
+            if (ownsOctaprism) {
+                if (countOf(crystalId) < 1) { data.items[crystalId] = 1; count++; }
+                if (countOf(charredId) > 0) { delete data.items[charredId]; delete data.items[String(charredId)]; count++; }
+            } else {
+                if (countOf(charredId) < 1) { data.items[charredId] = 1; count++; }
+                if (countOf(crystalId) > 0) { delete data.items[crystalId]; delete data.items[String(crystalId)]; count++; }
+            }
             return { changed:count > 0, count };
         }
     ),
@@ -5532,6 +5557,40 @@ load: () => {
         return progress;
     },
 
+    grantOctaprismFromPendant: () => {
+        if (!App.data || typeof App.runAtomicSaveMutation !== 'function') return { ok:false, reason:'invalid' };
+        return App.runAtomicSaveMutation(() => {
+            if (!App.data.items || typeof App.data.items !== 'object' || Array.isArray(App.data.items)) App.data.items = {};
+            const progress = App.ensureAbyssSpiritTrialEvents?.() || App.ensureAbyssRegionProgress?.();
+            if (!progress) return { ok:false, reason:'progress' };
+            progress.flags = progress.flags || {};
+            const master = App.getAbyssSpiritTrialMaster?.() || {};
+            const elements = Object.keys(master).length ? Object.keys(master) : ['火','水','風','雷','光','闇'];
+            if (!elements.every(element => progress.abyssSpiritBlessings?.[element] === true)) {
+                return { ok:false, reason:'requirements' };
+            }
+
+            const content = globalThis.ABYSS_REGION_CONTENT || {};
+            const octaprismId = Number(content.octaprismItemId || 701008);
+            const charredId = Number(content.charredPendantItemId || 701009);
+            const crystalId = Number(content.lightCrystalPendantItemId || 701010);
+            delete App.data.items[charredId];
+            delete App.data.items[String(charredId)];
+            App.data.items[crystalId] = Math.max(1, Math.floor(Number(App.data.items[crystalId] ?? App.data.items[String(crystalId)] ?? 0) || 0));
+            App.data.items[octaprismId] = Math.max(1, Math.floor(Number(App.data.items[octaprismId] ?? App.data.items[String(octaprismId)] ?? 0) || 0));
+
+            progress.flags.abyssOctaprismGrantPending = false;
+            progress.flags.abyssOctaprismGrantEventSeen = true;
+            progress.flags.abyssAllSpiritTrialsCleared = true;
+            progress.abyssOctaprismGrantedAt = progress.abyssOctaprismGrantedAt || Date.now();
+            elements.forEach(element => {
+                const record = progress.abyssSpiritTrialEvents?.[element];
+                if (record && record.state !== 'completed') record.state = 'completed';
+            });
+            return { ok:true, octaprismId, crystalId };
+        });
+    },
+
     resolveAbyssSpiritTrialEventId: (element) => {
         const key = String(element || '');
         const master = App.getAbyssSpiritTrialMaster();
@@ -7266,6 +7325,7 @@ load: () => {
         App.migrateGilgameshAllyDominanceV2(data);
         App.migrateLunaZenonBossVisualCleanupV1(data);
         App.migrateSpiritFragmentResistanceSourceV1(data);
+        App.migratePendantOctaprismV1(data);
         App.migrateSpecialBossEquipmentBalanceV1(data);
         App.purgeRemovedLegacyAbyssBossReferences(data);
         App.reconcileCarmenaGateProgress(data);
