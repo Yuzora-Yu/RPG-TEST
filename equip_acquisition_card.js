@@ -12,6 +12,13 @@
     const HANDLED_LIMIT = 300;
     const MIN_SHOW_DELAY_MS = 2050;
     const INPUT_RELEASE_DELAY_MS = 280;
+    const REVEAL_START_DELAY_MS = 140;
+    const OPTION_LINE_MS = 130;
+    const OPTION_SETTLE_MS = 300;
+    const TRAIT_NAME_MS = 150;
+    const TRAIT_LEVEL_SETTLE_MS = 290;
+    const SYNERGY_SETTLE_MS = 420;
+    const STEP_GAP_MS = 80;
     const BATTLE_SOURCES = new Set(['battleDrop', 'specialBoss']);
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
@@ -225,25 +232,73 @@
             Manager.show(entry, owned.equip, { battleResult:false });
         },
 
+        getStatusEffectLabel(key) {
+            if (typeof Menu !== 'undefined' && typeof Menu.getStatusEffectLabel === 'function') {
+                return Menu.getStatusEffectLabel(key);
+            }
+            const labels = {
+                Poison:'毒', ToxicPoison:'猛毒', Shock:'感電', Fear:'怯え', Debuff:'弱体',
+                InstantDeath:'即死', Seal:'封印', SkillSeal:'特技封印', SpellSeal:'呪文封印', HealSeal:'回復封印'
+            };
+            return labels[key] || key;
+        },
+
+        getSkillName(skillId) {
+            const skills = (typeof DB !== 'undefined' && Array.isArray(DB.SKILLS)) ? DB.SKILLS : [];
+            return skills.find(skill => Number(skill?.id) === Number(skillId))?.name || `不明(${skillId})`;
+        },
+
         getBaseStats(equip) {
             const labels = {
                 hp:'HP', mp:'MP', atk:'攻撃', def:'防御', mag:'魔力', mdef:'魔防', spd:'素早さ',
                 hit:'命中', eva:'回避', cri:'会心', finDmg:'与ダメ', finRed:'被ダメ軽減'
             };
+            const percentKeys = new Set(['hit','eva','cri','finDmg','finRed']);
+            const data = equip?.data && typeof equip.data === 'object' ? equip.data : {};
             const ordered = Object.keys(labels);
             const entries = [];
+            const formatSigned = (value) => `${value > 0 ? '+' : ''}${value}`;
+
             ordered.forEach(key => {
-                const value = Number(equip?.data?.[key]);
+                const value = Number(data[key]);
                 if (!Number.isFinite(value) || value === 0) return;
-                const unit = ['hit','eva','cri','finDmg','finRed'].includes(key) ? '%' : '';
-                entries.push(`${labels[key]} ${value > 0 ? '+' : ''}${value}${unit}`);
+                entries.push(`${labels[key]} ${formatSigned(value)}${percentKeys.has(key) ? '%' : ''}`);
             });
-            Object.entries(equip?.data || {}).forEach(([key, raw]) => {
-                if (ordered.includes(key)) return;
+
+            Object.entries(data).forEach(([key, raw]) => {
+                if (ordered.includes(key) || ['elmAtk','elmRes','grantSkills'].includes(key)) return;
                 const value = Number(raw);
                 if (!Number.isFinite(value) || value === 0) return;
-                entries.push(`${key} ${value > 0 ? '+' : ''}${value}`);
+                if (key.startsWith('resists_')) {
+                    entries.push(`${Manager.getStatusEffectLabel(key.slice(8))}耐 ${formatSigned(value)}%`);
+                    return;
+                }
+                if (key.startsWith('attack_')) {
+                    entries.push(`攻撃時${value}%で${Manager.getStatusEffectLabel(key.slice(7))}`);
+                    return;
+                }
+                entries.push(`${key} ${formatSigned(value)}`);
             });
+
+            const elements = (typeof CONST !== 'undefined' && Array.isArray(CONST.ELEMENTS))
+                ? CONST.ELEMENTS
+                : Array.from(new Set([
+                    ...Object.keys(data.elmAtk || {}),
+                    ...Object.keys(data.elmRes || {})
+                ]));
+            elements.forEach(element => {
+                const attack = Number(data.elmAtk?.[element]);
+                const resist = Number(data.elmRes?.[element]);
+                if (Number.isFinite(attack) && attack !== 0) entries.push(`${element}攻 ${formatSigned(attack)}%`);
+                if (Number.isFinite(resist) && resist !== 0) entries.push(`${element}耐 ${formatSigned(resist)}%`);
+            });
+
+            const grantSkills = Array.isArray(equip?.grantSkills)
+                ? equip.grantSkills
+                : (Array.isArray(data.grantSkills) ? data.grantSkills : []);
+            if (grantSkills.length) {
+                entries.push(`[習得:${grantSkills.map(Manager.getSkillName).join('、')}]`);
+            }
             return entries.length ? entries : ['基礎能力なし'];
         },
 
@@ -262,17 +317,22 @@
             const label = option?.label || rule?.name || option?.key || '追加効果';
             const element = option?.elm && !String(label).includes(String(option.elm)) ? `${option.elm} ` : '';
             const value = Number(option?.val);
-            const valueText = Number.isFinite(value)
-                ? `${value >= 0 ? '+' : ''}${value}${option?.unit ?? rule?.unit ?? ''}`
-                : '';
+            const rawUnit = option?.unit ?? rule?.unit ?? '';
+            const unit = rawUnit === 'val' ? '' : rawUnit;
+            const valueText = Number.isFinite(value) ? `${value >= 0 ? '+' : ''}${value}${unit}` : '';
             const rarity = String(option?.rarity || '').toUpperCase();
             return `${element}${label}${valueText ? ` ${valueText}` : ''}${rarity ? ` [${rarity}]` : ''}`;
         },
 
+        normalizeTrait(trait) {
+            if (trait && typeof trait === 'object') return { ...trait };
+            return { id:Number(trait) || 0, level:1 };
+        },
+
         splitTraits(equip) {
-            const all = Array.isArray(equip?.traits) ? equip.traits : [];
+            const all = Array.isArray(equip?.traits) ? equip.traits.map(Manager.normalizeTrait) : [];
             const master = Manager.resolveMaster(equip);
-            const base = Array.isArray(master?.traits) ? master.traits : [];
+            const base = Array.isArray(master?.traits) ? master.traits.map(Manager.normalizeTrait) : [];
             const remaining = all.map(trait => ({ ...trait }));
             const baseTraits = [];
             base.forEach(masterTrait => {
@@ -282,31 +342,44 @@
             return { baseTraits, additionalTraits:remaining };
         },
 
+        getTraitParts(trait) {
+            const normalized = Manager.normalizeTrait(trait);
+            const master = typeof PassiveSkill !== 'undefined' ? PassiveSkill.MASTER?.[Number(normalized.id)] : null;
+            return {
+                name:master?.name || `特性${normalized.id || ''}`,
+                level:Math.max(1, Number(normalized.level ?? normalized.lv) || 1)
+            };
+        },
+
         getTraitText(trait) {
-            const master = typeof PassiveSkill !== 'undefined' ? PassiveSkill.MASTER?.[Number(trait?.id)] : null;
-            const level = Math.max(1, Number(trait?.level) || 1);
-            return `${master?.name || `特性${trait?.id ?? ''}`} Lv${level}`;
+            const parts = Manager.getTraitParts(trait);
+            return `${parts.name} Lv${parts.level}`;
         },
 
         buildRows(equip) {
             const rows = [];
-            (equip?.opts || []).forEach(option => {
+            (equip?.opts || []).forEach((option, optionIndex) => {
                 const rarity = String(option?.rarity || 'N').toUpperCase();
+                const color = Manager.getRarityColor(rarity);
                 rows.push({
                     kind:'option',
-                    html:`<span style="color:${Manager.getRarityColor(rarity)}">${escapeHtml(Manager.getOptionText(option))}</span>`
+                    optionIndex,
+                    color,
+                    html:`<span class="equip-acquisition-option-text" style="color:${color}">${escapeHtml(Manager.getOptionText(option))}</span>`
                 });
             });
-            const traits = Manager.splitTraits(equip).additionalTraits;
-            if (traits.length) {
+            Manager.splitTraits(equip).additionalTraits.forEach((trait, traitIndex) => {
+                const parts = Manager.getTraitParts(trait);
                 rows.push({
                     kind:'trait',
-                    html:`<span class="equip-acquisition-trait-text">${traits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・')}</span>`
+                    traitIndex,
+                    html:`<span class="equip-acquisition-trait-name">${escapeHtml(parts.name)}</span><span class="equip-acquisition-trait-level"> Lv${parts.level}</span>`
                 });
-            }
+            });
+            const calculatedSynergies = typeof App.checkSynergy === 'function' ? App.checkSynergy(equip) : [];
             const synergies = Array.isArray(equip?.synergies) && equip.synergies.length
                 ? equip.synergies
-                : (typeof App.checkSynergy === 'function' ? App.checkSynergy(equip) : []);
+                : (Array.isArray(calculatedSynergies) ? calculatedSynergies : []);
             if (synergies.length) {
                 rows.push({
                     kind:'synergy',
@@ -325,7 +398,13 @@
             style.id = 'equip-acquisition-card-style';
             style.textContent = `
                 #equip-acquisition-card-overlay{position:fixed;inset:0;z-index:2147483600;background:transparent;display:flex;align-items:center;justify-content:center;padding:max(6px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));box-sizing:border-box;font-family:'DotGothic16',sans-serif;color:#fff;touch-action:none;overscroll-behavior:contain;-webkit-tap-highlight-color:transparent}
-                .equip-acquisition-card{width:min(calc(100vw - 12px),550px);max-height:min(70svh,338px);overflow-y:auto;box-sizing:border-box;padding:10px 11px 10px;border:1px solid #d2b55f;border-radius:11px;background:rgba(7,7,9,.91);box-shadow:0 0 0 2px rgba(0,0,0,.88),0 6px 18px rgba(0,0,0,.65);position:relative;transition:opacity .12s ease,transform .12s ease}
+                .equip-acquisition-card-shell{width:min(calc(100vw - 12px),550px);position:relative;isolation:isolate;overflow:visible}
+                .equip-acquisition-card-shell::before,.equip-acquisition-card-shell::after{content:"";position:absolute;pointer-events:none;opacity:0;z-index:-1}
+                .equip-acquisition-card-shell::before{inset:-14px;border-radius:18px;background:radial-gradient(ellipse at 18% 45%,rgba(102,246,255,.82),transparent 46%),radial-gradient(ellipse at 78% 38%,rgba(180,92,255,.76),transparent 49%),radial-gradient(ellipse at 52% 82%,rgba(72,255,176,.55),transparent 56%);background-size:180% 180%;filter:blur(13px);transform:scale(.88)}
+                .equip-acquisition-card-shell::after{inset:-4px;border-radius:15px;padding:2px;background:linear-gradient(120deg,rgba(102,246,255,.96),rgba(180,92,255,.94),rgba(72,255,176,.9),rgba(255,112,210,.86),rgba(102,246,255,.96));background-size:300% 300%;filter:blur(1.5px);transform:scale(.96);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+                .equip-acquisition-card-shell.is-synergy::before{animation:equipAcquisitionAuraBloom .42s cubic-bezier(.2,.9,.24,1) both,equipAcquisitionAuraDrift 2.6s ease-in-out .42s infinite alternate}
+                .equip-acquisition-card-shell.is-synergy::after{animation:equipAcquisitionAuraRing .42s cubic-bezier(.2,.9,.24,1) both,equipAcquisitionAuraBorderShift 2.8s ease-in-out .42s infinite alternate}
+                .equip-acquisition-card{width:100%;max-height:min(70svh,338px);overflow-y:auto;box-sizing:border-box;padding:10px 11px 10px;border:1px solid #d2b55f;border-radius:11px;background:rgba(7,7,9,.91);box-shadow:0 0 0 2px rgba(0,0,0,.88),0 6px 18px rgba(0,0,0,.65);position:relative;z-index:1;transition:opacity .12s ease,transform .12s ease}
                 #equip-acquisition-card-overlay.is-closing .equip-acquisition-card{opacity:.01;transform:scale(.985)}
                 .equip-acquisition-main{display:grid;grid-template-columns:60px minmax(0,1fr);gap:9px;align-items:start}
                 .equip-acquisition-image{width:60px;height:60px;background:#050505;border:none;border-radius:6px;overflow:hidden;position:relative;box-sizing:border-box;align-self:center}
@@ -336,13 +415,34 @@
                 .equip-acquisition-name{font-size:18px;line-height:1.25;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
                 .equip-acquisition-rank{font-size:11px;line-height:1;color:#aaa;white-space:nowrap;margin-left:auto;flex-shrink:0}
                 .equip-acquisition-base-stats{margin-top:6px;font-size:11px;line-height:1.35;color:#ccc;white-space:normal;overflow-wrap:anywhere}
+                .equip-acquisition-base-stats .equip-acquisition-grant-skill{color:#ffff00}
                 .equip-acquisition-reveal-list{display:flex;flex-wrap:wrap;gap:3px 9px;margin-top:6px;min-height:1px;line-height:1.3}
-                .equip-acquisition-reveal-row{font-size:11px;max-width:100%;overflow-wrap:anywhere}.equip-acquisition-reveal-row.synergy{width:100%}.equip-acquisition-reveal-row.synergy strong{margin-right:3px}.equip-acquisition-reveal-row.synergy span{color:#ddd}
-                .equip-acquisition-base-traits,.equip-acquisition-trait-text{font-size:11px;color:#ffd27a;line-height:1.35}.equip-acquisition-base-traits{margin-top:4px}
+                .equip-acquisition-reveal-row{display:none;position:relative;font-size:11px;max-width:100%;overflow:visible;overflow-wrap:anywhere;transform-origin:left center}
+                .equip-acquisition-reveal-row.is-present{display:inline-flex;align-items:baseline}
+                .equip-acquisition-reveal-row.synergy{width:100%}.equip-acquisition-reveal-row.synergy strong{margin-right:3px}.equip-acquisition-reveal-row.synergy span{color:#ddd}
+                .equip-acquisition-reveal-row.option::before{content:"";position:absolute;left:0;top:50%;width:0;height:1px;background:var(--reveal-color,#fff);box-shadow:0 0 4px var(--reveal-color,#fff),0 0 9px var(--reveal-color,#fff);opacity:0;transform:translateY(-50%);z-index:2}
+                .equip-acquisition-reveal-row.option.is-line-active::before{animation:equipAcquisitionOptionLine ${OPTION_LINE_MS}ms ease-out both}
+                .equip-acquisition-option-text{display:inline-block;opacity:0;transform:scale(1.34);transform-origin:left center;filter:brightness(1.7)}
+                .equip-acquisition-reveal-row.option.is-text-visible .equip-acquisition-option-text{animation:equipAcquisitionOptionPop ${OPTION_SETTLE_MS}ms cubic-bezier(.12,.84,.22,1.18) both}
+                .equip-acquisition-trait-name,.equip-acquisition-trait-level{display:inline-block;color:#ffd27a;opacity:0;transform-origin:left center}
+                .equip-acquisition-reveal-row.trait.is-name-visible .equip-acquisition-trait-name{animation:equipAcquisitionTraitName .18s ease-out both}
+                .equip-acquisition-trait-level{margin-left:2px;transform:scale(1.9)}
+                .equip-acquisition-reveal-row.trait.is-level-visible .equip-acquisition-trait-level{animation:equipAcquisitionTraitLevel ${TRAIT_LEVEL_SETTLE_MS}ms cubic-bezier(.12,.88,.2,1.25) both}
+                .equip-acquisition-reveal-row.synergy .equip-acquisition-reveal-value{opacity:0;transform:scale(1.2);transform-origin:left center}
+                .equip-acquisition-reveal-row.synergy.is-text-visible .equip-acquisition-reveal-value{animation:equipAcquisitionSynergyPop ${SYNERGY_SETTLE_MS}ms cubic-bezier(.12,.82,.2,1.12) both}
+                .equip-acquisition-base-traits{font-size:11px;color:#ffd27a;line-height:1.35;margin-top:4px}
                 .equip-acquisition-tap-hint{margin-top:8px;padding-top:5px;border-top:1px solid rgba(210,181,95,.32);font-size:10px;line-height:1.25;color:#aaa;text-align:right}
-                .equip-acquisition-card.is-synergy{animation:equipAcquisitionGlow .85s ease-in-out infinite alternate}
-                @keyframes equipAcquisitionGlow{from{box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65),0 0 3px rgba(255,233,138,.18)}to{box-shadow:0 0 0 2px rgba(0,0,0,.88),0 5px 14px rgba(0,0,0,.65),0 0 12px rgba(255,233,138,.68)}}
-                @media(max-width:340px){.equip-acquisition-card{width:calc(100vw - 10px);padding:8px}.equip-acquisition-main{grid-template-columns:55px minmax(0,1fr);gap:7px}.equip-acquisition-image{width:55px;height:55px}.equip-acquisition-name{font-size:16px}.equip-acquisition-rank,.equip-acquisition-base-stats,.equip-acquisition-reveal-row,.equip-acquisition-base-traits,.equip-acquisition-trait-text{font-size:10px}}
+                @keyframes equipAcquisitionOptionLine{0%{width:0;opacity:0}24%{opacity:1}72%{width:100%;opacity:1}100%{width:100%;opacity:0}}
+                @keyframes equipAcquisitionOptionPop{0%{opacity:0;transform:scale(1.34);filter:brightness(2)}44%{opacity:1;transform:scale(1.16);filter:brightness(1.65)}100%{opacity:1;transform:scale(1);filter:brightness(1)}}
+                @keyframes equipAcquisitionTraitName{0%{opacity:0;transform:translateX(-5px) scale(1.12)}100%{opacity:1;transform:translateX(0) scale(1)}}
+                @keyframes equipAcquisitionTraitLevel{0%{opacity:0;transform:scale(1.9);text-shadow:0 0 12px #fff,0 0 18px #ffd27a}45%{opacity:1;transform:scale(1.28);text-shadow:0 0 8px #ffd27a}100%{opacity:1;transform:scale(1);text-shadow:none}}
+                @keyframes equipAcquisitionSynergyPop{0%{opacity:0;transform:scale(1.2);filter:brightness(2)}100%{opacity:1;transform:scale(1);filter:brightness(1)}}
+                @keyframes equipAcquisitionAuraBloom{0%{opacity:0;transform:scale(.86)}58%{opacity:1;transform:scale(1.05)}100%{opacity:.88;transform:scale(1)}}
+                @keyframes equipAcquisitionAuraRing{0%{opacity:0;transform:scale(.9)}100%{opacity:.72;transform:scale(1)}}
+                @keyframes equipAcquisitionAuraDrift{0%{background-position:0% 35%;filter:blur(13px) hue-rotate(0deg)}100%{background-position:100% 65%;filter:blur(16px) hue-rotate(38deg)}}
+                @keyframes equipAcquisitionAuraBorderShift{0%{background-position:0% 50%;filter:blur(1.5px) hue-rotate(0deg)}100%{background-position:100% 50%;filter:blur(2.2px) hue-rotate(45deg)}}
+                @media(max-width:340px){.equip-acquisition-card-shell{width:calc(100vw - 10px)}.equip-acquisition-card{padding:8px}.equip-acquisition-main{grid-template-columns:55px minmax(0,1fr);gap:7px}.equip-acquisition-image{width:55px;height:55px}.equip-acquisition-name{font-size:16px}.equip-acquisition-rank,.equip-acquisition-base-stats,.equip-acquisition-reveal-row,.equip-acquisition-base-traits{font-size:10px}}
+                @media(prefers-reduced-motion:reduce){.equip-acquisition-card-shell::before,.equip-acquisition-card-shell::after,.equip-acquisition-reveal-row *{animation-duration:1ms!important;animation-iteration-count:1!important}}
             `;
             document.head.appendChild(style);
         },
@@ -356,27 +456,31 @@
             const nameColor = Manager.getRarityColor(equip?.rarity || 'N');
             const rows = Manager.buildRows(equip);
             const split = Manager.splitTraits(equip);
+            const baseStatsHtml = Manager.getBaseStats(equip).map(text => {
+                const isSkill = String(text).startsWith('[習得:');
+                return `<span${isSkill ? ' class="equip-acquisition-grant-skill"' : ''}>${escapeHtml(text)}</span>`;
+            }).join(' ');
             overlay.innerHTML = `
-                <div class="equip-acquisition-card">
-                    <div class="equip-acquisition-main">
-                        <div class="equip-acquisition-image">
-                            <div class="equip-acquisition-image-fallback">${escapeHtml(equip.baseName || equip.type || '装備')}</div>
-                            <img alt="" draggable="false">
-                        </div>
-                        <div class="equip-acquisition-summary">
-                            <div class="equip-acquisition-name-line">
-                                <div class="equip-acquisition-name" style="color:${nameColor}">${escapeHtml(equip.name || '装備+3')}</div>
-                                <div class="equip-acquisition-rank">Rank ${Math.max(1, Number(equip.rank) || 1)}</div>
+                <div class="equip-acquisition-card-shell">
+                    <div class="equip-acquisition-card">
+                        <div class="equip-acquisition-main">
+                            <div class="equip-acquisition-image">
+                                <div class="equip-acquisition-image-fallback">${escapeHtml(equip.baseName || equip.type || '装備')}</div>
+                                <img alt="" draggable="false">
                             </div>
-                            <div class="equip-acquisition-base-stats">${Manager.getBaseStats(equip).map(text => `<span>${escapeHtml(text)}</span>`).join(' ')}</div>
-                            <div class="equip-acquisition-reveal-list">${rows.map(row => `<div class="equip-acquisition-reveal-row ${row.kind}"><div class="equip-acquisition-reveal-value">${row.html}</div></div>`).join('')}</div>
-                            <div class="equip-acquisition-base-traits">${split.baseTraits.length ? split.baseTraits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・') : ''}</div>
-                            <div class="equip-acquisition-tap-hint">画面タップで閉じる</div>
+                            <div class="equip-acquisition-summary">
+                                <div class="equip-acquisition-name-line">
+                                    <div class="equip-acquisition-name" style="color:${nameColor}">${escapeHtml(equip.name || '装備+3')}</div>
+                                    <div class="equip-acquisition-rank">Rank ${Math.max(1, Number(equip.rank) || 1)}</div>
+                                </div>
+                                <div class="equip-acquisition-base-stats">${baseStatsHtml}</div>
+                                <div class="equip-acquisition-reveal-list">${rows.map((row, index) => `<div class="equip-acquisition-reveal-row ${row.kind}" data-reveal-index="${index}" data-reveal-kind="${row.kind}"${row.color ? ` style="--reveal-color:${row.color}"` : ''}><div class="equip-acquisition-reveal-value">${row.html}</div></div>`).join('')}</div>
+                                <div class="equip-acquisition-base-traits">${split.baseTraits.length ? split.baseTraits.map(trait => escapeHtml(Manager.getTraitText(trait))).join('・') : ''}</div>
+                                <div class="equip-acquisition-tap-hint">${rows.length ? '画面タップで演出をスキップ' : '画面タップで閉じる'}</div>
+                            </div>
                         </div>
                     </div>
                 </div>`;
-            const card = overlay.querySelector('.equip-acquisition-card');
-            if (rows.some(row => row.kind === 'synergy')) card?.classList.add('is-synergy');
             const image = overlay.querySelector('img');
             const fallback = overlay.querySelector('.equip-acquisition-image-fallback');
             const eid = Number(equip.eid ?? equip.masterEid ?? entry.eid) || 0;
@@ -395,6 +499,115 @@
             return overlay;
         },
 
+        queueReveal(active, callback, delay) {
+            if (!active || active.closing) return null;
+            const timer = setTimeout(() => {
+                active.revealTimers?.delete(timer);
+                if (Manager.active !== active || active.closing || active.revealedAll) return;
+                callback();
+            }, Math.max(0, Number(delay) || 0));
+            active.revealTimers?.add(timer);
+            return timer;
+        },
+
+        clearRevealTimers(active) {
+            if (!active?.revealTimers) return;
+            active.revealTimers.forEach(timer => clearTimeout(timer));
+            active.revealTimers.clear();
+        },
+
+        setRevealHint(active, text) {
+            const hint = active?.overlay?.querySelector('.equip-acquisition-tap-hint');
+            if (hint) hint.textContent = text;
+        },
+
+        finishRevealSequence(active) {
+            if (!active || Manager.active !== active) return;
+            Manager.clearRevealTimers(active);
+            active.revealedAll = true;
+            Manager.setRevealHint(active, '画面タップで閉じる');
+        },
+
+        revealNext(active) {
+            if (!active || Manager.active !== active || active.revealedAll || active.closing) return;
+            const row = active.revealRows[active.revealIndex];
+            if (!row) {
+                Manager.finishRevealSequence(active);
+                return;
+            }
+            const kind = String(row.dataset.revealKind || '');
+            row.classList.add('is-present');
+            if (kind === 'option') {
+                row.classList.add('is-line-active');
+                Manager.queueReveal(active, () => row.classList.add('is-text-visible'), OPTION_LINE_MS + 10);
+                Manager.queueReveal(active, () => {
+                    row.classList.remove('is-line-active');
+                    row.classList.add('is-settled');
+                    active.revealIndex += 1;
+                    Manager.queueReveal(active, () => Manager.revealNext(active), STEP_GAP_MS);
+                }, OPTION_LINE_MS + OPTION_SETTLE_MS + 20);
+                return;
+            }
+            if (kind === 'trait') {
+                row.classList.add('is-name-visible');
+                Manager.queueReveal(active, () => row.classList.add('is-level-visible'), TRAIT_NAME_MS);
+                Manager.queueReveal(active, () => {
+                    row.classList.add('is-settled');
+                    active.revealIndex += 1;
+                    Manager.queueReveal(active, () => Manager.revealNext(active), STEP_GAP_MS);
+                }, TRAIT_NAME_MS + TRAIT_LEVEL_SETTLE_MS);
+                return;
+            }
+            if (kind === 'synergy') {
+                Manager.queueReveal(active, () => {
+                    row.classList.add('is-text-visible');
+                    active.overlay?.querySelector('.equip-acquisition-card-shell')?.classList.add('is-synergy');
+                }, 25);
+                Manager.queueReveal(active, () => {
+                    row.classList.add('is-settled');
+                    active.revealIndex += 1;
+                    Manager.finishRevealSequence(active);
+                }, SYNERGY_SETTLE_MS);
+                return;
+            }
+            row.classList.add('is-text-visible','is-name-visible','is-level-visible','is-settled');
+            active.revealIndex += 1;
+            Manager.queueReveal(active, () => Manager.revealNext(active), STEP_GAP_MS);
+        },
+
+        startRevealSequence(active) {
+            if (!active || Manager.active !== active) return;
+            active.revealRows = Array.from(active.overlay.querySelectorAll('.equip-acquisition-reveal-row'));
+            active.revealIndex = 0;
+            if (!active.revealRows.length) {
+                Manager.finishRevealSequence(active);
+                return;
+            }
+            const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
+            if (reduceMotion) {
+                Manager.skipReveal(active);
+                return;
+            }
+            Manager.queueReveal(active, () => Manager.revealNext(active), REVEAL_START_DELAY_MS);
+        },
+
+        skipReveal(active = Manager.active) {
+            if (!active || Manager.active !== active || active.revealedAll) return false;
+            Manager.clearRevealTimers(active);
+            (active.revealRows || []).forEach(row => {
+                row.classList.add('is-present','is-text-visible','is-name-visible','is-level-visible','is-settled');
+                row.classList.remove('is-line-active');
+                if (row.dataset.revealKind === 'synergy') {
+                    active.overlay?.querySelector('.equip-acquisition-card-shell')?.classList.add('is-synergy');
+                }
+            });
+            active.revealIndex = active.revealRows?.length || 0;
+            active.revealedAll = true;
+            active.nextActionAt = Date.now() + INPUT_RELEASE_DELAY_MS;
+            Manager.setRevealHint(active, '画面タップで閉じる');
+            return true;
+        },
+
         consumeInput(event) {
             if (!Manager.active) return;
             if (event?.cancelable) event.preventDefault();
@@ -408,13 +621,21 @@
             active.inputGuard = event => {
                 if (!Manager.active) return;
                 Manager.consumeInput(event);
-                if (Manager.active.closing) return;
+                const current = Manager.active;
+                if (current.closing) return;
                 if (event.type === 'keydown') {
-                    if (!['Escape', 'Enter', ' '].includes(event.key)) return;
-                    Manager.closeActive();
+                    if (event.repeat || !['Escape', 'Enter', ' '].includes(event.key)) return;
+                } else if (!['pointerup', 'touchend', 'mouseup', 'click'].includes(event.type)) {
                     return;
                 }
-                if (['pointerup', 'touchend', 'mouseup', 'click'].includes(event.type)) Manager.closeActive();
+                const now = Date.now();
+                if (now < Number(current.nextActionAt || 0)) return;
+                current.nextActionAt = now + INPUT_RELEASE_DELAY_MS;
+                if (!current.revealedAll) {
+                    Manager.skipReveal(current);
+                    return;
+                }
+                Manager.closeActive();
             };
             const options = { capture:true, passive:false };
             ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click','keydown']
@@ -447,10 +668,16 @@
                 previousResultInputLocked,
                 closing:false,
                 resolve:typeof options.resolve === 'function' ? options.resolve : null,
-                inputGuard:null
+                inputGuard:null,
+                revealTimers:new Set(),
+                revealRows:[],
+                revealIndex:0,
+                revealedAll:false,
+                nextActionAt:0
             };
             document.body.appendChild(overlay);
             Manager.installInputGuard();
+            Manager.startRevealSequence(Manager.active);
             return true;
         },
 
@@ -499,6 +726,7 @@
             if (!active || active.closing) return false;
             if (!Manager.commitKeep(active)) return false;
             active.closing = true;
+            Manager.clearRevealTimers(active);
             active.overlay?.classList.add('is-closing');
 
             // pointerup/touchendの後に生成されるclickまで同じガードで吸収してから再開する。
