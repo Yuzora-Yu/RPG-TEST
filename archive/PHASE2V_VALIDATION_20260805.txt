@@ -1,0 +1,12 @@
+Phase2V 軽量検証
+
+合格:
+- battle.js node --check
+- equip_acquisition_card.js node --check
+- sw.js node --check
+- tools/test-phase2v-result-advance-trait-layout.js
+
+未実施:
+- 全回帰
+- 迷宮生成ストレス
+- PC/Android/iPhone実機操作

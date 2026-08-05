@@ -69,6 +69,123 @@ const MenuInventory = {
             : (typeof DB !== 'undefined' && DB.OPT_RULES ? DB.OPT_RULES : []);
     },
 
+    escapeHtml: (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[ch])),
+
+    ensureCardStyle: () => {
+        if (typeof EquipAcquisitionCard !== 'undefined' && typeof EquipAcquisitionCard.injectStyle === 'function') {
+            EquipAcquisitionCard.injectStyle();
+        }
+        if (document.getElementById('inventory-equip-card-style')) return;
+        const style = document.createElement('style');
+        style.id = 'inventory-equip-card-style';
+        style.textContent = `
+            #inventory-list.inventory-equip-card-list{padding:8px 7px 26px;box-sizing:border-box}
+            .inventory-equip-card-shell{position:relative;isolation:isolate;margin:0 0 8px;background:rgba(7,7,9,.9);color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.46);font-family:'DotGothic16',sans-serif;overflow:visible}
+            .inventory-equip-card-shell.is-selected{background:rgba(55,18,18,.94)}
+            .inventory-equip-card-shell.is-synergy::before{content:"";position:absolute;inset:-6px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 18% 45%,rgba(102,246,255,.32),transparent 50%),radial-gradient(ellipse at 78% 38%,rgba(180,92,255,.3),transparent 52%),radial-gradient(ellipse at 52% 82%,rgba(72,255,176,.24),transparent 58%);filter:blur(8px);animation:inventoryEquipAuraDrift 3.2s ease-in-out infinite alternate}
+            .inventory-equip-card{position:relative;z-index:1;padding:8px 9px 0;background:inherit}
+            .inventory-equip-card .equip-acquisition-main{grid-template-columns:56px minmax(0,1fr);gap:8px}
+            .inventory-equip-card .equip-acquisition-image{width:56px;height:56px;border:0;border-radius:0}
+            .inventory-equip-card .equip-acquisition-name{font-size:15px}
+            .inventory-equip-card .equip-acquisition-rank{font-size:9px}
+            .inventory-equip-card .equip-acquisition-base-stats{margin-top:4px;font-size:10px;line-height:1.35}
+            .inventory-equip-option-list{display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:4px;font-size:10px;line-height:1.35}
+            .inventory-equip-trait-list{margin-top:4px;color:#ffd27a;font-size:10px;line-height:1.35;overflow-wrap:anywhere}
+            .inventory-equip-synergy-list{margin-top:5px;font-size:10px;line-height:1.35}
+            .inventory-equip-synergy{padding:3px 5px;background:rgba(255,255,255,.06)}
+            .inventory-equip-synergy strong{margin-right:5px}
+            .inventory-equip-footer{margin:7px -9px 0;padding:5px 8px;min-height:29px;box-sizing:border-box;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.045);font-size:10px;color:#aaa}
+            .inventory-equip-select{display:flex;align-items:center;gap:5px;color:#ddd;cursor:pointer;white-space:nowrap}
+            .inventory-equip-select input{margin:0;width:14px;height:14px;accent-color:#d6aa25}
+            .inventory-equip-owner{min-width:0;flex:1;text-align:center;color:#f2a0a0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            .inventory-equip-lock{border:0;border-radius:0;background:#303843;color:#fff;font-family:inherit;font-size:10px;line-height:1;padding:6px 10px;min-width:58px;cursor:pointer}
+            .inventory-equip-lock.is-locked{background:#694141;color:#ffe0a3}
+            .inventory-equip-lock:active{filter:brightness(1.25)}
+            @keyframes inventoryEquipAuraDrift{0%{opacity:.58;transform:scale(.985);filter:blur(8px) hue-rotate(0deg)}100%{opacity:.86;transform:scale(1.012);filter:blur(10px) hue-rotate(38deg)}}
+            @media(max-width:340px){#inventory-list.inventory-equip-card-list{padding-left:5px;padding-right:5px}.inventory-equip-card{padding-left:7px;padding-right:7px}.inventory-equip-footer{margin-left:-7px;margin-right:-7px}.inventory-equip-card .equip-acquisition-main{grid-template-columns:50px minmax(0,1fr);gap:7px}.inventory-equip-card .equip-acquisition-image{width:50px;height:50px}.inventory-equip-card .equip-acquisition-name{font-size:14px}}
+            @media(prefers-reduced-motion:reduce){.inventory-equip-card-shell.is-synergy::before{animation:none}}
+        `;
+        document.head.appendChild(style);
+    },
+
+    getCardManager: () => (typeof EquipAcquisitionCard !== 'undefined' ? EquipAcquisitionCard : null),
+
+    getCardSynergies: (item) => {
+        if (Array.isArray(item?.synergies) && item.synergies.length) return item.synergies;
+        if (typeof App.checkSynergy === 'function') {
+            const result = App.checkSynergy(item);
+            return Array.isArray(result) ? result : [];
+        }
+        return [];
+    },
+
+    getCardHTML: (item, owner, selected) => {
+        const card = MenuInventory.getCardManager();
+        const rarityColor = card?.getRarityColor?.(item?.rarity || 'N') || Menu.getRarityColor(item?.rarity || 'N');
+        const baseStats = card?.getBaseStats?.(item) || ['基礎能力なし'];
+        const baseStatsHtml = baseStats.map(text => {
+            const skill = String(text).startsWith('[習得:');
+            return `<span${skill ? ' class="equip-acquisition-grant-skill"' : ''}>${MenuInventory.escapeHtml(text)}</span>`;
+        }).join(' ');
+        const options = Array.isArray(item?.opts) ? item.opts : [];
+        const optionsHtml = options.map(option => {
+            const color = card?.getRarityColor?.(option?.rarity || 'N') || Menu.getRarityColor(option?.rarity || 'N');
+            const text = card?.getOptionText?.(option) || `${option?.label || option?.key || '追加効果'} ${Number(option?.val) >= 0 ? '+' : ''}${Number(option?.val) || 0}`;
+            return `<span style="color:${color}">${MenuInventory.escapeHtml(text)}</span>`;
+        }).join('');
+        const traits = Array.isArray(item?.traits) ? item.traits : [];
+        const traitsHtml = traits.map(trait => MenuInventory.escapeHtml(card?.getTraitText?.(trait) || `特性${Number(trait?.id ?? trait) || ''}`)).join('・');
+        const synergies = MenuInventory.getCardSynergies(item);
+        const synergiesHtml = synergies.map(syn => `
+            <div class="inventory-equip-synergy">
+                <strong style="color:${MenuInventory.escapeHtml(syn?.color || '#fff3a5')}">${MenuInventory.escapeHtml(syn?.name || '共鳴')}</strong>
+                <span>${MenuInventory.escapeHtml(syn?.desc || '')}</span>
+            </div>`).join('');
+        const eid = Math.max(0, Number(item?.eid ?? item?.masterEid ?? item?.equipMasterId) || 0);
+        const ownerName = owner?.name ? `装備中：${MenuInventory.escapeHtml(owner.name)}` : '';
+        const disabled = item?.locked || owner;
+        return `
+            <div class="inventory-equip-card ${synergies.length ? 'has-synergy' : ''}">
+                <div class="equip-acquisition-main">
+                    <div class="equip-acquisition-image" data-eid="${eid}">
+                        <div class="equip-acquisition-image-fallback">${MenuInventory.escapeHtml(item?.baseName || item?.type || '装備')}</div>
+                        <img alt="" draggable="false">
+                    </div>
+                    <div class="equip-acquisition-summary">
+                        <div class="equip-acquisition-name-line">
+                            <div class="equip-acquisition-name" style="color:${rarityColor}">${MenuInventory.escapeHtml(item?.name || '装備')}</div>
+                            <div class="equip-acquisition-rank">Rank ${Math.max(0, Number(item?.rank) || 0)}</div>
+                        </div>
+                        <div class="equip-acquisition-base-stats">${baseStatsHtml}</div>
+                        ${optionsHtml ? `<div class="inventory-equip-option-list">${optionsHtml}</div>` : ''}
+                        ${traitsHtml ? `<div class="inventory-equip-trait-list">${traitsHtml}</div>` : ''}
+                        ${synergiesHtml ? `<div class="inventory-equip-synergy-list">${synergiesHtml}</div>` : ''}
+                    </div>
+                </div>
+                <div class="inventory-equip-footer">
+                    <label class="inventory-equip-select">
+                        <input type="checkbox" ${selected ? 'checked' : ''} ${disabled ? 'disabled' : ''}>
+                        <span>選択</span>
+                    </label>
+                    <div class="inventory-equip-owner">${ownerName}</div>
+                    <button type="button" class="inventory-equip-lock ${item?.locked ? 'is-locked' : ''}">${item?.locked ? '解除' : 'ロック'}</button>
+                </div>
+            </div>`;
+    },
+
+    hydrateCardImage: (cardElement) => {
+        const imageBox = cardElement?.querySelector?.('.equip-acquisition-image');
+        const image = imageBox?.querySelector?.('img');
+        const fallback = imageBox?.querySelector?.('.equip-acquisition-image-fallback');
+        const eid = Number(imageBox?.dataset?.eid) || 0;
+        if (!image || !fallback || eid <= 0) return;
+        image.onload = () => { image.style.display = 'block'; fallback.style.display = 'none'; };
+        image.onerror = () => { image.removeAttribute('src'); image.style.display = 'none'; fallback.style.display = 'flex'; };
+        image.src = `assets/equips/${eid}.png`;
+    },
+
     getFilteredItems: () => {
         let items = (App.data.inventory || []).map((item, idx) => ({ ...item, _originalIdx: idx }));
 
@@ -100,6 +217,7 @@ const MenuInventory = {
         const item = App.data.inventory.find(i => String(i.id) === String(id));
         if (item) {
             item.locked = !item.locked;
+            if (item.locked) MenuInventory.selectedIds = MenuInventory.selectedIds.filter(value => String(value) !== String(id));
             App.save();
             MenuInventory.render();
         }
@@ -172,6 +290,8 @@ const MenuInventory = {
 
         const list = document.getElementById('inventory-list');
         if (!list) return;
+        MenuInventory.ensureCardStyle();
+        list.classList.add('inventory-equip-card-list');
 
         const ownerMap = MenuInventory.getOwnerMap();
         const selectedSet = new Set(MenuInventory.selectedIds.map(id => String(id)));
@@ -191,30 +311,37 @@ const MenuInventory = {
         const pageItems = items.slice(pageStart, pageStart + MenuInventory.pageSize);
 
         pageItems.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'list-item';
-            div.style.cssText = `flex-direction:column; align-items:flex-start; position:relative; ${selectedSet.has(String(item.id)) ? 'background:#422; border-left:3px solid #f44;' : ''}`;
+            const key = String(item.id);
+            const owner = ownerMap.get(key);
+            const selected = selectedSet.has(key);
+            const synergies = MenuInventory.getCardSynergies(item);
+            const shell = document.createElement('div');
+            shell.className = `inventory-equip-card-shell${selected ? ' is-selected' : ''}${synergies.length ? ' is-synergy' : ''}`;
+            shell.dataset.equipId = key;
+            shell.innerHTML = MenuInventory.getCardHTML(item, owner, selected);
 
-            const owner = ownerMap.get(String(item.id));
-            const rarityColor = Menu.getRarityColor(item.rarity || 'N');
+            const footer = shell.querySelector('.inventory-equip-footer');
+            footer?.addEventListener('click', event => event.stopPropagation());
 
-            div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; width:100%; border-bottom:1px solid #333; padding-bottom:4px; margin-bottom:4px;">
-                    <div style="display:flex; align-items:center; gap:5px; min-width:0; flex:1; margin-right:4px;">
-                        <input type="checkbox" ${selectedSet.has(String(item.id)) ? 'checked' : ''} ${item.locked || owner ? 'disabled' : ''}>
-                        ${Menu.getEquipmentNameLineHTML(item, { suffixHTML: `${item.locked ? ' <span style="color:#ffd700;font-size:10px;">🔒</span>' : ''}${owner ? ` <span style="color:#f88;font-size:9px;">[${owner.name}]</span>` : ''}` })}
-                    </div>
-                    <button class="btn" style="padding:2px 8px; font-size:9px; background:${item.locked ? '#644' : '#444'}; flex-shrink:0;"
-                        onclick="event.stopPropagation(); MenuInventory.toggleLock('${item.id}')">${item.locked ? '解除' : 'ロック'}</button>
-                </div>
-                ${Menu.getEquipDetailHTML(item, false)}
-            `;
+            const checkbox = shell.querySelector('input[type="checkbox"]');
+            checkbox?.addEventListener('click', event => event.stopPropagation());
+            checkbox?.addEventListener('change', () => {
+                if (!item.locked && !owner) MenuInventory.toggleSelect(item.id);
+            });
 
-            div.onclick = () => {
+            const lockButton = shell.querySelector('.inventory-equip-lock');
+            lockButton?.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                MenuInventory.toggleLock(item.id);
+            });
+
+            shell.addEventListener('click', () => {
                 if (item.locked || owner) return;
                 MenuInventory.toggleSelect(item.id);
-            };
-            list.appendChild(div);
+            });
+            MenuInventory.hydrateCardImage(shell);
+            list.appendChild(shell);
         });
     },
 

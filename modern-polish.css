@@ -7639,3 +7639,62 @@ body.title-page .title-actions .btn {
     padding-bottom: 7px;
   }
 }
+
+
+/* Phase2W: レベルアップ結果の待機表示は、ログ本文と分離した静かな点滅表示にする。 */
+body.game-page #battle-log-layer {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+}
+
+body.game-page #battle-log-layer > #battle-log {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+body.game-page #battle-log .battle-result-level-spacer {
+  display: block;
+  min-height: 1.15em;
+  line-height: 1.15;
+}
+
+body.game-page #battle-result-advance-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  z-index: 3;
+  display: block;
+  min-width: 20px;
+  padding: 0;
+  box-sizing: border-box;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  line-height: 1;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-50%);
+  text-shadow: none;
+}
+
+body.game-page #battle-result-advance-indicator.is-visible {
+  visibility: visible;
+  animation: battleResultAdvanceBlink 0.82s linear infinite alternate;
+}
+
+@keyframes battleResultAdvanceBlink {
+  0% { opacity: 0.22; }
+  100% { opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.game-page #battle-result-advance-indicator.is-visible {
+    opacity: 0.9;
+    animation: none;
+  }
+}

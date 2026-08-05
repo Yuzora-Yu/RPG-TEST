@@ -1,0 +1,12 @@
+const fs = require('fs');
+const assert = require('assert');
+const battle = fs.readFileSync('battle.js','utf8');
+const css = fs.readFileSync('modern-polish.css','utf8');
+const card = fs.readFileSync('equip_acquisition_card.js','utf8');
+assert(battle.includes('battle-result-level-spacer'));
+assert(css.includes('min-height: 1.15em'));
+assert(css.includes('transform: translateX(-50%)'));
+assert(!css.includes('translate(-50%, 3px)'));
+assert(css.includes('color: rgba(255, 255, 255, 0.9)'));
+assert(card.includes('width:min(calc(100vw - 20px),550px)'));
+console.log('Phase2W static checks: PASS');

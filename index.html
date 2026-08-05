@@ -164,7 +164,10 @@ if ('serviceWorker' in navigator) {
         <div class="party-bar" id="battle-party-bar"></div>
 
         <div id="battle-info">
-            <div id="battle-log"></div>
+            <div id="battle-log-layer">
+                <div id="battle-log"></div>
+                <div id="battle-result-advance-indicator" aria-hidden="true">▼</div>
+            </div>
             <div id="battle-actor-name"></div>
             <div class="cmd-grid" id="command-root">
                 <button class="cmd-btn" onclick="Battle.selectCommand('attack')">こうげき</button>

@@ -1895,15 +1895,27 @@ const Battle = {
         button.textContent = Battle.resultSkipRequested ? 'スキップ中' : 'スキップ';
     },
 
+    setResultAdvanceIndicatorVisible: (visible) => {
+        const indicator = Battle.getEl?.('battle-result-advance-indicator') || document.getElementById('battle-result-advance-indicator');
+        if (!indicator) return;
+        const shouldShow = visible === true && Battle.phase === 'result' && Battle.resultReadyToEnd !== true;
+        indicator.classList.toggle('is-visible', shouldShow);
+        indicator.setAttribute('aria-hidden', shouldShow ? 'false' : 'true');
+    },
+
     setResultLevelSkipActive: (active) => {
         Battle.resultLevelSkipActive = active === true;
-        if (!Battle.resultLevelSkipActive) Battle.resultSkipRequested = false;
+        if (!Battle.resultLevelSkipActive) {
+            Battle.resultSkipRequested = false;
+            Battle.setResultAdvanceIndicatorVisible(false);
+        }
         Battle.updateResultLevelSkipButton();
     },
 
     requestResultLevelSkip: () => {
         if (Battle.phase !== 'result' || Battle.resultLevelSkipActive !== true) return false;
         Battle.resultSkipRequested = true;
+        Battle.setResultAdvanceIndicatorVisible(false);
         Battle.updateResultLevelSkipButton();
         if (typeof Battle.resultAdvanceResolver === 'function') {
             const resolveAdvance = Battle.resultAdvanceResolver;
@@ -1933,10 +1945,15 @@ const Battle = {
     },
 
     waitForResultAdvance: () => {
-        if (Battle.phase !== 'result' || (Battle.resultLevelSkipActive && Battle.resultSkipRequested)) return Promise.resolve();
+        if (Battle.phase !== 'result' || (Battle.resultLevelSkipActive && Battle.resultSkipRequested)) {
+            Battle.setResultAdvanceIndicatorVisible(false);
+            return Promise.resolve();
+        }
+        Battle.setResultAdvanceIndicatorVisible(true);
         return new Promise(resolve => {
             Battle.resultAdvanceResolver = () => {
                 Battle.resultAdvanceResolver = null;
+                Battle.setResultAdvanceIndicatorVisible(false);
                 resolve();
             };
         });
@@ -2034,6 +2051,7 @@ const Battle = {
         Battle.resultLevelSkipActive = false;
         Battle.resultWaiters = [];
         Battle.updateResultLevelSkipButton?.();
+        Battle.setResultAdvanceIndicatorVisible?.(false);
         
         const logEl = Battle.getEl('battle-log');
         if(logEl) logEl.innerHTML = '';
@@ -3917,6 +3935,7 @@ const Battle = {
         Battle.resultLevelSkipActive = false;
         Battle.resultWaiters = [];
         Battle.updateResultLevelSkipButton?.();
+        Battle.setResultAdvanceIndicatorVisible?.(false);
         Battle.finishState = 'idle';
         Battle.finishToken = null;
         Battle.finishTimerId = null;
@@ -7932,6 +7951,7 @@ findNextActor: () => {
         Battle.resultLevelSkipActive = false;
 		Battle.resultWaiters = [];
         Battle.updateResultLevelSkipButton?.();
+        Battle.setResultAdvanceIndicatorVisible?.(false);
 		if (App.data.battle) App.data.battle.active = false;
         // 保存トランザクションは開始済み。
 
@@ -8491,8 +8511,9 @@ findNextActor: () => {
                     Battle.resultInputLocked = false;
                 }
                 for (const detail of event.details) Battle.log(detail);
+                // ステータス上昇ログと入力待ち表示が詰まらないよう、必ず1行分の余白を置く。
+                Battle.log('<span class="battle-result-level-spacer" aria-hidden="true">&nbsp;</span>');
                 if (!Battle.resultSkipRequested) {
-                    Battle.log(`<span style="color:#aaa; font-size:0.85em;">▼</span>`);
                     await Battle.waitForResultAdvance();
                 }
             }
@@ -8907,6 +8928,7 @@ findNextActor: () => {
             Battle.resultLevelSkipActive = false;
             Battle.resultWaiters = [];
             Battle.updateResultLevelSkipButton?.();
+            Battle.setResultAdvanceIndicatorVisible?.(false);
             App.save();
             Battle.schedule(() => {
                 App.changeScene('field');
@@ -8925,6 +8947,7 @@ findNextActor: () => {
         Battle.resultSkipRequested = false;
         Battle.resultLevelSkipActive = false;
         Battle.updateResultLevelSkipButton?.();
+        Battle.setResultAdvanceIndicatorVisible?.(false);
         if (typeof Battle.resultAdvanceResolver === 'function') {
             const resolveAdvance = Battle.resultAdvanceResolver;
             Battle.resultAdvanceResolver = null;
