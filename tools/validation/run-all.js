@@ -9,6 +9,22 @@ const validators = fs.readdirSync(validationRoot)
     .sort();
 
 let failed = 0;
+const rootScripts = fs.readdirSync(projectRoot)
+    .filter(name => name.endsWith('.js'))
+    .sort();
+
+for (const script of rootScripts) {
+    const result = spawnSync(process.execPath, ['--check', path.join(projectRoot, script)], {
+        cwd: projectRoot,
+        stdio: 'inherit'
+    });
+    if (result.status !== 0) failed += 1;
+}
+
+if (!failed) {
+    console.log(`[validation] JavaScript syntax passed: ${rootScripts.length} files.`);
+}
+
 for (const validator of validators) {
     console.log(`\n[validation] ${validator}`);
     const result = spawnSync(process.execPath, [path.join(validationRoot, validator)], {
@@ -23,4 +39,4 @@ if (failed) {
     process.exit(1);
 }
 
-console.log(`\nValidation suite passed: ${validators.length}/${validators.length} scripts.`);
+console.log(`\nValidation suite passed: syntax + ${validators.length}/${validators.length} maintained scripts.`);

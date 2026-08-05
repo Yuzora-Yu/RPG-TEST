@@ -3,14 +3,23 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..', '..');
 const inventory = fs.readFileSync(path.join(root, 'menus_inventory.js'), 'utf8');
-const common = fs.readFileSync(path.join(root, 'menus.js'), 'utf8');
 
-if (inventory.includes('traitHtml') || inventory.includes('color:#00ffff')) {
-    throw new Error('Inventory still renders a second cyan trait line below the shared equipment details.');
+if (!inventory.includes('inventory-equip-card-shell') ||
+    !inventory.includes('inventory-equip-footer') ||
+    !inventory.includes('inventory-equip-select') ||
+    !inventory.includes('inventory-equip-lock')) {
+    throw new Error('Inventory equipment cards or footer controls are missing.');
 }
-if (!common.includes('getEquipDetailHTML: (equip, showName = true) =>') ||
-    !inventory.includes('Menu.getEquipDetailHTML(item, false)')) {
-    throw new Error('The shared equipment detail and gold trait display was removed unexpectedly.');
+if (!inventory.includes('card?.getBaseStats') ||
+    !inventory.includes('card?.getOptionText') ||
+    !inventory.includes('card?.getTraitText')) {
+    throw new Error('Inventory equipment cards are not using the shared complete equipment formatter.');
+}
+if (inventory.includes('Menu.getEquipDetailHTML(item, false)')) {
+    throw new Error('Legacy inventory detail layout is still active.');
+}
+if (inventory.includes('特性:') || inventory.includes('特性：')) {
+    throw new Error('Inventory card restored the removed trait prefix.');
 }
 
-console.log('Inventory equipment display validation passed: traits render once through the shared detail formatter.');
+console.log('Inventory equipment display validation passed: acquisition-style cards and footer controls are active.');

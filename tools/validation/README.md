@@ -1,23 +1,19 @@
-# Validation tools
+# 検証ツール
 
-ゲーム本体のJS・HTML・CSSと混在させないため、静的検証とランタイム模擬検証はこのフォルダへ集約する。
-
-全検証:
+検証入口は一つだけです。
 
 ```powershell
 node tools/validation/run-all.js
 ```
 
-個別検証の例:
+ルートのJavaScript構文を確認した後、現行コードで保守されている `validate-*.js` を実行します。
 
-```powershell
-node tools/validation/validate-asset-fixed-names.js
-node tools/validation/validate-asset-libraries.js
-```
+## 方針
 
-- 新しい検証は `validate-*.js` として追加すると、`run-all.js` の対象へ自動で入る。
-- プロジェクトルートは `path.resolve(__dirname, '..', '..')` で解決する。
-- マップ読込などの共通処理は `validation-helpers.js` を利用する。
-- 生成レポートや一時出力が必要な場合は `logs/` 以下へ保存する。
-- `validate-asset-fixed-names.js` は、実行時画像の固定名、実ファイル、版番号残存を検査する。
-- `validate-asset-libraries.js` は、再利用素材の登録、寸法、透過形式、全データキャッシュ収録を検査する。
+- 検証結果は補助情報であり、PC／スマートフォンの実ブラウザ確認を置き換えません。
+- 関数名やソース文字列の存在だけを調べる検証は追加しません。
+- 新しい検証は、保存データ・資産参照・到達可能性など、実データの結果を確認できる場合に限定します。
+- 一工程だけで使う調査スクリプトは常設せず、作業終了時に削除します。
+- 失敗した検証を通すために製品コードを旧仕様へ戻しません。先に現行仕様と実プレイを確認します。
+
+2026-08-05の整理で、現行コードと一致しない26本と重複入口 `run-core.js` を削除しました。指摘内容は `docs/project-status/CLEANUP_AUDIT_20260805.md` に残しています。
