@@ -106,6 +106,7 @@ const Menu = {
 
     resetDialogLayout: () => {
         const area = document.getElementById('menu-dialog-area');
+        const shell = area?.querySelector?.('.menu-dialog-shell');
         const textEl = Menu.getDialogEl?.('menu-dialog-text') || document.getElementById('menu-dialog-text');
         const btnEl = Menu.getDialogEl?.('menu-dialog-buttons') || document.getElementById('menu-dialog-buttons');
         if (area) {
@@ -113,12 +114,13 @@ const Menu = {
             area.style.zIndex = '';
             area.style.inset = '';
         }
+        if (shell) shell.classList.remove('is-fixed-list');
         if (textEl) {
             textEl.scrollTop = 0;
             textEl.style.textAlign = '';
         }
         if (btnEl) {
-            btnEl.classList.remove('is-list');
+            btnEl.classList.remove('is-list', 'is-fixed-list');
             btnEl.style.flexDirection = '';
             btnEl.style.gap = '';
             btnEl.style.width = '';
@@ -983,10 +985,11 @@ const Menu = {
     },
 	
 	// 複数の選択肢をリスト表示するダイアログ
-    listChoice: (text, choices) => {
+    listChoice: (text, choices, options = {}) => {
         Menu.installBackGuard();
         Menu.ensureBackGuard();
         const area = Menu.getDialogEl('menu-dialog-area');
+        const shell = area?.querySelector?.('.menu-dialog-shell');
         const textEl = Menu.getDialogEl('menu-dialog-text');
         const btnEl = Menu.getDialogEl('menu-dialog-buttons');
         
@@ -996,19 +999,29 @@ const Menu = {
         textEl.innerHTML = String(text).replace(/\n/g, '<br>');
         btnEl.classList.add('is-list');
 
-        const pageSize = 6;
+        const fixedLayout = !!options.fixedLayout;
+        const loopPages = !!options.loopPages;
+        const requestedPageSize = Number(options.pageSize);
+        const pageSize = Number.isInteger(requestedPageSize) && requestedPageSize > 0
+            ? requestedPageSize
+            : 6;
         const totalPages = Math.max(1, Math.ceil(choices.length / pageSize));
         let page = 0;
 
+        if (fixedLayout) {
+            shell?.classList.add('is-fixed-list');
+            btnEl.classList.add('is-fixed-list');
+        }
+
         const resetDialogButtons = () => Menu.resetDialogLayout();
 
-        const makeButton = (label, onClick, options = {}) => {
+        const makeButton = (label, onClick, buttonOptions = {}) => {
             const btn = document.createElement('button');
             btn.className = 'btn';
-            btn.style.width = options.width || '100%';
-            btn.style.padding = options.padding || '10px';
-            if (options.background) btn.style.background = options.background;
-            if (options.disabled) {
+            btn.style.width = buttonOptions.width || '100%';
+            btn.style.padding = buttonOptions.padding || '10px';
+            if (buttonOptions.background) btn.style.background = buttonOptions.background;
+            if (buttonOptions.disabled) {
                 btn.disabled = true;
                 btn.style.opacity = '0.45';
             }
@@ -1020,9 +1033,11 @@ const Menu = {
         const renderPage = () => {
             btnEl.innerHTML = '';
             const start = page * pageSize;
+            const choiceList = document.createElement('div');
+            choiceList.className = 'menu-dialog-choice-list';
 
             choices.slice(start, start + pageSize).forEach(c => {
-                btnEl.appendChild(makeButton(c.label, () => { 
+                choiceList.appendChild(makeButton(c.label, () => { 
                     resetDialogButtons();
                     Menu.closeDialog(); 
                     if (c.callback) c.callback(); 
@@ -1033,9 +1048,11 @@ const Menu = {
                     padding: c.padding
                 }));
             });
+            btnEl.appendChild(choiceList);
 
             if (totalPages > 1) {
                 const nav = document.createElement('div');
+                nav.className = 'menu-dialog-list-nav';
                 nav.style.display = 'grid';
                 nav.style.gridTemplateColumns = '48px 1fr 48px';
                 nav.style.gap = '8px';
@@ -1043,9 +1060,11 @@ const Menu = {
                 nav.style.width = '100%';
 
                 nav.appendChild(makeButton('◀', () => {
-                    page = Math.max(0, page - 1);
+                    page = loopPages
+                        ? (page - 1 + totalPages) % totalPages
+                        : Math.max(0, page - 1);
                     renderPage();
-                }, { width: '48px', padding: '8px', disabled: page === 0 }));
+                }, { width: '48px', padding: '8px', disabled: !loopPages && page === 0 }));
 
                 const indicator = document.createElement('div');
                 indicator.style.fontSize = '12px';
@@ -1055,9 +1074,11 @@ const Menu = {
                 nav.appendChild(indicator);
 
                 nav.appendChild(makeButton('▶', () => {
-                    page = Math.min(totalPages - 1, page + 1);
+                    page = loopPages
+                        ? (page + 1) % totalPages
+                        : Math.min(totalPages - 1, page + 1);
                     renderPage();
-                }, { width: '48px', padding: '8px', disabled: page >= totalPages - 1 }));
+                }, { width: '48px', padding: '8px', disabled: !loopPages && page >= totalPages - 1 }));
 
                 btnEl.appendChild(nav);
             }

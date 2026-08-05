@@ -7127,6 +7127,45 @@ body.game-page .menu-dialog-footer.is-list {
   overflow-y: auto;
 }
 
+body.game-page .menu-dialog-choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* スカイプリズムなど、ページごとの件数差で高さを変えない選択画面 */
+body.game-page .menu-dialog-shell.is-fixed-list {
+  height: min(100%, 650px);
+}
+
+body.game-page .menu-dialog-shell.is-fixed-list .menu-dialog-body {
+  flex: 0 0 auto;
+  min-height: 88px;
+}
+
+body.game-page .menu-dialog-footer.is-list.is-fixed-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+}
+
+body.game-page .menu-dialog-footer.is-list.is-fixed-list .menu-dialog-choice-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.game-page .menu-dialog-footer.is-list.is-fixed-list .menu-dialog-list-nav,
+body.game-page .menu-dialog-footer.is-list.is-fixed-list > .btn {
+  flex: 0 0 auto;
+}
+
 @media (orientation: landscape) and (max-height: 520px) {
   body.game-page .game-modal-overlay,
   body.game-page .menu-dialog-overlay {

@@ -713,7 +713,11 @@ const MenuItems = {
         });
 
         Menu.listChoice(`スカイプリズム：移動先を選択
-発見済み ${discoveredCount}/${entries.length}`, choices);
+発見済み ${discoveredCount}/${entries.length}`, choices, {
+            pageSize: 6,
+            fixedLayout: true,
+            loopPages: true
+        });
     },
 
     renderTargetList: () => {
