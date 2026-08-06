@@ -678,46 +678,41 @@ const MenuItems = {
             return;
         }
 
-        const discoveredCount = entries.filter(e => e.discovered).length;
         const choices = entries.map((entry) => {
             if (!entry.discovered) {
-                return { label: '？？？', disabled: true, background: '#333' };
+                return { label: '？？？', disabled: true, background: '#333', destination: entry.destination };
             }
-
             const dungeonNote = entry.kind === 'dungeon' ? ' [ダンジョン]' : '';
             const label = `${entry.name}${dungeonNote}`;
             return {
                 label,
+                destination: entry.destination,
+                worldKey: entry.record?.worldKey || entry.destination?.worldKey || (entry.areaKey === 'ABYSS_WORLD' || entry.name === '深淵世界' ? 'ABYSS_WORLD' : 'WORLD'),
+                areaKey: entry.areaKey,
+                confirmText: `${entry.name}へ移動しますか？\nスカイプリズムを1個消費します。`,
                 callback: () => {
-                    Menu.confirm(`${entry.name}へ移動しますか？
-スカイプリズムを1個消費します。`, () => {
-                        const result = (typeof App.useSkyPrismTo === 'function')
-                            ? App.useSkyPrismTo(entry.areaKey)
-                            : { ok: false, message: 'スカイプリズムを使用できませんでした。' };
-
-                        if (result.ok) {
-                            MenuItems.playUseSe(item);
-                            if (typeof Menu !== 'undefined' && typeof Menu.closeAll === 'function') Menu.closeAll();
-                            if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
-                            if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') Field.refreshCurrentAction({ silent:true });
-                            if (typeof Field !== 'undefined' && typeof Field.startIdleStep === 'function') Field.startIdleStep();
-                            if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
-                            // 成功時は App.useSkyPrismTo() 側の App.log のみ表示する。
-                            // 追加の「〇〇へ移動した！」モーダルは出さない。
-                        } else {
-                            Menu.msg(result.message || '移動できません。');
-                        }
-                    });
+                    const result = (typeof App.useSkyPrismTo === 'function')
+                        ? App.useSkyPrismTo(entry.areaKey)
+                        : { ok: false, message: 'スカイプリズムを使用できませんでした。' };
+                    if (result.ok) {
+                        MenuItems.playUseSe(item);
+                        if (typeof Menu !== 'undefined' && typeof Menu.closeAll === 'function') Menu.closeAll();
+                        if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
+                        if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') Field.refreshCurrentAction({ silent:true });
+                        if (typeof Field !== 'undefined' && typeof Field.startIdleStep === 'function') Field.startIdleStep();
+                        if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+                    } else {
+                        Menu.msg(result.message || '移動できません。');
+                    }
                 }
             };
         });
 
-        Menu.listChoice(`スカイプリズム：移動先を選択
-発見済み ${discoveredCount}/${entries.length}`, choices, {
-            pageSize: 6,
-            fixedLayout: true,
-            loopPages: true
-        });
+        if (typeof Menu.skyPrismChoice === 'function') {
+            Menu.skyPrismChoice('スカイプリズム：移動先を選択', choices);
+        } else {
+            Menu.listChoice('スカイプリズム：移動先を選択', choices);
+        }
     },
 
     renderTargetList: () => {

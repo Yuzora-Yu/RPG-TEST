@@ -106,21 +106,20 @@ const Menu = {
 
     resetDialogLayout: () => {
         const area = document.getElementById('menu-dialog-area');
-        const shell = area?.querySelector?.('.menu-dialog-shell');
         const textEl = Menu.getDialogEl?.('menu-dialog-text') || document.getElementById('menu-dialog-text');
         const btnEl = Menu.getDialogEl?.('menu-dialog-buttons') || document.getElementById('menu-dialog-buttons');
         if (area) {
+            area.classList.remove('is-sky-prism');
             area.style.position = '';
             area.style.zIndex = '';
             area.style.inset = '';
         }
-        if (shell) shell.classList.remove('is-fixed-list');
         if (textEl) {
             textEl.scrollTop = 0;
             textEl.style.textAlign = '';
         }
         if (btnEl) {
-            btnEl.classList.remove('is-list', 'is-fixed-list');
+            btnEl.classList.remove('is-list', 'is-sky-prism-list');
             btnEl.style.flexDirection = '';
             btnEl.style.gap = '';
             btnEl.style.width = '';
@@ -984,12 +983,275 @@ const Menu = {
         area.style.display = 'flex';
     },
 	
-	// 複数の選択肢をリスト表示するダイアログ
-    listChoice: (text, choices, options = {}) => {
+
+    // スカイプリズム専用の移動先選択UI。
+    // 通常の確認ダイアログへ画面を差し替えず、移動先一覧とワールドマップを背面に維持する。
+    skyPrismChoice: (text, choices, options = {}) => {
         Menu.installBackGuard();
         Menu.ensureBackGuard();
         const area = Menu.getDialogEl('menu-dialog-area');
-        const shell = area?.querySelector?.('.menu-dialog-shell');
+        const textEl = Menu.getDialogEl('menu-dialog-text');
+        const btnEl = Menu.getDialogEl('menu-dialog-buttons');
+        if (!area || !textEl || !btnEl) return;
+
+        Menu.resetDialogLayout();
+        area.classList.add('is-sky-prism');
+        textEl.innerHTML = String(text).replace(/\n/g, '<br>');
+        btnEl.classList.add('is-list', 'is-sky-prism-list');
+        area.style.display = 'flex';
+
+        let page = 0;
+        let pageSize = 6;
+        let selectedChoice = null;
+        let blinkPhase = 0;
+        let blinkTimer = null;
+        let resizeTimer = null;
+
+        const getPageSize = () => {
+            const shell = area.querySelector('.menu-dialog-shell');
+            const shellHeight = shell?.getBoundingClientRect().height || Math.min(window.innerHeight - 12, 760);
+            const headerHeight = textEl.getBoundingClientRect().height || 52;
+            const mapMin = shellHeight < 650 ? 128 : shellHeight < 720 ? 155 : 190;
+            const fixedHeight = headerHeight + mapMin + 118;
+            const availableForRows = Math.max(92, shellHeight - fixedHeight);
+            return Math.max(2, Math.min(6, Math.floor((availableForRows + 8) / 53)));
+        };
+        const getTotalPages = () => Math.max(1, Math.ceil(choices.length / pageSize));
+        const stopBlink = () => {
+            if (blinkTimer) clearInterval(blinkTimer);
+            blinkTimer = null;
+            blinkPhase = 0;
+        };
+        const cleanup = () => {
+            stopBlink();
+            if (resizeTimer) clearTimeout(resizeTimer);
+            window.removeEventListener('resize', handleResize);
+            area.classList.remove('is-sky-prism');
+            Menu.resetDialogLayout();
+        };
+        const makeButton = (label, onClick, opts = {}) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.width = opts.width || '100%';
+            btn.style.padding = opts.padding || '10px';
+            if (opts.background) btn.style.background = opts.background;
+            if (opts.disabled) {
+                btn.disabled = true;
+                btn.style.opacity = '0.45';
+            }
+            btn.innerText = label;
+            btn.onclick = onClick;
+            return btn;
+        };
+        const resolveWorldKey = (choice) => {
+            const raw = choice?.worldKey || choice?.destination?.worldKey || '';
+            if (String(raw).toUpperCase() === 'ABYSS_WORLD' || choice?.areaKey === 'ABYSS_WORLD' || choice?.label === '深淵世界') return 'ABYSS_WORLD';
+            return 'WORLD';
+        };
+
+        const drawMap = () => {
+            const canvas = btnEl.querySelector('.sky-prism-map-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            const fallbackChoice = choices.find(c => c.destination) || null;
+            const targetChoice = selectedChoice || fallbackChoice;
+            const worldKey = resolveWorldKey(targetChoice);
+            const worldDef = (typeof MapRegistry !== 'undefined' && MapRegistry.getWorldDefinition)
+                ? MapRegistry.getWorldDefinition(worldKey)
+                : (typeof WORLD_MAPS !== 'undefined' ? WORLD_MAPS[worldKey] : null);
+            const rows = worldDef?.tiles || [];
+            const mapH = Array.isArray(rows) ? rows.length : 0;
+            const mapW = mapH ? rows.reduce((m, row) => Math.max(m, Array.isArray(row) ? row.length : String(row || '').length), 0) : 0;
+            ctx.fillStyle = '#090502';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (!mapW || !mapH) return;
+
+            const layout = (typeof Field !== 'undefined' && Field.getFullMapLayout)
+                ? Field.getFullMapLayout(canvas, mapW, mapH, 8)
+                : { size: Math.min((canvas.width - 16) / mapW, (canvas.height - 16) / mapH), offsetX: 8, offsetY: 8 };
+            const oldWorldKey = App.data?.location?.worldKey;
+            const oldCurrentMapData = typeof Field !== 'undefined' ? Field.currentMapData : null;
+            if (App.data?.location) App.data.location.worldKey = worldKey;
+            if (typeof Field !== 'undefined') Field.currentMapData = null;
+            try {
+                for (let y = 0; y < mapH; y++) {
+                    const row = rows[y];
+                    for (let x = 0; x < mapW; x++) {
+                        const tile = Array.isArray(row) ? row[x] : String(row || '')[x];
+                        const color = (typeof Field !== 'undefined' && Field.getMiniMapTileColor)
+                            ? Field.getMiniMapTileColor(tile, x, y)
+                            : (worldDef?.tileOverrides?.[String(tile || '').toUpperCase()]?.color || '#315f52');
+                        ctx.fillStyle = color || '#000';
+                        ctx.fillRect(layout.offsetX + x * layout.size, layout.offsetY + y * layout.size, Math.ceil(layout.size), Math.ceil(layout.size));
+                    }
+                }
+            } finally {
+                if (typeof Field !== 'undefined') Field.currentMapData = oldCurrentMapData;
+                if (App.data?.location) App.data.location.worldKey = oldWorldKey;
+            }
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.72)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(Math.floor(layout.offsetX) + 0.5, Math.floor(layout.offsetY) + 0.5, Math.max(1, Math.floor(mapW * layout.size) - 1), Math.max(1, Math.floor(mapH * layout.size) - 1));
+
+            const destination = selectedChoice?.destination;
+            if (destination) {
+                const x = Number(destination.x);
+                const y = Number(destination.y);
+                if (Number.isFinite(x) && Number.isFinite(y)) {
+                    const cx = layout.offsetX + (x + 0.5) * layout.size;
+                    const cy = layout.offsetY + (y + 0.5) * layout.size;
+                    const pulse = 0.5 + 0.5 * Math.sin(blinkPhase);
+                    const radius = Math.max(4, Math.min(9, layout.size * 0.62));
+                    ctx.save();
+                    ctx.shadowColor = '#fff4b0';
+                    ctx.shadowBlur = 8 + pulse * 12;
+                    ctx.strokeStyle = `rgba(255, 244, 176, ${0.72 + pulse * 0.28})`;
+                    ctx.lineWidth = Math.max(2, radius * 0.34);
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius + 2 + pulse * 3, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.shadowColor = '#ff2518';
+                    ctx.shadowBlur = 10 + pulse * 10;
+                    ctx.fillStyle = '#ff1710';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+        };
+
+        const closeConfirmation = () => {
+            const layer = btnEl.querySelector('.sky-prism-confirm-layer');
+            if (layer) layer.remove();
+            selectedChoice = null;
+            stopBlink();
+            drawMap();
+        };
+
+        const showConfirmation = (choice) => {
+            selectedChoice = choice;
+            stopBlink();
+            blinkTimer = setInterval(() => {
+                blinkPhase += Math.PI / 5;
+                drawMap();
+            }, 90);
+            drawMap();
+
+            const stage = btnEl.querySelector('.sky-prism-choice-stage');
+            if (!stage) return;
+            const existing = stage.querySelector('.sky-prism-confirm-layer');
+            if (existing) existing.remove();
+            const layer = document.createElement('div');
+            layer.className = 'sky-prism-confirm-layer';
+            const panel = document.createElement('div');
+            panel.className = 'sky-prism-confirm-panel';
+            const message = document.createElement('div');
+            message.className = 'sky-prism-confirm-message';
+            message.innerHTML = String(choice.confirmText || `${choice.label}へ移動しますか？\nスカイプリズムを1個消費します。`).replace(/\n/g, '<br>');
+            const actions = document.createElement('div');
+            actions.className = 'sky-prism-confirm-actions';
+            actions.appendChild(makeButton('はい', () => {
+                stopBlink();
+                if (choice.callback) choice.callback();
+            }, { width: '80px' }));
+            actions.appendChild(makeButton('いいえ', closeConfirmation, { width: '80px', background: '#555' }));
+            panel.appendChild(message);
+            panel.appendChild(actions);
+            layer.appendChild(panel);
+            stage.appendChild(layer);
+        };
+
+        const renderPage = () => {
+            stopBlink();
+            selectedChoice = null;
+            pageSize = getPageSize();
+            const totalPages = getTotalPages();
+            page = ((page % totalPages) + totalPages) % totalPages;
+            btnEl.innerHTML = '';
+
+            const stage = document.createElement('div');
+            stage.className = 'sky-prism-choice-stage';
+            const list = document.createElement('div');
+            list.className = 'sky-prism-destination-list';
+            list.style.setProperty('--sky-prism-page-rows', String(pageSize));
+            const start = page * pageSize;
+            const pageChoices = choices.slice(start, start + pageSize);
+            pageChoices.forEach(choice => {
+                list.appendChild(makeButton(choice.label, () => showConfirmation(choice), {
+                    disabled: !!choice.disabled,
+                    background: choice.background,
+                    padding: choice.padding
+                }));
+            });
+            for (let i = pageChoices.length; i < pageSize; i++) {
+                const spacer = document.createElement('div');
+                spacer.className = 'sky-prism-destination-spacer';
+                spacer.setAttribute('aria-hidden', 'true');
+                list.appendChild(spacer);
+            }
+            stage.appendChild(list);
+            btnEl.appendChild(stage);
+
+            const mapWrap = document.createElement('div');
+            mapWrap.className = 'sky-prism-map-wrap';
+            const canvas = document.createElement('canvas');
+            canvas.className = 'sky-prism-map-canvas';
+            canvas.width = 480;
+            canvas.height = 300;
+            mapWrap.appendChild(canvas);
+            btnEl.appendChild(mapWrap);
+
+            const footer = document.createElement('div');
+            footer.className = 'sky-prism-fixed-footer';
+            const nav = document.createElement('div');
+            nav.className = 'sky-prism-nav';
+            nav.appendChild(makeButton('◀', () => {
+                page = (page - 1 + getTotalPages()) % getTotalPages();
+                renderPage();
+            }, { width: '48px', padding: '8px' }));
+            const indicator = document.createElement('div');
+            indicator.className = 'sky-prism-page-indicator';
+            indicator.innerText = `${page + 1}/${totalPages}`;
+            nav.appendChild(indicator);
+            nav.appendChild(makeButton('▶', () => {
+                page = (page + 1) % getTotalPages();
+                renderPage();
+            }, { width: '48px', padding: '8px' }));
+            footer.appendChild(nav);
+            footer.appendChild(makeButton('やめる', () => {
+                cleanup();
+                Menu.closeDialog();
+                if (options.onCancel) options.onCancel();
+            }, { background: '#444' }));
+            btnEl.appendChild(footer);
+            drawMap();
+        };
+
+        const handleResize = () => {
+            if (resizeTimer) clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                const nextSize = getPageSize();
+                if (nextSize !== pageSize) {
+                    const firstIndex = page * pageSize;
+                    page = Math.floor(firstIndex / nextSize);
+                    renderPage();
+                } else {
+                    drawMap();
+                }
+            }, 120);
+        };
+        window.addEventListener('resize', handleResize);
+        renderPage();
+    },
+
+	// 複数の選択肢をリスト表示するダイアログ
+    listChoice: (text, choices) => {
+        Menu.installBackGuard();
+        Menu.ensureBackGuard();
+        const area = Menu.getDialogEl('menu-dialog-area');
         const textEl = Menu.getDialogEl('menu-dialog-text');
         const btnEl = Menu.getDialogEl('menu-dialog-buttons');
         
@@ -999,29 +1261,19 @@ const Menu = {
         textEl.innerHTML = String(text).replace(/\n/g, '<br>');
         btnEl.classList.add('is-list');
 
-        const fixedLayout = !!options.fixedLayout;
-        const loopPages = !!options.loopPages;
-        const requestedPageSize = Number(options.pageSize);
-        const pageSize = Number.isInteger(requestedPageSize) && requestedPageSize > 0
-            ? requestedPageSize
-            : 6;
+        const pageSize = 6;
         const totalPages = Math.max(1, Math.ceil(choices.length / pageSize));
         let page = 0;
 
-        if (fixedLayout) {
-            shell?.classList.add('is-fixed-list');
-            btnEl.classList.add('is-fixed-list');
-        }
-
         const resetDialogButtons = () => Menu.resetDialogLayout();
 
-        const makeButton = (label, onClick, buttonOptions = {}) => {
+        const makeButton = (label, onClick, options = {}) => {
             const btn = document.createElement('button');
             btn.className = 'btn';
-            btn.style.width = buttonOptions.width || '100%';
-            btn.style.padding = buttonOptions.padding || '10px';
-            if (buttonOptions.background) btn.style.background = buttonOptions.background;
-            if (buttonOptions.disabled) {
+            btn.style.width = options.width || '100%';
+            btn.style.padding = options.padding || '10px';
+            if (options.background) btn.style.background = options.background;
+            if (options.disabled) {
                 btn.disabled = true;
                 btn.style.opacity = '0.45';
             }
@@ -1033,11 +1285,9 @@ const Menu = {
         const renderPage = () => {
             btnEl.innerHTML = '';
             const start = page * pageSize;
-            const choiceList = document.createElement('div');
-            choiceList.className = 'menu-dialog-choice-list';
 
             choices.slice(start, start + pageSize).forEach(c => {
-                choiceList.appendChild(makeButton(c.label, () => { 
+                btnEl.appendChild(makeButton(c.label, () => { 
                     resetDialogButtons();
                     Menu.closeDialog(); 
                     if (c.callback) c.callback(); 
@@ -1048,11 +1298,9 @@ const Menu = {
                     padding: c.padding
                 }));
             });
-            btnEl.appendChild(choiceList);
 
             if (totalPages > 1) {
                 const nav = document.createElement('div');
-                nav.className = 'menu-dialog-list-nav';
                 nav.style.display = 'grid';
                 nav.style.gridTemplateColumns = '48px 1fr 48px';
                 nav.style.gap = '8px';
@@ -1060,11 +1308,9 @@ const Menu = {
                 nav.style.width = '100%';
 
                 nav.appendChild(makeButton('◀', () => {
-                    page = loopPages
-                        ? (page - 1 + totalPages) % totalPages
-                        : Math.max(0, page - 1);
+                    page = (page - 1 + totalPages) % totalPages;
                     renderPage();
-                }, { width: '48px', padding: '8px', disabled: !loopPages && page === 0 }));
+                }, { width: '48px', padding: '8px' }));
 
                 const indicator = document.createElement('div');
                 indicator.style.fontSize = '12px';
@@ -1074,11 +1320,9 @@ const Menu = {
                 nav.appendChild(indicator);
 
                 nav.appendChild(makeButton('▶', () => {
-                    page = loopPages
-                        ? (page + 1) % totalPages
-                        : Math.min(totalPages - 1, page + 1);
+                    page = (page + 1) % totalPages;
                     renderPage();
-                }, { width: '48px', padding: '8px', disabled: !loopPages && page >= totalPages - 1 }));
+                }, { width: '48px', padding: '8px' }));
 
                 btnEl.appendChild(nav);
             }
