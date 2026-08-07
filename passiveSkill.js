@@ -283,7 +283,12 @@ PassiveSkill.applyLevelUpTraits = function(char) {
                 // 重複習得を避けるチェック（既存にあればレベルアップ扱いにするかスキップ）
                 if (char.traits.find(t => t.id === newTraitId)) return null;
 
-                char.traits.push({ id: newTraitId, level: 1, battleCount: 0 }); // battleCountを初期化
+                const fixedTraitLevels = (masterChar && Array.isArray(masterChar.fixedTraitLevels)) ? masterChar.fixedTraitLevels : [];
+                const configuredTraitLevel = Number(fixedTraitLevels[traitCount]);
+                const initialTraitLevel = Number.isFinite(configuredTraitLevel)
+                    ? Math.max(1, Math.min(10, Math.floor(configuredTraitLevel)))
+                    : 1;
+                char.traits.push({ id: newTraitId, level: initialTraitLevel, battleCount: 0 }); // 固定初期Lv指定に対応
                 const m = PassiveSkill.MASTER[newTraitId];
                 // ★修正: ログにキャラ名を追加
                 return `<span style="color:#00ffff;">【${char.name}】は 新たな特性【${m.name}】を習得した！</span>`;
